@@ -13,7 +13,7 @@ cd mini-caffe
 git submodule update --init --recursive
 ```
 
-设置环境变量 `OpenCV_DIR` 指向 OpenCV 安装目录，比如 `D:\3rdparty\opencv2.4.8\build`。设置 `BOOST_DIR` 指向 Boost 安装目录，注意如果你下载的是事先编译好的 Boost 库，请把库目录（包含有lib文件的目录改成`stage\lib`），如果你是自己源码编译的，那就不用管了。注意 Boost 库使用 32 位的。
+设置环境变量 `OpenCV_DIR` 指向 OpenCV 安装目录，比如 `D:\3rdparty\opencv2.4.8\build`。设置 `BOOST_DIR` 指向 Boost 安装目录，比如 `D:\3rdparty\boost_1_57_0`，注意如果你下载的是事先编译好的 Boost 库，请把库目录（包含有lib文件的目录改成`stage\lib`），如果你是自己源码编译的，那就不用管了。注意 Boost 库使用 32 位的。
 
 ### 编译依赖库
 
@@ -60,9 +60,9 @@ cmake .. -DBUILD_TESTING=OFF
 
 ### 编译 Caffe 前的最后准备
 
-我们需要收集各个库的头文件，库文件和 dll 文件，我写了个 `copydeps.bat` 脚本，直接双击运行，会将所有需要的文件复制到 3rdparty 制定的目录下。
+我们需要收集各个库的头文件，库文件和 dll 文件，我写了个 `copydeps.bat` 脚本，直接双击运行，会将所有需要的文件复制到 3rdparty 指定的目录下。
 
-我们还需要使用 protobuf 预处理 Caffe 中的 `caffe.proto` 文件，用来生成头文件后源文件，我写了 `generatebp.bat` 脚本自动调用 `srdparty\bin\protoc.exe` 生成头文件和源文件，并将其放到指定的目录下，直接双击运行就可以了。
+我们还需要使用 protobuf 预处理 Caffe 中的 `caffe.proto` 文件，用来生成头文件和源文件，我写了 `generatebp.bat` 脚本自动调用 `srdparty\bin\protoc.exe` 生成头文件和源文件，并将其放到指定的目录下，直接双击运行就可以了。
 
 做完上述准备后，我们可以 cmake 来生成 Caffe 的 VS 工程文件，在源码树根目录下创建 build 目录
 
