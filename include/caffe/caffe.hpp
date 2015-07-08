@@ -24,5 +24,6 @@
 #include "caffe/util/benchmark.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/vision_layers.hpp"
+#include "caffe/dummy.hpp"
 
 #endif  // CAFFE_CAFFE_HPP_

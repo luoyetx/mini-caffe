@@ -35,7 +35,7 @@ generate config files first.
 ```
 cd 3rdparty/src/protobuf/cmake
 mkdir build && cd build
-cmake ..
+cmake .. -DBUILD_TESTING=OFF
 ```
 
 open `protobuf.sln` and compile with `debug` and `release` version.
