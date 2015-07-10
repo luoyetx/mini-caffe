@@ -231,7 +231,7 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
   CHECK_LE(width, img_width);
   CHECK_GE(num, 1);
 
-  CHECK(cv_img.depth() == CV_32F) << "Image data type must be unsigned byte";
+  CHECK(cv_img.depth() == CV_32F) << "Image data type must be 32 bit float";
 
   const Dtype scale = param_.scale();
   const bool do_mirror = param_.mirror() && Rand(2);
