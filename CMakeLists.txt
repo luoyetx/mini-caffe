@@ -24,6 +24,3 @@ file(GLOB HD include/caffe/*.h* include/caffe/proto/*.h* include/caffe/util/*.h*
 
 add_library(libcaffe STATIC ${HD} ${SRC})
 target_link_libraries(libcaffe ${LIBS} ${OpenCV_LIBS})
-
-# Python Binding
-include(python/python.cmake)
