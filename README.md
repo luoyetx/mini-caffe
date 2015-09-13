@@ -1,7 +1,7 @@
 mini-caffe
 ==========
 
-为 Windows 提供一个 Caffe 的最小运行环境。
+为 Windows 提供一个 Caffe 的最小运行环境。请使用 **VS2013** 编译项目，**VS2012**及以下版本不保证依赖库能够正常编译成功。亲测 VS2012 无法编译 cmake 生成的 protobuf 库。
 
 ### 安装
 
