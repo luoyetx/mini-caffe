@@ -21,13 +21,15 @@ set(LIBS debug gflagsd optimized gflags
          debug libprotocd optimized libprotoc
          libopenblas Shlwapi)
 
-file(GLOB SRC ${CMAKE_CURRENT_LIST_DIR}/src/caffe/*.c*
-              ${CMAKE_CURRENT_LIST_DIR}/src/caffe/layers/*.c*
-              ${CMAKE_CURRENT_LIST_DIR}/src/caffe/util/*.c*
-              ${CMAKE_CURRENT_LIST_DIR}/src/caffe/proto/*.c*
-              ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.h*
-              ${CMAKE_CURRENT_LIST_DIR}/include/caffe/proto/*.h*
-              ${CMAKE_CURRENT_LIST_DIR}/include/caffe/util/*.h*)
+file(GLOB SRC ${CMAKE_CURRENT_LIST_DIR}/src/caffe/*.cpp
+              ${CMAKE_CURRENT_LIST_DIR}/src/caffe/layers/*.cpp
+              ${CMAKE_CURRENT_LIST_DIR}/src/caffe/util/*.cpp
+              ${CMAKE_CURRENT_LIST_DIR}/src/caffe/proto/caffe.pb.cc
+              ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp
+              ${CMAKE_CURRENT_LIST_DIR}/include/caffe/util/*.hpp
+              ${CMAKE_CURRENT_LIST_DIR}/include/caffe/layers/*.hpp
+              ${CMAKE_CURRENT_LIST_DIR}/include/caffe/proto/caffe.pb.h)
 
+add_definitions(-DCPU_ONLY -DUSE_OPENCV)
 add_library(libcaffe STATIC ${SRC})
 target_link_libraries(libcaffe ${LIBS} ${OpenCV_LIBS})
