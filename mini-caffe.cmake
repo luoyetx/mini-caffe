@@ -11,14 +11,14 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/include
                     ${CMAKE_CURRENT_LIST_DIR}/include
                     ${BOOST_DIR})
 
-link_directories(${BOOST_DIR}/stage/lib
+link_directories(${BOOST_DIR}/stage/lib # for self compiled
+                 ${BOOST_DIR}/lib32-msvc-12.0 # for VS2013
                  ${CMAKE_CURRENT_LIST_DIR}/3rdparty/lib)
 
 set(LIBS debug gflagsd optimized gflags
          debug gflags_nothreadsd optimized gflags_nothreads
          debug libglogd optimized libglog
          debug libprotobufd optimized libprotobuf
-         debug libprotocd optimized libprotoc
          libopenblas Shlwapi)
 
 file(GLOB SRC ${CMAKE_CURRENT_LIST_DIR}/src/caffe/*.cpp
