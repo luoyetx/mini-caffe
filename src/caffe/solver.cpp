@@ -5,7 +5,6 @@
 
 #include "caffe/solver.hpp"
 #include "caffe/util/format.hpp"
-#include "caffe/util/hdf5.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/util/upgrade_proto.hpp"
 

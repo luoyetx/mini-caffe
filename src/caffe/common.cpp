@@ -7,6 +7,8 @@
 #include "caffe/common.hpp"
 #include "caffe/util/rng.hpp"
 
+#include <process.h>
+
 namespace caffe {
 
 // Make sure each thread can have different values.
@@ -45,8 +47,8 @@ void GlobalInit(int* pargc, char*** pargv) {
   ::gflags::ParseCommandLineFlags(pargc, pargv, true);
   // Google logging.
   ::google::InitGoogleLogging(*(pargv)[0]);
-  // Provide a backtrace on segfault.
-  ::google::InstallFailureSignalHandler();
+  //// Provide a backtrace on segfault.
+  //::google::InstallFailureSignalHandler();
 }
 
 #ifdef CPU_ONLY  // CPU-only Caffe.
