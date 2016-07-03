@@ -5,14 +5,19 @@
 #include <utility>
 #include <vector>
 
+#include "hdf5.h"
+
 #include "caffe/common.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/net.hpp"
 #include "caffe/parallel.hpp"
 #include "caffe/proto/caffe.pb.h"
+#include "caffe/util/hdf5.hpp"
 #include "caffe/util/insert_splits.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/upgrade_proto.hpp"
+
+#include "caffe/test/test_caffe_main.hpp"
 
 namespace caffe {
 
@@ -51,22 +56,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   name_ = param.name();
   map<string, int> blob_name_to_idx;
   set<string> available_blobs;
-  CHECK(param.input_dim_size() == 0 || param.input_shape_size() == 0)
-      << "Must specify either input_shape OR deprecated input_dim, not both.";
-  if (param.input_dim_size() > 0) {
-    // Deprecated 4D dimensions.
-    CHECK_EQ(param.input_size() * 4, param.input_dim_size())
-        << "Incorrect input blob dimension specifications.";
-  } else {
-    CHECK_EQ(param.input_size(), param.input_shape_size())
-        << "Exactly one input_shape must be specified per input.";
-  }
   memory_used_ = 0;
-  // set the input blobs
-  for (int input_id = 0; input_id < param.input_size(); ++input_id) {
-    const int layer_id = -1;  // inputs have fake layer ID -1
-    AppendTop(param, layer_id, input_id, &available_blobs, &blob_name_to_idx);
-  }
   // For each layer, set up its input and output
   bottom_vecs_.resize(param.layer_size());
   top_vecs_.resize(param.layer_size());
@@ -113,6 +103,12 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     int num_top = layer_param.top_size();
     for (int top_id = 0; top_id < num_top; ++top_id) {
       AppendTop(param, layer_id, top_id, &available_blobs, &blob_name_to_idx);
+      // Collect Input layer tops as Net inputs.
+      if (layer_param.type() == "Input") {
+        const int blob_id = blobs_.size() - 1;
+        net_input_blob_indices_.push_back(blob_id);
+        net_input_blobs_.push_back(blobs_[blob_id].get());
+      }
     }
     // If the layer specifies that AutoTopBlobs() -> true and the LayerParameter
     // specified fewer than the required number (as specified by
@@ -374,19 +370,17 @@ bool Net<Dtype>::StateMeetsRule(const NetState& state,
   return true;
 }
 
-// Helper for Net::Init: add a new input or top blob to the net.  (Inputs have
-// layer_id == -1, tops have layer_id >= 0.)
+// Helper for Net::Init: add a new top blob to the net.
 template <typename Dtype>
 void Net<Dtype>::AppendTop(const NetParameter& param, const int layer_id,
                            const int top_id, set<string>* available_blobs,
                            map<string, int>* blob_name_to_idx) {
-  shared_ptr<LayerParameter> layer_param((layer_id >= 0) ?
-    (new LayerParameter(param.layer(layer_id))) : NULL);
-  const string& blob_name = layer_param ?
-      (layer_param->top_size() > top_id ?
-          layer_param->top(top_id) : "(automatic)") : param.input(top_id);
+  shared_ptr<LayerParameter> layer_param(
+      new LayerParameter(param.layer(layer_id)));
+  const string& blob_name = (layer_param->top_size() > top_id) ?
+      layer_param->top(top_id) : "(automatic)";
   // Check if we are doing in-place computation
-  if (blob_name_to_idx && layer_param && layer_param->bottom_size() > top_id &&
+  if (blob_name_to_idx && layer_param->bottom_size() > top_id &&
       blob_name == layer_param->bottom(top_id)) {
     // In-place computation
     LOG_IF(INFO, Caffe::root_solver())
@@ -402,11 +396,7 @@ void Net<Dtype>::AppendTop(const NetParameter& param, const int layer_id,
   } else {
     // Normal output.
     if (Caffe::root_solver()) {
-      if (layer_param) {
-        LOG(INFO) << layer_param->name() << " -> " << blob_name;
-      } else {
-        LOG(INFO) << "Input " << top_id << " -> " << blob_name;
-      }
+      LOG(INFO) << layer_param->name() << " -> " << blob_name;
     }
     shared_ptr<Blob<Dtype> > blob_pointer(new Blob<Dtype>());
     const int blob_id = blobs_.size();
@@ -414,22 +404,8 @@ void Net<Dtype>::AppendTop(const NetParameter& param, const int layer_id,
     blob_names_.push_back(blob_name);
     blob_need_backward_.push_back(false);
     if (blob_name_to_idx) { (*blob_name_to_idx)[blob_name] = blob_id; }
-    if (layer_id == -1) {
-      // Set the (explicitly specified) dimensions of the input blob.
-      if (param.input_dim_size() > 0) {
-        blob_pointer->Reshape(param.input_dim(top_id * 4),
-                              param.input_dim(top_id * 4 + 1),
-                              param.input_dim(top_id * 4 + 2),
-                              param.input_dim(top_id * 4 + 3));
-      } else {
-        blob_pointer->Reshape(param.input_shape(top_id));
-      }
-      net_input_blob_indices_.push_back(blob_id);
-      net_input_blobs_.push_back(blob_pointer.get());
-    } else {
-      top_id_vecs_[layer_id].push_back(blob_id);
-      top_vecs_[layer_id].push_back(blob_pointer.get());
-    }
+    top_id_vecs_[layer_id].push_back(blob_id);
+    top_vecs_[layer_id].push_back(blob_pointer.get());
   }
   if (available_blobs) { available_blobs->insert(blob_name); }
 }
@@ -451,12 +427,11 @@ int Net<Dtype>::AppendBottom(const NetParameter& param, const int layer_id,
   bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
   bottom_id_vecs_[layer_id].push_back(blob_id);
   available_blobs->erase(blob_name);
-  bool propagate_down = true;
+  bool need_backward = blob_need_backward_[blob_id];
   // Check if the backpropagation on bottom_id should be skipped
-  if (layer_param.propagate_down_size() > 0)
-    propagate_down = layer_param.propagate_down(bottom_id);
-  const bool need_backward = blob_need_backward_[blob_id] &&
-                          propagate_down;
+  if (layer_param.propagate_down_size() > 0) {
+    need_backward = layer_param.propagate_down(bottom_id);
+  }
   bottom_need_backward_[layer_id].push_back(need_backward);
   return blob_id;
 }
@@ -561,11 +536,6 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
   CHECK_GE(start, 0);
   CHECK_LT(end, layers_.size());
   Dtype loss = 0;
-  if (debug_info_) {
-    for (int i = 0; i < net_input_blobs_.size(); ++i) {
-      InputDebugInfo(i);
-    }
-  }
   for (int i = start; i <= end; ++i) {
     // LOG(ERROR) << "Forwarding " << layer_names_[i];
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
@@ -586,7 +556,7 @@ Dtype Net<Dtype>::ForwardTo(int end) {
 }
 
 template <typename Dtype>
-const vector<Blob<Dtype>*>& Net<Dtype>::ForwardPrefilled(Dtype* loss) {
+const vector<Blob<Dtype>*>& Net<Dtype>::Forward(Dtype* loss) {
   if (loss != NULL) {
     *loss = ForwardFromTo(0, layers_.size() - 1);
   } else {
@@ -598,32 +568,13 @@ const vector<Blob<Dtype>*>& Net<Dtype>::ForwardPrefilled(Dtype* loss) {
 template <typename Dtype>
 const vector<Blob<Dtype>*>& Net<Dtype>::Forward(
     const vector<Blob<Dtype>*> & bottom, Dtype* loss) {
-  // Copy bottom to internal bottom
+  LOG_EVERY_N(WARNING, 1000) << "DEPRECATED: Forward(bottom, loss) "
+      << "will be removed in a future version. Use Forward(loss).";
+  // Copy bottom to net bottoms
   for (int i = 0; i < bottom.size(); ++i) {
     net_input_blobs_[i]->CopyFrom(*bottom[i]);
   }
-  return ForwardPrefilled(loss);
-}
-
-template <typename Dtype>
-string Net<Dtype>::Forward(const string& input_blob_protos, Dtype* loss) {
-  BlobProtoVector blob_proto_vec;
-  if (net_input_blobs_.size()) {
-    blob_proto_vec.ParseFromString(input_blob_protos);
-    CHECK_EQ(blob_proto_vec.blobs_size(), net_input_blobs_.size())
-        << "Incorrect input size.";
-    for (int i = 0; i < blob_proto_vec.blobs_size(); ++i) {
-      net_input_blobs_[i]->FromProto(blob_proto_vec.blobs(i));
-    }
-  }
-  ForwardPrefilled(loss);
-  blob_proto_vec.Clear();
-  for (int i = 0; i < net_output_blobs_.size(); ++i) {
-    net_output_blobs_[i]->ToProto(blob_proto_vec.add_blobs());
-  }
-  string output;
-  blob_proto_vec.SerializeToString(&output);
-  return output;
+  return Forward(loss);
 }
 
 template <typename Dtype>
@@ -637,16 +588,6 @@ void Net<Dtype>::BackwardFromTo(int start, int end) {
       if (debug_info_) { BackwardDebugInfo(i); }
     }
   }
-}
-
-template <typename Dtype>
-void Net<Dtype>::InputDebugInfo(const int input_id) {
-  const Blob<Dtype>& blob = *net_input_blobs_[input_id];
-  const string& blob_name = blob_names_[net_input_blob_indices_[input_id]];
-  const Dtype data_abs_val_mean = blob.asum_data() / blob.count();
-  LOG_IF(INFO, Caffe::root_solver())
-      << "    [Forward] "
-      << "Input " << blob_name << " data: " << data_abs_val_mean;
 }
 
 template <typename Dtype>
@@ -838,7 +779,7 @@ template <typename Dtype>
 void Net<Dtype>::CopyTrainedLayersFrom(const string trained_filename) {
   if (trained_filename.size() >= 3 &&
       trained_filename.compare(trained_filename.size() - 3, 3, ".h5") == 0) {
-    //CopyTrainedLayersFromHDF5(trained_filename);
+    CopyTrainedLayersFromHDF5(trained_filename);
   } else {
     CopyTrainedLayersFromBinaryProto(trained_filename);
   }
@@ -852,64 +793,61 @@ void Net<Dtype>::CopyTrainedLayersFromBinaryProto(
   CopyTrainedLayersFrom(param);
 }
 
-//template <typename Dtype>
-//void Net<Dtype>::CopyTrainedLayersFromHDF5(const string trained_filename) {
-//  hid_t file_hid = H5Fopen(trained_filename.c_str(), H5F_ACC_RDONLY,
-//                           H5P_DEFAULT);
-//  CHECK_GE(file_hid, 0) << "Couldn't open " << trained_filename;
-//  hid_t data_hid = H5Gopen2(file_hid, "data", H5P_DEFAULT);
-//  CHECK_GE(data_hid, 0) << "Error reading weights from " << trained_filename;
-//  int num_layers = hdf5_get_num_links(data_hid);
-//  for (int i = 0; i < num_layers; ++i) {
-//    string source_layer_name = hdf5_get_name_by_idx(data_hid, i);
-//    if (!layer_names_index_.count(source_layer_name)) {
-//      LOG(INFO) << "Ignoring source layer " << source_layer_name;
-//      continue;
-//    }
-//    int target_layer_id = layer_names_index_[source_layer_name];
-//    DLOG(INFO) << "Copying source layer " << source_layer_name;
-//    vector<shared_ptr<Blob<Dtype> > >& target_blobs =
-//        layers_[target_layer_id]->blobs();
-//    hid_t layer_hid = H5Gopen2(data_hid, source_layer_name.c_str(),
-//        H5P_DEFAULT);
-//    CHECK_GE(layer_hid, 0)
-//        << "Error reading weights from " << trained_filename;
-//    // Check that source layer doesn't have more params than target layer
-//    int num_source_params = hdf5_get_num_links(layer_hid);
-//    CHECK_LE(num_source_params, target_blobs.size())
-//        << "Incompatible number of blobs for layer " << source_layer_name;
-//    for (int j = 0; j < target_blobs.size(); ++j) {
-//      ostringstream oss;
-//      oss << j;
-//      string dataset_name = oss.str();
-//      int target_net_param_id = param_id_vecs_[target_layer_id][j];
-//      if (!H5Lexists(layer_hid, dataset_name.c_str(), H5P_DEFAULT)) {
-//        // Target param doesn't exist in source weights...
-//        if (param_owners_[target_net_param_id] != -1) {
-//          // ...but it's weight-shared in target, so that's fine.
-//          continue;
-//        } else {
-//          LOG(FATAL) << "Incompatible number of blobs for layer "
-//              << source_layer_name;
-//        }
-//      }
-//      hdf5_load_nd_dataset(layer_hid, dataset_name.c_str(), 0, kMaxBlobAxes,
-//          target_blobs[j].get());
-//    }
-//    H5Gclose(layer_hid);
-//  }
-//  H5Gclose(data_hid);
-//  H5Fclose(file_hid);
-//}
+template <typename Dtype>
+void Net<Dtype>::CopyTrainedLayersFromHDF5(const string trained_filename) {
+  hid_t file_hid = H5Fopen(trained_filename.c_str(), H5F_ACC_RDONLY,
+                           H5P_DEFAULT);
+  CHECK_GE(file_hid, 0) << "Couldn't open " << trained_filename;
+  hid_t data_hid = H5Gopen2(file_hid, "data", H5P_DEFAULT);
+  CHECK_GE(data_hid, 0) << "Error reading weights from " << trained_filename;
+  int num_layers = hdf5_get_num_links(data_hid);
+  for (int i = 0; i < num_layers; ++i) {
+    string source_layer_name = hdf5_get_name_by_idx(data_hid, i);
+    if (!layer_names_index_.count(source_layer_name)) {
+      LOG(INFO) << "Ignoring source layer " << source_layer_name;
+      continue;
+    }
+    int target_layer_id = layer_names_index_[source_layer_name];
+    DLOG(INFO) << "Copying source layer " << source_layer_name;
+    vector<shared_ptr<Blob<Dtype> > >& target_blobs =
+        layers_[target_layer_id]->blobs();
+    hid_t layer_hid = H5Gopen2(data_hid, source_layer_name.c_str(),
+        H5P_DEFAULT);
+    CHECK_GE(layer_hid, 0)
+        << "Error reading weights from " << trained_filename;
+    // Check that source layer doesn't have more params than target layer
+    int num_source_params = hdf5_get_num_links(layer_hid);
+    CHECK_LE(num_source_params, target_blobs.size())
+        << "Incompatible number of blobs for layer " << source_layer_name;
+    for (int j = 0; j < target_blobs.size(); ++j) {
+      ostringstream oss;
+      oss << j;
+      string dataset_name = oss.str();
+      int target_net_param_id = param_id_vecs_[target_layer_id][j];
+      if (!H5Lexists(layer_hid, dataset_name.c_str(), H5P_DEFAULT)) {
+        // Target param doesn't exist in source weights...
+        if (param_owners_[target_net_param_id] != -1) {
+          // ...but it's weight-shared in target, so that's fine.
+          continue;
+        } else {
+          LOG(FATAL) << "Incompatible number of blobs for layer "
+              << source_layer_name;
+        }
+      }
+      hdf5_load_nd_dataset(layer_hid, dataset_name.c_str(), 0, kMaxBlobAxes,
+          target_blobs[j].get());
+    }
+    H5Gclose(layer_hid);
+  }
+  H5Gclose(data_hid);
+  H5Fclose(file_hid);
+}
 
 template <typename Dtype>
 void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) const {
   param->Clear();
   param->set_name(name_);
   // Add bottom and top
-  for (int i = 0; i < net_input_blob_indices_.size(); ++i) {
-    param->add_input(blob_names_[net_input_blob_indices_[i]]);
-  }
   DLOG(INFO) << "Serializing " << layers_.size() << " layers";
   for (int i = 0; i < layers_.size(); ++i) {
     LayerParameter* layer_param = param->add_layer();
@@ -917,62 +855,62 @@ void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) const {
   }
 }
 
-//template <typename Dtype>
-//void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
-//  hid_t file_hid = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
-//      H5P_DEFAULT);
-//  CHECK_GE(file_hid, 0)
-//      << "Couldn't open " << filename << " to save weights.";
-//  hid_t data_hid = H5Gcreate2(file_hid, "data", H5P_DEFAULT, H5P_DEFAULT,
-//      H5P_DEFAULT);
-//  CHECK_GE(data_hid, 0) << "Error saving weights to " << filename << ".";
-//  hid_t diff_hid = -1;
-//  if (write_diff) {
-//    diff_hid = H5Gcreate2(file_hid, "diff", H5P_DEFAULT, H5P_DEFAULT,
-//        H5P_DEFAULT);
-//    CHECK_GE(diff_hid, 0) << "Error saving weights to " << filename << ".";
-//  }
-//  for (int layer_id = 0; layer_id < layers_.size(); ++layer_id) {
-//    const LayerParameter& layer_param = layers_[layer_id]->layer_param();
-//    string layer_name = layer_param.name();
-//    hid_t layer_data_hid = H5Gcreate2(data_hid, layer_name.c_str(),
-//        H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-//    CHECK_GE(layer_data_hid, 0)
-//        << "Error saving weights to " << filename << ".";
-//    hid_t layer_diff_hid = -1;
-//    if (write_diff) {
-//      layer_diff_hid = H5Gcreate2(diff_hid, layer_name.c_str(),
-//          H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-//      CHECK_GE(layer_diff_hid, 0)
-//          << "Error saving weights to " << filename << ".";
-//    }
-//    int num_params = layers_[layer_id]->blobs().size();
-//    for (int param_id = 0; param_id < num_params; ++param_id) {
-//      ostringstream dataset_name;
-//      dataset_name << param_id;
-//      const int net_param_id = param_id_vecs_[layer_id][param_id];
-//      if (param_owners_[net_param_id] == -1) {
-//        // Only save params that own themselves
-//        hdf5_save_nd_dataset<Dtype>(layer_data_hid, dataset_name.str(),
-//            *params_[net_param_id]);
-//      }
-//      if (write_diff) {
-//        // Write diffs regardless of weight-sharing
-//        hdf5_save_nd_dataset<Dtype>(layer_diff_hid, dataset_name.str(),
-//            *params_[net_param_id], true);
-//      }
-//    }
-//    H5Gclose(layer_data_hid);
-//    if (write_diff) {
-//      H5Gclose(layer_diff_hid);
-//    }
-//  }
-//  H5Gclose(data_hid);
-//  if (write_diff) {
-//    H5Gclose(diff_hid);
-//  }
-//  H5Fclose(file_hid);
-//}
+template <typename Dtype>
+void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
+  hid_t file_hid = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
+      H5P_DEFAULT);
+  CHECK_GE(file_hid, 0)
+      << "Couldn't open " << filename << " to save weights.";
+  hid_t data_hid = H5Gcreate2(file_hid, "data", H5P_DEFAULT, H5P_DEFAULT,
+      H5P_DEFAULT);
+  CHECK_GE(data_hid, 0) << "Error saving weights to " << filename << ".";
+  hid_t diff_hid = -1;
+  if (write_diff) {
+    diff_hid = H5Gcreate2(file_hid, "diff", H5P_DEFAULT, H5P_DEFAULT,
+        H5P_DEFAULT);
+    CHECK_GE(diff_hid, 0) << "Error saving weights to " << filename << ".";
+  }
+  for (int layer_id = 0; layer_id < layers_.size(); ++layer_id) {
+    const LayerParameter& layer_param = layers_[layer_id]->layer_param();
+    string layer_name = layer_param.name();
+    hid_t layer_data_hid = H5Gcreate2(data_hid, layer_name.c_str(),
+        H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    CHECK_GE(layer_data_hid, 0)
+        << "Error saving weights to " << filename << ".";
+    hid_t layer_diff_hid = -1;
+    if (write_diff) {
+      layer_diff_hid = H5Gcreate2(diff_hid, layer_name.c_str(),
+          H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      CHECK_GE(layer_diff_hid, 0)
+          << "Error saving weights to " << filename << ".";
+    }
+    int num_params = layers_[layer_id]->blobs().size();
+    for (int param_id = 0; param_id < num_params; ++param_id) {
+      ostringstream dataset_name;
+      dataset_name << param_id;
+      const int net_param_id = param_id_vecs_[layer_id][param_id];
+      if (param_owners_[net_param_id] == -1) {
+        // Only save params that own themselves
+        hdf5_save_nd_dataset<Dtype>(layer_data_hid, dataset_name.str(),
+            *params_[net_param_id]);
+      }
+      if (write_diff) {
+        // Write diffs regardless of weight-sharing
+        hdf5_save_nd_dataset<Dtype>(layer_diff_hid, dataset_name.str(),
+            *params_[net_param_id], true);
+      }
+    }
+    H5Gclose(layer_data_hid);
+    if (write_diff) {
+      H5Gclose(layer_diff_hid);
+    }
+  }
+  H5Gclose(data_hid);
+  if (write_diff) {
+    H5Gclose(diff_hid);
+  }
+  H5Fclose(file_hid);
+}
 
 template <typename Dtype>
 void Net<Dtype>::Update() {
