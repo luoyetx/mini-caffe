@@ -68,10 +68,6 @@ void BatchReindexLayer<Dtype>::Backward_cpu(
   }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(BatchReindexLayer);
-#endif
-
 INSTANTIATE_CLASS(BatchReindexLayer);
 REGISTER_LAYER_CLASS(BatchReindex);
 

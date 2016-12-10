@@ -209,10 +209,6 @@ void ScaleLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(ScaleLayer);
-#endif
-
 INSTANTIATE_CLASS(ScaleLayer);
 REGISTER_LAYER_CLASS(Scale);
 

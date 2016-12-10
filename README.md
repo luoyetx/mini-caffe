@@ -1,7 +1,11 @@
-mini-caffe
+Mini-Caffe
 ==========
 
 Minimal runtime core of Caffe porting to WIN32. This repo is aimed to provide a minimal runtime of Caffe for those want to run Caffe model on Windows platform.
+
+### Update
+
+- 2016/12/11. Mini-Caffe now only depends on OpenBLAS and protobuf.
 
 ### What can mini-caffe do?
 
@@ -21,18 +25,18 @@ Since Caffe depends on many 3rdparty libraries, I have modified some code to rem
 
 but we still need libraries below.
 
-- OpenCV
-- Boost
-- gflags
-- glog
+- ~~OpenCV~~
+- ~~Boost~~
+- ~~gflags~~
+- ~~glog~~
 - protobuf
 - openblas
 
-We can download pre-compiled OpenCV and Boost, and set two environment variables `OpenCV_DIR` and `Boost_DIR`. For example, `OpenCV_DIR` = `D:\3rdparty\opencv2.4.8\build` and `Boost_DIR` = `D:\3rdparty\boost_1_57_0`. Pay attention to the Compiler version and build Architecture, which will be **VC12** and **x86**.
+~~We can download pre-compiled OpenCV and Boost, and set two environment variables `OpenCV_DIR` and `Boost_DIR`. For example, `OpenCV_DIR` = `D:\3rdparty\opencv2.4.8\build` and `Boost_DIR` = `D:\3rdparty\boost_1_57_0`. Pay attention to the Compiler version and build Architecture, which will be **VC12** and **x86**.~~
 
 For openblas, I already put the library in the source code.
 
-gflags, glog, protobuf can be compiled by ourself, I add these libraries as submodules of mini-caffe. However, I also provide a pre-compiled version of these libraries. The binaries is compiled by VC12 for x86. You can download from [dropbox](https://www.dropbox.com/s/8zbimuiviiyede5/3rdparty-VC12-x86.zip?dl=0) or [baidu driver](http://pan.baidu.com/s/1hqOoCL2).
+~~gflags, glog,~~ protobuf can be compiled by ourself, I add these libraries as submodules of mini-caffe. However, I also provide a pre-compiled version of these libraries. The binaries is compiled by VC12 for x86. You can download from [dropbox](https://www.dropbox.com/s/8zbimuiviiyede5/3rdparty-VC12-x86.zip?dl=0) or [baidu driver](http://pan.baidu.com/s/1hqOoCL2).
 
 To compile these libraries yourself, you should download the source code first.
 
@@ -41,21 +45,6 @@ git submodule update --init
 ```
 
 all source code are under `3rdparty/src`.
-
-##### gflags
-
-```
-cd 3rdparty/src/gflags
-mkdir build
-cd build
-cmake ..
-```
-
-use VS2013 to compile gflags. `Debug` and `Release`.
-
-##### glog
-
-glog project already provides a solution file for Visual Studio. Just compile `Debug` and `Release`.
 
 ##### protobuf
 

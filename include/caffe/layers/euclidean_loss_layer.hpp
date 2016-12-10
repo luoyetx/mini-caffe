@@ -58,8 +58,6 @@ class EuclideanLossLayer : public LossLayer<Dtype> {
   /// @copydoc EuclideanLossLayer
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
   /**
    * @brief Computes the Euclidean error gradient w.r.t. the inputs.
@@ -95,8 +93,6 @@ class EuclideanLossLayer : public LossLayer<Dtype> {
    *      @f$ if propagate_down[1]
    */
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
   Blob<Dtype> diff_;

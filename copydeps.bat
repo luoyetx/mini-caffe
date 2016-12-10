@@ -1,10 +1,3 @@
-mkdir 3rdparty\include\gflags
-copy 3rdparty\src\gflags\build\include\gflags 3rdparty\include\gflags
-copy 3rdparty\src\gflags\build\lib\Debug\gflags.lib 3rdparty\lib\gflagsd.lib
-copy 3rdparty\src\gflags\build\lib\Debug\gflags_nothreads.lib 3rdparty\lib\gflags_nothreadsd.lib
-copy 3rdparty\src\gflags\build\lib\Release\gflags.lib 3rdparty\lib\gflags.lib
-copy 3rdparty\src\gflags\build\lib\Release\gflags_nothreads.lib 3rdparty\lib\gflags_nothreads.lib
-
 mkdir 3rdparty\include\glog
 copy 3rdparty\src\glog\src\windows\glog 3rdparty\include\glog
 copy 3rdparty\src\glog\Debug\libglog.lib 3rdparty\lib\libglogd.lib

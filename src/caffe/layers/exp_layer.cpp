@@ -58,10 +58,6 @@ void ExpLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(ExpLayer);
-#endif
-
 INSTANTIATE_CLASS(ExpLayer);
 REGISTER_LAYER_CLASS(Exp);
 

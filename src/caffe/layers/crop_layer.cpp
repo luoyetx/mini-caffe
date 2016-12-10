@@ -133,10 +133,6 @@ void CropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(CropLayer);
-#endif
-
 INSTANTIATE_CLASS(CropLayer);
 REGISTER_LAYER_CLASS(Crop);
 

@@ -164,14 +164,7 @@ void Blob<Dtype>::Update() {
     break;
   case SyncedMemory::HEAD_AT_GPU:
   case SyncedMemory::SYNCED:
-#ifndef CPU_ONLY
-    // perform computation on GPU
-    caffe_gpu_axpy<Dtype>(count_, Dtype(-1),
-        static_cast<const Dtype*>(diff_->gpu_data()),
-        static_cast<Dtype*>(data_->mutable_gpu_data()));
-#else
     NO_GPU;
-#endif
     break;
   default:
     LOG(FATAL) << "Syncedmem not initialized.";
@@ -196,15 +189,7 @@ Dtype Blob<Dtype>::asum_data() const {
     return caffe_cpu_asum(count_, cpu_data());
   case SyncedMemory::HEAD_AT_GPU:
   case SyncedMemory::SYNCED:
-#ifndef CPU_ONLY
-  {
-    Dtype asum;
-    caffe_gpu_asum(count_, gpu_data(), &asum);
-    return asum;
-  }
-#else
     NO_GPU;
-#endif
   case SyncedMemory::UNINITIALIZED:
     return 0;
   default:
@@ -231,15 +216,7 @@ Dtype Blob<Dtype>::asum_diff() const {
     return caffe_cpu_asum(count_, cpu_diff());
   case SyncedMemory::HEAD_AT_GPU:
   case SyncedMemory::SYNCED:
-#ifndef CPU_ONLY
-  {
-    Dtype asum;
-    caffe_gpu_asum(count_, gpu_diff(), &asum);
-    return asum;
-  }
-#else
     NO_GPU;
-#endif
   case SyncedMemory::UNINITIALIZED:
     return 0;
   default:
@@ -270,12 +247,7 @@ Dtype Blob<Dtype>::sumsq_data() const {
     break;
   case SyncedMemory::HEAD_AT_GPU:
   case SyncedMemory::SYNCED:
-#ifndef CPU_ONLY
-    data = gpu_data();
-    caffe_gpu_dot(count_, data, data, &sumsq);
-#else
     NO_GPU;
-#endif
     break;
   case SyncedMemory::UNINITIALIZED:
     return 0;
@@ -307,13 +279,7 @@ Dtype Blob<Dtype>::sumsq_diff() const {
     break;
   case SyncedMemory::HEAD_AT_GPU:
   case SyncedMemory::SYNCED:
-#ifndef CPU_ONLY
-    diff = gpu_diff();
-    caffe_gpu_dot(count_, diff, diff, &sumsq);
-    break;
-#else
     NO_GPU;
-#endif
   case SyncedMemory::UNINITIALIZED:
     return 0;
   default:
@@ -341,13 +307,7 @@ void Blob<Dtype>::scale_data(Dtype scale_factor) {
     return;
   case SyncedMemory::HEAD_AT_GPU:
   case SyncedMemory::SYNCED:
-#ifndef CPU_ONLY
-    data = mutable_gpu_data();
-    caffe_gpu_scal(count_, scale_factor, data);
-    return;
-#else
     NO_GPU;
-#endif
   case SyncedMemory::UNINITIALIZED:
     return;
   default:
@@ -374,13 +334,7 @@ void Blob<Dtype>::scale_diff(Dtype scale_factor) {
     return;
   case SyncedMemory::HEAD_AT_GPU:
   case SyncedMemory::SYNCED:
-#ifndef CPU_ONLY
-    diff = mutable_gpu_diff();
-    caffe_gpu_scal(count_, scale_factor, diff);
-    return;
-#else
     NO_GPU;
-#endif
   case SyncedMemory::UNINITIALIZED:
     return;
   default:
@@ -420,27 +374,12 @@ void Blob<Dtype>::CopyFrom(const Blob& source, bool copy_diff, bool reshape) {
       LOG(FATAL) << "Trying to copy blobs of different sizes.";
     }
   }
-  switch (Caffe::mode()) {
-  case Caffe::GPU:
-    if (copy_diff) {
-      caffe_copy(count_, source.gpu_diff(),
-          static_cast<Dtype*>(diff_->mutable_gpu_data()));
-    } else {
-      caffe_copy(count_, source.gpu_data(),
-          static_cast<Dtype*>(data_->mutable_gpu_data()));
-    }
-    break;
-  case Caffe::CPU:
-    if (copy_diff) {
-      caffe_copy(count_, source.cpu_diff(),
-          static_cast<Dtype*>(diff_->mutable_cpu_data()));
-    } else {
-      caffe_copy(count_, source.cpu_data(),
-          static_cast<Dtype*>(data_->mutable_cpu_data()));
-    }
-    break;
-  default:
-    LOG(FATAL) << "Unknown caffe mode.";
+  if (copy_diff) {
+    caffe_copy(count_, source.cpu_diff(),
+        static_cast<Dtype*>(diff_->mutable_cpu_data()));
+  } else {
+    caffe_copy(count_, source.cpu_data(),
+        static_cast<Dtype*>(data_->mutable_cpu_data()));
   }
 }
 

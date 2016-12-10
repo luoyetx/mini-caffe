@@ -11,12 +11,6 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/math_functions.hpp"
 
-/**
- Forward declare boost::thread instead of including boost/thread.hpp
- to avoid a boost/NVCC issues (#1009, #1010) on OSX.
- */
-namespace boost { class mutex; }
-
 namespace caffe {
 
 /**
@@ -66,7 +60,6 @@ class Layer {
    */
   void SetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-    InitMutex();
     CheckBlobCounts(bottom, top);
     LayerSetUp(bottom, top);
     Reshape(bottom, top);
@@ -334,15 +327,6 @@ class Layer {
   /** @brief Using the CPU device, compute the layer output. */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) = 0;
-  /**
-   * @brief Using the GPU device, compute the layer output.
-   *        Fall back to Forward_cpu() if unavailable.
-   */
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-    // LOG(WARNING) << "Using CPU code as backup.";
-    return Forward_cpu(bottom, top);
-  }
 
   /**
    * @brief Using the CPU device, compute the gradients for any parameters and
@@ -351,17 +335,6 @@ class Layer {
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down,
       const vector<Blob<Dtype>*>& bottom) = 0;
-  /**
-   * @brief Using the GPU device, compute the gradients for any parameters and
-   *        for the bottom blobs if propagate_down is true.
-   *        Fall back to Backward_cpu() if unavailable.
-   */
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down,
-      const vector<Blob<Dtype>*>& bottom) {
-    // LOG(WARNING) << "Using CPU code as backup.";
-    Backward_cpu(top, propagate_down, bottom);
-  }
 
   /**
    * Called by the parent Layer's SetUp to check that the number of bottom
@@ -431,16 +404,6 @@ class Layer {
   /** Whether this layer is actually shared by other nets*/
   bool is_shared_;
 
-  /** The mutex for sequential forward if this layer is shared */
-  shared_ptr<boost::mutex> forward_mutex_;
-
-  /** Initialize forward_mutex_ */
-  void InitMutex();
-  /** Lock forward_mutex_ if this layer is shared */
-  void Lock();
-  /** Unlock forward_mutex_ if this layer is shared */
-  void Unlock();
-
   DISABLE_COPY_AND_ASSIGN(Layer);
 };  // class Layer
 
@@ -450,39 +413,16 @@ class Layer {
 template <typename Dtype>
 inline Dtype Layer<Dtype>::Forward(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  // Lock during forward to ensure sequential forward
-  Lock();
   Dtype loss = 0;
   Reshape(bottom, top);
-  switch (Caffe::mode()) {
-  case Caffe::CPU:
-    Forward_cpu(bottom, top);
-    for (int top_id = 0; top_id < top.size(); ++top_id) {
-      if (!this->loss(top_id)) { continue; }
-      const int count = top[top_id]->count();
-      const Dtype* data = top[top_id]->cpu_data();
-      const Dtype* loss_weights = top[top_id]->cpu_diff();
-      loss += caffe_cpu_dot(count, data, loss_weights);
-    }
-    break;
-  case Caffe::GPU:
-    Forward_gpu(bottom, top);
-#ifndef CPU_ONLY
-    for (int top_id = 0; top_id < top.size(); ++top_id) {
-      if (!this->loss(top_id)) { continue; }
-      const int count = top[top_id]->count();
-      const Dtype* data = top[top_id]->gpu_data();
-      const Dtype* loss_weights = top[top_id]->gpu_diff();
-      Dtype blob_loss = 0;
-      caffe_gpu_dot(count, data, loss_weights, &blob_loss);
-      loss += blob_loss;
-    }
-#endif
-    break;
-  default:
-    LOG(FATAL) << "Unknown caffe mode.";
+  Forward_cpu(bottom, top);
+  for (int top_id = 0; top_id < top.size(); ++top_id) {
+    if (!this->loss(top_id)) { continue; }
+    const int count = top[top_id]->count();
+    const Dtype* data = top[top_id]->cpu_data();
+    const Dtype* loss_weights = top[top_id]->cpu_diff();
+    loss += caffe_cpu_dot(count, data, loss_weights);
   }
-  Unlock();
   return loss;
 }
 
@@ -490,16 +430,7 @@ template <typename Dtype>
 inline void Layer<Dtype>::Backward(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
     const vector<Blob<Dtype>*>& bottom) {
-  switch (Caffe::mode()) {
-  case Caffe::CPU:
-    Backward_cpu(top, propagate_down, bottom);
-    break;
-  case Caffe::GPU:
-    Backward_gpu(top, propagate_down, bottom);
-    break;
-  default:
-    LOG(FATAL) << "Unknown caffe mode.";
-  }
+  Backward_cpu(top, propagate_down, bottom);
 }
 
 // Serialize LayerParameter to protocol buffer

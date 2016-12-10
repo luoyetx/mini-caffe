@@ -113,11 +113,8 @@ class Net {
   void CopyTrainedLayersFrom(const NetParameter& param);
   void CopyTrainedLayersFrom(const string trained_filename);
   void CopyTrainedLayersFromBinaryProto(const string trained_filename);
-  void CopyTrainedLayersFromHDF5(const string trained_filename);
   /// @brief Writes the net to a proto.
   void ToProto(NetParameter* param, bool write_diff = false) const;
-  /// @brief Writes the net to an HDF5 file.
-  void ToHDF5(const string& filename, bool write_diff = false) const;
 
   /// @brief returns the network name.
   inline const string& name() const { return name_; }
@@ -240,13 +237,6 @@ class Net {
   /// @brief Append a new parameter blob to the net.
   void AppendParam(const NetParameter& param, const int layer_id,
                    const int param_id);
-
-  /// @brief Helper for displaying debug info in Forward.
-  void ForwardDebugInfo(const int layer_id);
-  /// @brief Helper for displaying debug info in Backward.
-  void BackwardDebugInfo(const int layer_id);
-  /// @brief Helper for displaying debug info in Update.
-  void UpdateDebugInfo(const int param_id);
 
   /// @brief The network name
   string name_;

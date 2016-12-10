@@ -16,10 +16,6 @@ void SilenceLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(SilenceLayer);
-#endif
-
 INSTANTIATE_CLASS(SilenceLayer);
 REGISTER_LAYER_CLASS(Silence);
 

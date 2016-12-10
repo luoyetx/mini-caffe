@@ -74,10 +74,6 @@ void DeconvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(DeconvolutionLayer);
-#endif
-
 INSTANTIATE_CLASS(DeconvolutionLayer);
 REGISTER_LAYER_CLASS(Deconvolution);
 

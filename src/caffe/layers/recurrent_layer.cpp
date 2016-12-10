@@ -286,10 +286,6 @@ void RecurrentLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   unrolled_net_->BackwardFrom(last_layer_index_);
 }
 
-#ifdef CPU_ONLY
-STUB_GPU_FORWARD(RecurrentLayer, Forward);
-#endif
-
 INSTANTIATE_CLASS(RecurrentLayer);
 
 }  // namespace caffe

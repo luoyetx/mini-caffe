@@ -35,11 +35,6 @@ void ReLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   }
 }
 
-
-#ifdef CPU_ONLY
-STUB_GPU(ReLULayer);
-#endif
-
 INSTANTIATE_CLASS(ReLULayer);
 
 }  // namespace caffe

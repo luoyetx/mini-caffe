@@ -13,25 +13,12 @@ namespace caffe {
 // but might be more significant for parallel training. Most importantly,
 // it improved stability for large models on many GPUs.
 inline void CaffeMallocHost(void** ptr, size_t size, bool* use_cuda) {
-#ifndef CPU_ONLY
-  if (Caffe::mode() == Caffe::GPU) {
-    CUDA_CHECK(cudaMallocHost(ptr, size));
-    *use_cuda = true;
-    return;
-  }
-#endif
   *ptr = malloc(size);
   *use_cuda = false;
   CHECK(*ptr) << "host allocation of size " << size << " failed";
 }
 
 inline void CaffeFreeHost(void* ptr, bool use_cuda) {
-#ifndef CPU_ONLY
-  if (use_cuda) {
-    CUDA_CHECK(cudaFreeHost(ptr));
-    return;
-  }
-#endif
   free(ptr);
 }
 
@@ -62,10 +49,6 @@ class SyncedMemory {
   enum SyncedHead { UNINITIALIZED, HEAD_AT_CPU, HEAD_AT_GPU, SYNCED };
   SyncedHead head() { return head_; }
   size_t size() { return size_; }
-
-#ifndef CPU_ONLY
-  void async_gpu_push(const cudaStream_t& stream);
-#endif
 
  private:
   void to_cpu();
