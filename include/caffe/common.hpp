@@ -15,8 +15,6 @@
 
 #include "caffe/util/logging.hpp"
 
-#define NO_GPU LOG(FATAL) << "Cannot use GPU in CPU-only Caffe: check mode."
-
 // Convert macro to string
 #define STRINGIFY(m) #m
 #define AS_STRING(m) STRINGIFY(m)

@@ -75,12 +75,6 @@ Blob<Dtype>::Blob(const vector<int>& shape)
 }
 
 template <typename Dtype>
-const int* Blob<Dtype>::gpu_shape() const {
-  CHECK(shape_data_);
-  return (const int*)shape_data_->gpu_data();
-}
-
-template <typename Dtype>
 const Dtype* Blob<Dtype>::cpu_data() const {
   CHECK(data_);
   return (const Dtype*)data_->cpu_data();
@@ -93,21 +87,9 @@ void Blob<Dtype>::set_cpu_data(Dtype* data) {
 }
 
 template <typename Dtype>
-const Dtype* Blob<Dtype>::gpu_data() const {
-  CHECK(data_);
-  return (const Dtype*)data_->gpu_data();
-}
-
-template <typename Dtype>
 const Dtype* Blob<Dtype>::cpu_diff() const {
   CHECK(diff_);
   return (const Dtype*)diff_->cpu_data();
-}
-
-template <typename Dtype>
-const Dtype* Blob<Dtype>::gpu_diff() const {
-  CHECK(diff_);
-  return (const Dtype*)diff_->gpu_data();
 }
 
 template <typename Dtype>
@@ -117,21 +99,9 @@ Dtype* Blob<Dtype>::mutable_cpu_data() {
 }
 
 template <typename Dtype>
-Dtype* Blob<Dtype>::mutable_gpu_data() {
-  CHECK(data_);
-  return static_cast<Dtype*>(data_->mutable_gpu_data());
-}
-
-template <typename Dtype>
 Dtype* Blob<Dtype>::mutable_cpu_diff() {
   CHECK(diff_);
   return static_cast<Dtype*>(diff_->mutable_cpu_data());
-}
-
-template <typename Dtype>
-Dtype* Blob<Dtype>::mutable_gpu_diff() {
-  CHECK(diff_);
-  return static_cast<Dtype*>(diff_->mutable_gpu_data());
 }
 
 template <typename Dtype>
@@ -162,10 +132,6 @@ void Blob<Dtype>::Update() {
         static_cast<const Dtype*>(diff_->cpu_data()),
         static_cast<Dtype*>(data_->mutable_cpu_data()));
     break;
-  case SyncedMemory::HEAD_AT_GPU:
-  case SyncedMemory::SYNCED:
-    NO_GPU;
-    break;
   default:
     LOG(FATAL) << "Syncedmem not initialized.";
   }
@@ -187,9 +153,6 @@ Dtype Blob<Dtype>::asum_data() const {
   switch (data_->head()) {
   case SyncedMemory::HEAD_AT_CPU:
     return caffe_cpu_asum(count_, cpu_data());
-  case SyncedMemory::HEAD_AT_GPU:
-  case SyncedMemory::SYNCED:
-    NO_GPU;
   case SyncedMemory::UNINITIALIZED:
     return 0;
   default:
@@ -214,9 +177,6 @@ Dtype Blob<Dtype>::asum_diff() const {
   switch (diff_->head()) {
   case SyncedMemory::HEAD_AT_CPU:
     return caffe_cpu_asum(count_, cpu_diff());
-  case SyncedMemory::HEAD_AT_GPU:
-  case SyncedMemory::SYNCED:
-    NO_GPU;
   case SyncedMemory::UNINITIALIZED:
     return 0;
   default:
@@ -244,10 +204,6 @@ Dtype Blob<Dtype>::sumsq_data() const {
   case SyncedMemory::HEAD_AT_CPU:
     data = cpu_data();
     sumsq = caffe_cpu_dot(count_, data, data);
-    break;
-  case SyncedMemory::HEAD_AT_GPU:
-  case SyncedMemory::SYNCED:
-    NO_GPU;
     break;
   case SyncedMemory::UNINITIALIZED:
     return 0;
@@ -277,9 +233,6 @@ Dtype Blob<Dtype>::sumsq_diff() const {
     diff = cpu_diff();
     sumsq = caffe_cpu_dot(count_, diff, diff);
     break;
-  case SyncedMemory::HEAD_AT_GPU:
-  case SyncedMemory::SYNCED:
-    NO_GPU;
   case SyncedMemory::UNINITIALIZED:
     return 0;
   default:
@@ -305,9 +258,6 @@ void Blob<Dtype>::scale_data(Dtype scale_factor) {
     data = mutable_cpu_data();
     caffe_scal(count_, scale_factor, data);
     return;
-  case SyncedMemory::HEAD_AT_GPU:
-  case SyncedMemory::SYNCED:
-    NO_GPU;
   case SyncedMemory::UNINITIALIZED:
     return;
   default:
@@ -332,9 +282,6 @@ void Blob<Dtype>::scale_diff(Dtype scale_factor) {
     diff = mutable_cpu_diff();
     caffe_scal(count_, scale_factor, diff);
     return;
-  case SyncedMemory::HEAD_AT_GPU:
-  case SyncedMemory::SYNCED:
-    NO_GPU;
   case SyncedMemory::UNINITIALIZED:
     return;
   default:
