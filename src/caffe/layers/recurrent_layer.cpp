@@ -273,19 +273,6 @@ void RecurrentLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void RecurrentLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  CHECK(!propagate_down[1]) << "Cannot backpropagate to sequence indicators.";
-
-  // TODO: skip backpropagation to inputs and parameters inside the unrolled
-  // net according to propagate_down[0] and propagate_down[2]. For now just
-  // backprop to inputs and parameters unconditionally, as either the inputs or
-  // the parameters do need backward (or Net would have set
-  // layer_needs_backward_[i] == false for this layer).
-  unrolled_net_->BackwardFrom(last_layer_index_);
-}
-
 INSTANTIATE_CLASS(RecurrentLayer);
 
 }  // namespace caffe

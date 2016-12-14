@@ -106,40 +106,6 @@ class LSTMUnitLayer : public Layer<Dtype> {
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  /**
-   * @brief Computes the error gradient w.r.t. the LSTMUnit inputs.
-   *
-   * @param top output Blob vector (length 2), providing the error gradient with
-   *        respect to the outputs
-   *   -# @f$ (1 \times N \times D) @f$:
-   *      containing error gradients @f$ \frac{\partial E}{\partial c_t} @f$
-   *      with respect to the updated cell state @f$ c_t @f$
-   *   -# @f$ (1 \times N \times D) @f$:
-   *      containing error gradients @f$ \frac{\partial E}{\partial h_t} @f$
-   *      with respect to the updated cell state @f$ h_t @f$
-   * @param propagate_down see Layer::Backward.
-   * @param bottom input Blob vector (length 3), into which the error gradients
-   *        with respect to the LSTMUnit inputs @f$ c_{t-1} @f$ and the gate
-   *        inputs are computed.  Computatation of the error gradients w.r.t.
-   *        the sequence indicators is not implemented.
-   *   -# @f$ (1 \times N \times D) @f$
-   *      the error gradient w.r.t. the previous timestep cell state
-   *      @f$ c_{t-1} @f$
-   *   -# @f$ (1 \times N \times 4D) @f$
-   *      the error gradient w.r.t. the "gate inputs"
-   *      @f$ [
-   *          \frac{\partial E}{\partial i_t}
-   *          \frac{\partial E}{\partial f_t}
-   *          \frac{\partial E}{\partial o_t}
-   *          \frac{\partial E}{\partial g_t}
-   *          ] @f$
-   *   -# @f$ (1 \times 1 \times N) @f$
-   *      the gradient w.r.t. the sequence continuation indicators
-   *      @f$ \delta_t @f$ is currently not computed.
-   */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-
   /// @brief The hidden and output dimension.
   int hidden_dim_;
   Blob<Dtype> X_acts_;

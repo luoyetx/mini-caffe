@@ -65,29 +65,12 @@ class Net {
   void ClearParamDiffs();
 
   /**
-   * The network backward should take no input and output, since it solely
-   * computes the gradient w.r.t the parameters, and the data has already been
-   * provided during the forward pass.
-   */
-  void Backward();
-  void BackwardFromTo(int start, int end);
-  void BackwardFrom(int start);
-  void BackwardTo(int end);
-
-  /**
    * @brief Reshape all layers from bottom to top.
    *
    * This is useful to propagate changes to layer sizes without running
    * a forward pass, e.g. to compute output feature size.
    */
   void Reshape();
-
-  Dtype ForwardBackward() {
-    Dtype loss;
-    Forward(&loss);
-    Backward();
-    return loss;
-  }
 
   /// @brief Updates the network weights based on the diff values computed.
   void Update();

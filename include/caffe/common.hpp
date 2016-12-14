@@ -28,8 +28,7 @@ private:\
 // Instantiate a class with float and double specifications.
 #define INSTANTIATE_CLASS(classname) \
   char gInstantiationGuard##classname; \
-  template class classname<float>; \
-  template class classname<double>
+  template class classname<float>
 
 // A simple macro to mark codes that are not implemented, so that when the code
 // is executed we will see a fatal log.
