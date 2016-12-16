@@ -607,22 +607,6 @@ void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) const {
 }
 
 template <typename Dtype>
-void Net<Dtype>::Update() {
-  for (int i = 0; i < learnable_params_.size(); ++i) {
-    learnable_params_[i]->Update();
-  }
-}
-
-template <typename Dtype>
-void Net<Dtype>::ClearParamDiffs() {
-  for (int i = 0; i < learnable_params_.size(); ++i) {
-    Blob<Dtype>* blob = learnable_params_[i];
-    caffe_set(blob->count(), static_cast<Dtype>(0),
-              blob->mutable_cpu_diff());
-  }
-}
-
-template <typename Dtype>
 void Net<Dtype>::ShareWeights() {
   for (int i = 0; i < params_.size(); ++i) {
     if (param_owners_[i] < 0) { continue; }

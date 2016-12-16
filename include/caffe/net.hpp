@@ -59,12 +59,6 @@ class Net {
       Dtype* loss = NULL);
 
   /**
-   * @brief Zeroes out the diffs of all net parameters.
-   *        Should be run before Backward.
-   */
-  void ClearParamDiffs();
-
-  /**
    * @brief Reshape all layers from bottom to top.
    *
    * This is useful to propagate changes to layer sizes without running
@@ -72,8 +66,6 @@ class Net {
    */
   void Reshape();
 
-  /// @brief Updates the network weights based on the diff values computed.
-  void Update();
   /**
    * @brief Shares weight data of owner blobs with shared blobs.
    *
