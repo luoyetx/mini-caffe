@@ -23,9 +23,8 @@ namespace caffe {
 template <typename Dtype>
 class Net {
  public:
-  explicit Net(const NetParameter& param, const Net* root_net = NULL);
-  explicit Net(const string& param_file, Phase phase,
-      const Net* root_net = NULL);
+  explicit Net(const NetParameter& param);
+  explicit Net(const string& param_file, Phase phase);
   virtual ~Net() {}
 
   /// @brief Initialize a network with a NetParameter.
@@ -35,13 +34,7 @@ class Net {
    * @brief Run Forward and return the result.
    *
    */
-  const vector<Blob<Dtype>*>& Forward(Dtype* loss = NULL);
-  /// @brief DEPRECATED; use Forward() instead.
-  const vector<Blob<Dtype>*>& ForwardPrefilled(Dtype* loss = NULL) {
-    LOG_EVERY_N(WARNING, 1000) << "DEPRECATED: ForwardPrefilled() "
-        << "will be removed in a future version. Use Forward().";
-    return Forward(loss);
-  }
+  const vector<Blob<Dtype>*>& Forward();
 
   /**
    * The From and To variants of Forward and Backward operate on the
@@ -51,12 +44,9 @@ class Net {
    * the middle may be incorrect if all of the layers of a fan-in are not
    * included.
    */
-  Dtype ForwardFromTo(int start, int end);
-  Dtype ForwardFrom(int start);
-  Dtype ForwardTo(int end);
-  /// @brief DEPRECATED; set input blobs then use Forward() instead.
-  const vector<Blob<Dtype>*>& Forward(const vector<Blob<Dtype>* > & bottom,
-      Dtype* loss = NULL);
+  void ForwardFromTo(int start, int end);
+  void ForwardFrom(int start);
+  void ForwardTo(int end);
 
   /**
    * @brief Reshape all layers from bottom to top.
@@ -74,11 +64,6 @@ class Net {
    */
   void ShareWeights();
 
-  /**
-   * @brief For an already initialized net, implicitly copies (i.e., using no
-   *        additional memory) the pre-trained layers from another Net.
-   */
-  void ShareTrainedLayersWith(const Net* other);
   // For an already initialized net, CopyTrainedLayersFrom() copies the already
   // trained layers from another net parameter instance.
   /**
@@ -133,31 +118,12 @@ class Net {
     CHECK_LT(i, bottom_id_vecs_.size()) << "Invalid layer id";
     return bottom_id_vecs_[i];
   }
-  inline const vector<vector<bool> >& bottom_need_backward() const {
-    return bottom_need_backward_;
-  }
-  inline const vector<Dtype>& blob_loss_weights() const {
-    return blob_loss_weights_;
-  }
-  inline const vector<bool>& layer_need_backward() const {
-    return layer_need_backward_;
-  }
   /// @brief returns the parameters
   inline const vector<shared_ptr<Blob<Dtype> > >& params() const {
     return params_;
   }
   inline const vector<Blob<Dtype>*>& learnable_params() const {
     return learnable_params_;
-  }
-  /// @brief returns the learnable parameter learning rate multipliers
-  inline const vector<float>& params_lr() const { return params_lr_; }
-  inline const vector<bool>& has_params_lr() const { return has_params_lr_; }
-  /// @brief returns the learnable parameter decay multipliers
-  inline const vector<float>& params_weight_decay() const {
-    return params_weight_decay_;
-  }
-  inline const vector<bool>& has_params_decay() const {
-    return has_params_decay_;
   }
   const map<string, int>& param_names_index() const {
     return param_names_index_;
@@ -221,24 +187,18 @@ class Net {
   vector<shared_ptr<Layer<Dtype> > > layers_;
   vector<string> layer_names_;
   map<string, int> layer_names_index_;
-  vector<bool> layer_need_backward_;
   /// @brief the blobs storing intermediate results between the layer.
   vector<shared_ptr<Blob<Dtype> > > blobs_;
   vector<string> blob_names_;
   map<string, int> blob_names_index_;
-  vector<bool> blob_need_backward_;
   /// bottom_vecs stores the vectors containing the input for each layer.
   /// They don't actually host the blobs (blobs_ does), so we simply store
   /// pointers.
   vector<vector<Blob<Dtype>*> > bottom_vecs_;
   vector<vector<int> > bottom_id_vecs_;
-  vector<vector<bool> > bottom_need_backward_;
   /// top_vecs stores the vectors containing the output for each layer
   vector<vector<Blob<Dtype>*> > top_vecs_;
   vector<vector<int> > top_id_vecs_;
-  /// Vector of weight in the loss (or objective) function of each net blob,
-  /// indexed by blob_id.
-  vector<Dtype> blob_loss_weights_;
   vector<vector<int> > param_id_vecs_;
   vector<int> param_owners_;
   vector<string> param_display_names_;
@@ -260,21 +220,12 @@ class Net {
    * and learnable_params_[learnable_param_ids_[i]] gives its owner.
    */
   vector<int> learnable_param_ids_;
-  /// the learning rate multipliers for learnable_params_
-  vector<float> params_lr_;
-  vector<bool> has_params_lr_;
-  /// the weight decay multipliers for learnable_params_
-  vector<float> params_weight_decay_;
-  vector<bool> has_params_decay_;
   /// The bytes of memory used by this net
   size_t memory_used_;
   /// Whether to compute and display debug info for the net.
   bool debug_info_;
-  /// The root net that actually holds the shared layers in data parallelism
-  const Net* const root_net_;
   DISABLE_COPY_AND_ASSIGN(Net);
 };
-
 
 }  // namespace caffe
 

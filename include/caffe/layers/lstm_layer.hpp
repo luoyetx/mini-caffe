@@ -9,7 +9,6 @@
 #include "caffe/common.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/layers/recurrent_layer.hpp"
-#include "caffe/net.hpp"
 #include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
@@ -76,11 +75,6 @@ class LSTMUnitLayer : public Layer<Dtype> {
   virtual inline const char* type() const { return "LSTMUnit"; }
   virtual inline int ExactNumBottomBlobs() const { return 3; }
   virtual inline int ExactNumTopBlobs() const { return 2; }
-
-  virtual inline bool AllowForceBackward(const int bottom_index) const {
-    // Can't propagate to sequence continuation indicators.
-    return bottom_index != 2;
-  }
 
  protected:
   /**

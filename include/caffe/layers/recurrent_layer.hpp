@@ -54,11 +54,6 @@ class RecurrentLayer : public Layer<Dtype> {
     return num_tops;
   }
 
-  virtual inline bool AllowForceBackward(const int bottom_index) const {
-    // Can't propagate to sequence continuation indicators.
-    return bottom_index != 1;
-  }
-
  protected:
   /**
    * @brief Fills net_param with the recurrent network architecture.  Subclasses

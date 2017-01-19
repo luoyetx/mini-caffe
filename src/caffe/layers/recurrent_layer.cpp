@@ -152,16 +152,6 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       this->blobs_.push_back(unrolled_net_->params()[i]);
     }
   }
-  // Check that param_propagate_down is set for all of the parameters in the
-  // unrolled net; set param_propagate_down to true in this layer.
-  for (int i = 0; i < unrolled_net_->layers().size(); ++i) {
-    for (int j = 0; j < unrolled_net_->layers()[i]->blobs().size(); ++j) {
-      CHECK(unrolled_net_->layers()[i]->param_propagate_down(j))
-          << "param_propagate_down not set for layer " << i << ", param " << j;
-    }
-  }
-  this->param_propagate_down_.clear();
-  this->param_propagate_down_.resize(this->blobs_.size(), true);
 
   // Set the diffs of recurrent outputs to 0 -- we can't backpropagate across
   // batches.
