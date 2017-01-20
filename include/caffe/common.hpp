@@ -34,6 +34,16 @@ private:\
 // is executed we will see a fatal log.
 #define NOT_IMPLEMENTED LOG(FATAL) << "Not Implemented Yet"
 
+#ifdef _MSC_VER
+#ifdef CAFFE_EXPORTS
+#define CAFFE_API __declspec(dllexport)
+#else
+#define CAFFE_API __declspec(dllimport)
+#endif
+#else
+#define CAFFE_API
+#endif
+
 namespace caffe {
 
 // Common functions and classes from std that caffe often uses.
@@ -54,7 +64,7 @@ using std::vector;
 
 // A singleton class to hold common caffe stuff, such as the handler that
 // caffe is going to use for cublas, curand, etc.
-class Caffe {
+class CAFFE_API Caffe {
 public:
   ~Caffe();
 
@@ -86,7 +96,6 @@ public:
 
 protected:
   Brew mode_;
-
 
 private:
   // The private constructor to avoid duplicate instantiation.

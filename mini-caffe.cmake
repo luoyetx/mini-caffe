@@ -29,5 +29,6 @@ source_group(src\\util FILES ${CAFFE_SOURCE_UTIL})
 set(SRC ${CAFFE_INCLUDE_LAYERS} ${CAFFE_INCLUDE_UTIL} ${CAFFE_INCLUDE_OTHER}
         ${CAFFE_SOURCE_LAYERS} ${CAFFE_SOURCE_UTIL} ${CAFFE_SOURCE_OTHER})
 
+add_definitions(-DCAFFE_EXPORTS)
 add_library(libcaffe SHARED ${SRC})
 target_link_libraries(libcaffe ${LIBS})
