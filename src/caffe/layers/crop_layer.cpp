@@ -4,11 +4,8 @@
 #include <set>
 #include <vector>
 
-
 #include "caffe/layer.hpp"
 #include "caffe/layers/crop_layer.hpp"
-#include "caffe/net.hpp"
-
 
 namespace caffe {
 
@@ -118,19 +115,6 @@ void CropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   crop_copy(bottom, top, offsets, indices, 0, bottom_data, top_data, true);
-}
-
-template <typename Dtype>
-void CropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  const Dtype* top_diff = top[0]->cpu_diff();
-  Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
-
-  if (propagate_down[0]) {
-    caffe_set(bottom[0]->count(), static_cast<Dtype>(0), bottom_diff);
-    std::vector<int> indices(top[0]->num_axes(), 0);
-    crop_copy(bottom, top, offsets, indices, 0, top_diff, bottom_diff, false);
-  }
 }
 
 INSTANTIATE_CLASS(CropLayer);

@@ -178,8 +178,6 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
   kernel_dim_ = this->blobs_[0]->count(1);
   weight_offset_ = conv_out_channels_ * kernel_dim_ / group_;
-  // Propagate gradients to the parameters (as directed by backward pass).
-  this->param_propagate_down_.resize(this->blobs_.size(), true);
 }
 
 template <typename Dtype>
@@ -295,29 +293,6 @@ void BaseConvolutionLayer<Dtype>::backward_cpu_gemm(const Dtype* output,
   if (!is_1x1_) {
     conv_col2im_cpu(col_buff, input);
   }
-}
-
-template <typename Dtype>
-void BaseConvolutionLayer<Dtype>::weight_cpu_gemm(const Dtype* input,
-    const Dtype* output, Dtype* weights) {
-  const Dtype* col_buff = input;
-  if (!is_1x1_) {
-    conv_im2col_cpu(input, col_buffer_.mutable_cpu_data());
-    col_buff = col_buffer_.cpu_data();
-  }
-  for (int g = 0; g < group_; ++g) {
-    caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasTrans, conv_out_channels_ / group_,
-        kernel_dim_, conv_out_spatial_dim_,
-        (Dtype)1., output + output_offset_ * g, col_buff + col_offset_ * g,
-        (Dtype)1., weights + weight_offset_ * g);
-  }
-}
-
-template <typename Dtype>
-void BaseConvolutionLayer<Dtype>::backward_cpu_bias(Dtype* bias,
-    const Dtype* input) {
-  caffe_cpu_gemv<Dtype>(CblasNoTrans, num_output_, out_spatial_dim_, 1.,
-      input, bias_multiplier_.cpu_data(), 1., bias);
 }
 
 INSTANTIATE_CLASS(BaseConvolutionLayer);

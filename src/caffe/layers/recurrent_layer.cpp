@@ -152,16 +152,6 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       this->blobs_.push_back(unrolled_net_->params()[i]);
     }
   }
-  // Check that param_propagate_down is set for all of the parameters in the
-  // unrolled net; set param_propagate_down to true in this layer.
-  for (int i = 0; i < unrolled_net_->layers().size(); ++i) {
-    for (int j = 0; j < unrolled_net_->layers()[i]->blobs().size(); ++j) {
-      CHECK(unrolled_net_->layers()[i]->param_propagate_down(j))
-          << "param_propagate_down not set for layer " << i << ", param " << j;
-    }
-  }
-  this->param_propagate_down_.clear();
-  this->param_propagate_down_.resize(this->blobs_.size(), true);
 
   // Set the diffs of recurrent outputs to 0 -- we can't backpropagate across
   // batches.
@@ -271,19 +261,6 @@ void RecurrentLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       top[i]->ShareData(*recur_output_blobs_[j]);
     }
   }
-}
-
-template <typename Dtype>
-void RecurrentLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  CHECK(!propagate_down[1]) << "Cannot backpropagate to sequence indicators.";
-
-  // TODO: skip backpropagation to inputs and parameters inside the unrolled
-  // net according to propagate_down[0] and propagate_down[2]. For now just
-  // backprop to inputs and parameters unconditionally, as either the inputs or
-  // the parameters do need backward (or Net would have set
-  // layer_needs_backward_[i] == false for this layer).
-  unrolled_net_->BackwardFrom(last_layer_index_);
 }
 
 INSTANTIATE_CLASS(RecurrentLayer);

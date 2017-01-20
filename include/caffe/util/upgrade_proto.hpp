@@ -65,18 +65,6 @@ bool NetNeedsInputUpgrade(const NetParameter& net_param);
 // Perform all necessary transformations to upgrade input fields into layers.
 void UpgradeNetInput(NetParameter* net_param);
 
-// Return true iff the solver contains any old solver_type specified as enums
-bool SolverNeedsTypeUpgrade(const SolverParameter& solver_param);
-
-bool UpgradeSolverType(SolverParameter* solver_param);
-
-// Check for deprecations and upgrade the SolverParameter as needed.
-bool UpgradeSolverAsNeeded(const string& param_file, SolverParameter* param);
-
-// Read parameters from a file into a SolverParameter proto message.
-void ReadSolverParamsFromTextFileOrDie(const string& param_file,
-                                       SolverParameter* param);
-
 }  // namespace caffe
 
 #endif   // CAFFE_UTIL_UPGRADE_PROTO_H_

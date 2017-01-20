@@ -1,19 +1,20 @@
 Mini-Caffe
 ==========
 
-Minimal runtime core of Caffe porting to WIN32. This repo is aimed to provide a minimal runtime of Caffe for those want to run Caffe model on Windows platform.
+Minimal runtime core of Caffe porting to Windows. This repo is aimed to provide a minimal runtime of Caffe for those want to run Caffe model on Windows platform.
 
 ### Update
 
+- 2017/01/16. Build with x64 and remove many code.
 - 2016/12/11. Mini-Caffe now only depends on OpenBLAS and protobuf.
 
 ### What can mini-caffe do?
 
-This repo has no CUDA, no Caffe tools which means you can only use mini-caffe to run the nerual network model in CPU mode. You should train the nerual model use caffe tools on *nix platform, mini-caffe is just an optional choice for testing the nerual model on Windows platform. If you want a fully ported Caffe, you may refer to [happynear/caffe-windows](https://github.com/happynear/caffe-windows).
+This repo has no CUDA, no Caffe tools which means you can only use mini-caffe to run the nerual network model in CPU mode. You should train the nerual model use caffe tools on *nix platform, mini-caffe is just an optional choice for testing the nerual model on Windows platform. If you want a fully ported Caffe, you may refer to [happynear/caffe-windows](https://github.com/happynear/caffe-windows) or [Microsoft/caffe](https://github.com/Microsoft/caffe).
 
 ### Which compiler?
 
-VC12 in Visual Studio 2013. We only build for x86, if you know the difference, it can be easily doned with x64. What's more, We also need CMake.
+VC12 in Visual Studio 2013. We only build for x64, if you know the difference, it can be easily doned with x86. What's more, We also need CMake.
 
 ### 3rdparty libraries
 
@@ -36,7 +37,7 @@ but we still need libraries below.
 
 For openblas, I already put the library in the source code.
 
-~~gflags, glog,~~ protobuf can be compiled by ourself, I add these libraries as submodules of mini-caffe. However, I also provide a pre-compiled version of these libraries. The binaries is compiled by VC12 for x86. You can download from [dropbox](https://www.dropbox.com/s/8zbimuiviiyede5/3rdparty-VC12-x86.zip?dl=0) or [baidu driver](http://pan.baidu.com/s/1hqOoCL2).
+~~gflags, glog,~~ protobuf can be compiled by ourself, I add these libraries as submodules of mini-caffe.
 
 To compile these libraries yourself, you should download the source code first.
 
@@ -52,7 +53,7 @@ all source code are under `3rdparty/src`.
 cd 3rdparty/src/protobuf/cmake
 mkdir build
 cd build
-cmake .. -DBUILD_TESTING=OFF
+cmake .. -DBUILD_TESTING=OFF -G "Visual Studio 12 2013 Win64"
 ```
 
 use VS2013 to compile protobuf. `Debug` and `Release`.
