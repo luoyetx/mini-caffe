@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/slice_layer.hpp"
+#include "./slice_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

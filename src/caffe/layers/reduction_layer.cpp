@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/layers/reduction_layer.hpp"
+#include "./reduction_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

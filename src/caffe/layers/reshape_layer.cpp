@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/layers/reshape_layer.hpp"
+#include "./reshape_layer.hpp"
 
 namespace caffe {
 

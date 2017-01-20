@@ -1,11 +1,8 @@
 #include <string>
 #include <vector>
 
-#include "caffe/blob.hpp"
-#include "caffe/common.hpp"
 #include "caffe/filler.hpp"
-#include "caffe/layer.hpp"
-#include "caffe/layers/rnn_layer.hpp"
+#include "./rnn_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

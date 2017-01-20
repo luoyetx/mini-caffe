@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/batch_norm_layer.hpp"
+#include "./batch_norm_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

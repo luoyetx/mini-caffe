@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/bnll_layer.hpp"
+#include "./bnll_layer.hpp"
 
 namespace caffe {
 

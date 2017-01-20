@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/layers/input_layer.hpp"
+#include "./input_layer.hpp"
 
 namespace caffe {
 

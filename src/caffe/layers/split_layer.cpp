@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/layers/split_layer.hpp"
+#include "./split_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

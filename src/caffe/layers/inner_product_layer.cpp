@@ -1,7 +1,7 @@
 #include <vector>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/inner_product_layer.hpp"
+#include "./inner_product_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

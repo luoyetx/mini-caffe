@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/layers/batch_reindex_layer.hpp"
+#include "./batch_reindex_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/layers/mvn_layer.hpp"
+#include "./mvn_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

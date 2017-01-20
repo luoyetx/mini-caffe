@@ -2,7 +2,7 @@
 #include <vector>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/base_conv_layer.hpp"
+#include "./base_conv_layer.hpp"
 #include "caffe/util/im2col.hpp"
 #include "caffe/util/math_functions.hpp"
 

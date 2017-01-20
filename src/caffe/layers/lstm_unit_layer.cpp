@@ -2,8 +2,7 @@
 #include <cmath>
 #include <vector>
 
-#include "caffe/layer.hpp"
-#include "caffe/layers/lstm_layer.hpp"
+#include "./lstm_layer.hpp"
 
 namespace caffe {
 

@@ -5,10 +5,7 @@
 #include <utility>
 #include <vector>
 
-#include "caffe/blob.hpp"
-#include "caffe/common.hpp"
-#include "caffe/layer.hpp"
-#include "caffe/layers/recurrent_layer.hpp"
+#include "./recurrent_layer.hpp"
 #include "caffe/net.hpp"
 #include "caffe/proto/caffe.pb.h"
 

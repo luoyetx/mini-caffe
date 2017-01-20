@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/layers/flatten_layer.hpp"
+#include "./flatten_layer.hpp"
 
 namespace caffe {
 

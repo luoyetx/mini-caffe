@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/relu_layer.hpp"
+#include "./relu_layer.hpp"
 
 namespace caffe {
 

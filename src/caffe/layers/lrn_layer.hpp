@@ -7,10 +7,10 @@
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 
-#include "caffe/layers/eltwise_layer.hpp"
-#include "caffe/layers/pooling_layer.hpp"
-#include "caffe/layers/power_layer.hpp"
-#include "caffe/layers/split_layer.hpp"
+#include "./eltwise_layer.hpp"
+#include "./pooling_layer.hpp"
+#include "./power_layer.hpp"
+#include "./split_layer.hpp"
 
 namespace caffe {
 

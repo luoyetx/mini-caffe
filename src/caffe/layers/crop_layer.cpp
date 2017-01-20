@@ -4,8 +4,7 @@
 #include <set>
 #include <vector>
 
-#include "caffe/layer.hpp"
-#include "caffe/layers/crop_layer.hpp"
+#include "./crop_layer.hpp"
 
 namespace caffe {
 

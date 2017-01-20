@@ -1,12 +1,11 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layer.hpp"
-#include "caffe/layers/concat_layer.hpp"
-#include "caffe/layers/flatten_layer.hpp"
-#include "caffe/layers/pooling_layer.hpp"
-#include "caffe/layers/split_layer.hpp"
-#include "caffe/layers/spp_layer.hpp"
+#include "./concat_layer.hpp"
+#include "./flatten_layer.hpp"
+#include "./pooling_layer.hpp"
+#include "./split_layer.hpp"
+#include "./spp_layer.hpp"
 
 namespace caffe {
 

@@ -1,38 +1,35 @@
-#ifndef CAFFE_EXP_LAYER_HPP_
-#define CAFFE_EXP_LAYER_HPP_
+#ifndef CAFFE_LOG_LAYER_HPP_
+#define CAFFE_LOG_LAYER_HPP_
 
 #include <vector>
 
-#include "caffe/blob.hpp"
-#include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
-
-#include "caffe/layers/neuron_layer.hpp"
+#include "./neuron_layer.hpp"
 
 namespace caffe {
 
 /**
- * @brief Computes @f$ y = \gamma ^ {\alpha x + \beta} @f$,
+ * @brief Computes @f$ y = log_{\gamma}(\alpha x + \beta) @f$,
  *        as specified by the scale @f$ \alpha @f$, shift @f$ \beta @f$,
  *        and base @f$ \gamma @f$.
  */
 template <typename Dtype>
-class ExpLayer : public NeuronLayer<Dtype> {
+class LogLayer : public NeuronLayer<Dtype> {
  public:
   /**
-   * @param param provides ExpParameter exp_param,
-   *     with ExpLayer options:
+   * @param param provides LogParameter log_param,
+   *     with LogLayer options:
    *   - scale (\b optional, default 1) the scale @f$ \alpha @f$
    *   - shift (\b optional, default 0) the shift @f$ \beta @f$
    *   - base (\b optional, default -1 for a value of @f$ e \approx 2.718 @f$)
    *         the base @f$ \gamma @f$
    */
-  explicit ExpLayer(const LayerParameter& param)
+  explicit LogLayer(const LayerParameter& param)
       : NeuronLayer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "Exp"; }
+  virtual inline const char* type() const { return "Log"; }
 
  protected:
   /**
@@ -42,15 +39,17 @@ class ExpLayer : public NeuronLayer<Dtype> {
    * @param top output Blob vector (length 1)
    *   -# @f$ (N \times C \times H \times W) @f$
    *      the computed outputs @f$
-   *        y = \gamma ^ {\alpha x + \beta}
+   *        y = log_{\gamma}(\alpha x + \beta)
    *      @f$
    */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  Dtype inner_scale_, outer_scale_;
+  Dtype base_scale_;
+  Dtype input_scale_, input_shift_;
+  Dtype backward_num_scale_;
 };
 
 }  // namespace caffe
 
-#endif  // CAFFE_EXP_LAYER_HPP_
+#endif  // CAFFE_LOG_LAYER_HPP_

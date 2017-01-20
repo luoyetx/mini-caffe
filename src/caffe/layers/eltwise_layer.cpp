@@ -1,7 +1,7 @@
 #include <cfloat>
 #include <vector>
 
-#include "caffe/layers/eltwise_layer.hpp"
+#include "./eltwise_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {

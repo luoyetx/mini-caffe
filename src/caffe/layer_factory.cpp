@@ -2,13 +2,13 @@
 
 #include "caffe/layer.hpp"
 #include "caffe/layer_factory.hpp"
-#include "caffe/layers/conv_layer.hpp"
-#include "caffe/layers/lrn_layer.hpp"
-#include "caffe/layers/pooling_layer.hpp"
-#include "caffe/layers/relu_layer.hpp"
-#include "caffe/layers/sigmoid_layer.hpp"
-#include "caffe/layers/softmax_layer.hpp"
-#include "caffe/layers/tanh_layer.hpp"
+#include "./layers/conv_layer.hpp"
+#include "./layers/lrn_layer.hpp"
+#include "./layers/pooling_layer.hpp"
+#include "./layers/relu_layer.hpp"
+#include "./layers/sigmoid_layer.hpp"
+#include "./layers/softmax_layer.hpp"
+#include "./layers/tanh_layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 
 namespace caffe {

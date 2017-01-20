@@ -2,7 +2,7 @@
 #include <cfloat>
 #include <vector>
 
-#include "caffe/layers/pooling_layer.hpp"
+#include "./pooling_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
