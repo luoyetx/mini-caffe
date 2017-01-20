@@ -5,7 +5,7 @@ Minimal runtime core of Caffe porting to Windows. This repo is aimed to provide 
 
 ### Update
 
-- 2017/01/16. Build with x64.
+- 2017/01/16. Build with x64 and remove many code.
 - 2016/12/11. Mini-Caffe now only depends on OpenBLAS and protobuf.
 
 ### What can mini-caffe do?
