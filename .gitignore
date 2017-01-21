@@ -2,9 +2,7 @@ build/
 
 src/caffe/proto/caffe.pb.h
 src/caffe/proto/caffe.pb.cc
-include/caffe/proto/caffe.pb.h
 
-*.a
 *.lib
 *.dll
 *.exe

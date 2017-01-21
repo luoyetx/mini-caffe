@@ -7,6 +7,7 @@
  */
 #ifndef DMLC_LOGGING_H_
 #define DMLC_LOGGING_H_
+
 #include <cstdio>
 #include <cstdlib>
 #include <string>

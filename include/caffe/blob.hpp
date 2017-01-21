@@ -23,7 +23,7 @@ class BlobProto;
  * TODO(dox): more thorough description.
  */
 template <typename Dtype>
-class CAFFE_API Blob{
+class CAFFE_API Blob {
  public:
   Blob()
        : data_(), diff_(), count_(0), capacity_(0) {}

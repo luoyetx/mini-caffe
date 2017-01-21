@@ -210,7 +210,6 @@ message LayerParameter {
   optional PoolingParameter pooling_param = 121;
   optional PowerParameter power_param = 122;
   optional PReLUParameter prelu_param = 131;
-  optional RecurrentParameter recurrent_param = 146;
   optional ReductionParameter reduction_param = 136;
   optional ReLUParameter relu_param = 123;
   optional ReshapeParameter reshape_param = 133;
@@ -574,25 +573,6 @@ message PowerParameter {
   optional float shift = 3 [default = 0.0];
 }
 
-// Message that stores parameters used by RecurrentLayer
-message RecurrentParameter {
-  // The dimension of the output (and usually hidden state) representation --
-  // must be explicitly set to non-zero.
-  optional uint32 num_output = 1 [default = 0];
-
-  optional FillerParameter weight_filler = 2; // The filler for the weight
-  optional FillerParameter bias_filler = 3; // The filler for the bias
-
-  // Whether to enable displaying debug_info in the unrolled recurrent net.
-  optional bool debug_info = 4 [default = false];
-
-  // Whether to add as additional inputs (bottoms) the initial hidden state
-  // blobs, and add as additional outputs (tops) the final timestep hidden state
-  // blobs.  The number of additional bottom/top blobs required depends on the
-  // recurrent architecture -- e.g., 1 for RNNs, 2 for LSTMs.
-  optional bool expose_hidden = 5 [default = false];
-}
-
 // Message that stores parameters used by ReductionLayer
 message ReductionParameter {
   enum ReductionOp {
@@ -813,6 +793,16 @@ message SPPParameter {
   optional Engine engine = 6 [default = DEFAULT];
 }
 
+message PReLUParameter {
+  // Parametric ReLU described in K. He et al, Delving Deep into Rectifiers:
+  // Surpassing Human-Level Performance on ImageNet Classification, 2015.
+
+  // Initial value of a_i. Default is a_i=0.25 for all i.
+  optional FillerParameter filler = 1;
+  // Whether or not slope paramters are shared across channels.
+  optional bool channel_shared = 2 [default = false];
+}
+
 // DEPRECATED: use LayerParameter.
 message V1LayerParameter {
   repeated string bottom = 2;
@@ -971,14 +961,4 @@ message V0LayerParameter {
   // the other dimensions must be the same for all the bottom blobs.
   // By default it will concatenate blobs along the channels dimension.
   optional uint32 concat_dim = 65 [default = 1];
-}
-
-message PReLUParameter {
-  // Parametric ReLU described in K. He et al, Delving Deep into Rectifiers:
-  // Surpassing Human-Level Performance on ImageNet Classification, 2015.
-
-  // Initial value of a_i. Default is a_i=0.25 for all i.
-  optional FillerParameter filler = 1;
-  // Whether or not slope paramters are shared across channels.
-  optional bool channel_shared = 2 [default = false];
 }
