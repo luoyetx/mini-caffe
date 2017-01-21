@@ -24,7 +24,7 @@ before_build:
       call copydeps.bat
       call generatepb.bat
 
-build:
+build_script:
   - cmd: |
       mkdir build
       cd build
