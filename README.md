@@ -1,6 +1,9 @@
 Mini-Caffe
 ==========
 
+[![Build Status](https://travis-ci.org/luoyetx/mini-caffe.svg?branch=master)](https://travis-ci.org/luoyetx/mini-caffe)
+[![Build status](https://ci.appveyor.com/api/projects/status/yre40qwoni7y0696/branch/master?svg=true)](https://ci.appveyor.com/project/luoyetx/mini-caffe/branch/master)
+
 Minimal runtime core of Caffe porting to Windows. This repo is aimed to provide a minimal runtime of Caffe for those want to run Caffe model on Windows platform.
 
 ### Update
