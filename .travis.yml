@@ -1,0 +1,21 @@
+language: cpp
+
+compiler:
+  - gcc
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - protobuf-compiler
+      - libprotobuf-dev
+      - libatlas-dev
+      - gcc-4.8
+      - g++-4.8
+
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+
+script:
+  - ./travis.sh

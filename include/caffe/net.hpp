@@ -9,10 +9,15 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
-#include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
+
+template<typename Dtype>
+class Layer;
+
+class NetState;
+class NetStateRule;
+class NetParameter;
 
 /**
  * @brief Connects Layer%s together into a directed acyclic graph (DAG)
@@ -21,10 +26,10 @@ namespace caffe {
  * TODO(dox): more thorough description.
  */
 template <typename Dtype>
-class Net {
+class CAFFE_API Net {
  public:
   explicit Net(const NetParameter& param);
-  explicit Net(const string& param_file, Phase phase);
+  explicit Net(const string& param_file);
   virtual ~Net() {}
 
   /// @brief Initialize a network with a NetParameter.
@@ -56,14 +61,6 @@ class Net {
    */
   void Reshape();
 
-  /**
-   * @brief Shares weight data of owner blobs with shared blobs.
-   *
-   * Note: this is called by Net::Init, and thus should normally not be
-   * called manually.
-   */
-  void ShareWeights();
-
   // For an already initialized net, CopyTrainedLayersFrom() copies the already
   // trained layers from another net parameter instance.
   /**
@@ -71,8 +68,8 @@ class Net {
    *        another Net.
    */
   void CopyTrainedLayersFrom(const NetParameter& param);
-  void CopyTrainedLayersFrom(const string trained_filename);
-  void CopyTrainedLayersFromBinaryProto(const string trained_filename);
+  void CopyTrainedLayersFrom(const string& trained_filename);
+  void CopyTrainedLayersFromBinaryProto(const string& trained_filename);
   /// @brief Writes the net to a proto.
   void ToProto(NetParameter* param, bool write_diff = false) const;
 
@@ -90,8 +87,6 @@ class Net {
   inline const vector<shared_ptr<Layer<Dtype> > >& layers() const {
     return layers_;
   }
-  /// @brief returns the phase: TRAIN or TEST
-  inline Phase phase() const { return phase_; }
   /**
    * @brief returns the bottom vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
@@ -152,8 +147,6 @@ class Net {
   bool has_layer(const string& layer_name) const;
   const shared_ptr<Layer<Dtype> > layer_by_name(const string& layer_name) const;
 
-  void set_debug_info(const bool value) { debug_info_ = value; }
-
   // Helpers for Init.
   /**
    * @brief Remove layers that the user specified should be excluded given the current
@@ -181,8 +174,6 @@ class Net {
 
   /// @brief The network name
   string name_;
-  /// @brief The phase: TRAIN or TEST
-  Phase phase_;
   /// @brief Individual layers in the net
   vector<shared_ptr<Layer<Dtype> > > layers_;
   vector<string> layer_names_;
@@ -222,8 +213,6 @@ class Net {
   vector<int> learnable_param_ids_;
   /// The bytes of memory used by this net
   size_t memory_used_;
-  /// Whether to compute and display debug info for the net.
-  bool debug_info_;
   DISABLE_COPY_AND_ASSIGN(Net);
 };
 

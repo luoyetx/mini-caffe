@@ -1,10 +1,8 @@
 build/
 
-src/caffe/proto/caffe.pb.h
-src/caffe/proto/caffe.pb.cc
-include/caffe/proto/caffe.pb.h
+src/proto/caffe.pb.h
+src/proto/caffe.pb.cc
 
-*.a
 *.lib
 *.dll
 *.exe

@@ -13,7 +13,7 @@
 #include <vector>
 #include <memory>
 
-#include "caffe/util/logging.hpp"
+#include "caffe/logging.hpp"
 
 // Convert macro to string
 #define STRINGIFY(m) #m
@@ -33,6 +33,16 @@ private:\
 // A simple macro to mark codes that are not implemented, so that when the code
 // is executed we will see a fatal log.
 #define NOT_IMPLEMENTED LOG(FATAL) << "Not Implemented Yet"
+
+#ifdef _MSC_VER
+#ifdef CAFFE_EXPORTS
+#define CAFFE_API __declspec(dllexport)
+#else
+#define CAFFE_API __declspec(dllimport)
+#endif
+#else
+#define CAFFE_API
+#endif
 
 namespace caffe {
 
@@ -54,7 +64,7 @@ using std::vector;
 
 // A singleton class to hold common caffe stuff, such as the handler that
 // caffe is going to use for cublas, curand, etc.
-class Caffe {
+class CAFFE_API Caffe {
 public:
   ~Caffe();
 
@@ -86,7 +96,6 @@ public:
 
 protected:
   Brew mode_;
-
 
 private:
   // The private constructor to avoid duplicate instantiation.
