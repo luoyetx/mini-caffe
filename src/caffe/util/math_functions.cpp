@@ -3,7 +3,6 @@
 
 #include "caffe/common.hpp"
 #include "./math_functions.hpp"
-#include "./rng.hpp"
 
 namespace caffe {
 
@@ -129,83 +128,6 @@ template <>
 void caffe_abs<float>(const int n, const float* a, float* y) {
     vsAbs(n, a, y);
 }
-
-unsigned int caffe_rng_rand() {
-  return (*caffe_rng())();
-}
-
-template <typename Dtype>
-Dtype caffe_nextafter(const Dtype b) {
-  return std::nextafter(b, std::numeric_limits<Dtype>::max());
-}
-
-template
-float caffe_nextafter(const float b);
-
-template <typename Dtype>
-void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r) {
-  CHECK_GE(n, 0);
-  CHECK(r);
-  CHECK_LE(a, b);
-  std::uniform_real<Dtype> random_distribution(a, caffe_nextafter<Dtype>(b));
-  rng_t* engine = caffe_rng();
-  for (int i = 0; i < n; ++i) {
-    r[i] = random_distribution(*engine);
-  }
-}
-
-template
-void caffe_rng_uniform<float>(const int n, const float a, const float b,
-                              float* r);
-
-template <typename Dtype>
-void caffe_rng_gaussian(const int n, const Dtype a,
-                        const Dtype sigma, Dtype* r) {
-  CHECK_GE(n, 0);
-  CHECK(r);
-  CHECK_GT(sigma, 0);
-  std::normal_distribution<Dtype> random_distribution(a, sigma);
-  rng_t* engine = caffe_rng();
-  for (int i = 0; i < n; ++i) {
-    r[i] = random_distribution(*engine);
-  }
-}
-
-template
-void caffe_rng_gaussian<float>(const int n, const float mu,
-                               const float sigma, float* r);
-
-template <typename Dtype>
-void caffe_rng_bernoulli(const int n, const Dtype p, int* r) {
-  CHECK_GE(n, 0);
-  CHECK(r);
-  CHECK_GE(p, 0);
-  CHECK_LE(p, 1);
-  std::bernoulli_distribution random_distribution(p);
-  rng_t* engine = caffe_rng();
-  for (int i = 0; i < n; ++i) {
-    r[i] = random_distribution(*engine);
-  }
-}
-
-template
-void caffe_rng_bernoulli<float>(const int n, const float p, int* r);
-
-template <typename Dtype>
-void caffe_rng_bernoulli(const int n, const Dtype p, unsigned int* r) {
-  CHECK_GE(n, 0);
-  CHECK(r);
-  CHECK_GE(p, 0);
-  CHECK_LE(p, 1);
-  std::bernoulli_distribution random_distribution(p);
-  rng_t* engine = caffe_rng();
-  for (int i = 0; i < n; ++i) {
-    r[i] = static_cast<unsigned int>(random_distribution(*engine));
-  }
-}
-
-template
-void caffe_rng_bernoulli<float>(const int n, const float p, unsigned int* r);
 
 template <>
 float caffe_cpu_strided_dot<float>(const int n, const float* x, const int incx,
