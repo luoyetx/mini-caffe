@@ -6,7 +6,7 @@ compiler:
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r
+      - ubuntu-toolchain-r-test
     packages:
       - protobuf-compiler
       - libprotobuf-dev
