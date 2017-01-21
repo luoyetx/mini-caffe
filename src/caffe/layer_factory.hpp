@@ -44,6 +44,7 @@
 #include <vector>
 
 #include "caffe/common.hpp"
+#include "./proto/caffe.pb.h"
 
 namespace caffe {
 

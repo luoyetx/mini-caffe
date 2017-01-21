@@ -16,6 +16,9 @@
 #ifdef WIN32
 #include <io.h>
 #define open _open
+#else
+#include <unistd.h>
+#define O_BINARY 0x00
 #endif
 
 const int kProtoReadBytesLimit = INT_MAX;  // Max size of 2 GB minus 1 byte.

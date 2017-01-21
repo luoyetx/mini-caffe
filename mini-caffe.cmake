@@ -1,14 +1,22 @@
 # mini-caffe.cmake
 
-include_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/include
-                    ${CMAKE_CURRENT_LIST_DIR}/3rdparty/include/openblas
-                    ${CMAKE_CURRENT_LIST_DIR}/3rdparty/include/google
-                    ${CMAKE_CURRENT_LIST_DIR}/include)
+if(CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif()
 
-link_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/lib)
-
-set(LIBS debug libprotobufd optimized libprotobuf
-         libopenblas Shlwapi)
+if(WIN32)
+  include_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/include
+                      ${CMAKE_CURRENT_LIST_DIR}/3rdparty/include/openblas
+                      ${CMAKE_CURRENT_LIST_DIR}/3rdparty/include/google
+                      ${CMAKE_CURRENT_LIST_DIR}/include)
+  link_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/lib)
+  set(LIBS debug libprotobufd optimized libprotobuf
+           libopenblas)
+else()
+  include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+  set(LIBS protobuf openblas)
+endif()
 
 file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)
 file(GLOB CAFFE_SOURCE_LAYERS ${CMAKE_CURRENT_LIST_DIR}/src/caffe/layers/*.hpp

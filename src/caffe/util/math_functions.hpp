@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <cmath>  // for std::fabs and std::signbit
+#include <cstring>
 
 #include "caffe/common.hpp"
 #include "caffe/logging.hpp"
