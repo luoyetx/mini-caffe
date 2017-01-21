@@ -1,1 +1,1 @@
-"./3rdparty/bin/protoc" -I="./src/caffe/proto" --cpp_out="./src/caffe/proto" "./src/caffe/proto/caffe.proto"
+"./3rdparty/bin/protoc" -I="./src/proto" --cpp_out="./src/proto" "./src/proto/caffe.proto"
