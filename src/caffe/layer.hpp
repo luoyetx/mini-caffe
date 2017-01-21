@@ -33,7 +33,6 @@ class Layer {
   explicit Layer(const LayerParameter& param)
     : layer_param_(param) {
       // Set phase and copy blobs (if there are any).
-      phase_ = param.phase();
       if (layer_param_.blobs_size() > 0) {
         blobs_.resize(layer_param_.blobs_size());
         for (int i = 0; i < layer_param_.blobs_size(); ++i) {
@@ -210,8 +209,6 @@ class Layer {
  protected:
   /** The protobuf that stores the layer parameters */
   LayerParameter layer_param_;
-  /** The phase: TRAIN or TEST */
-  Phase phase_;
   /** The vector that stores the learnable parameters as a set of blobs. */
   vector<shared_ptr<Blob<Dtype> > > blobs_;
 
@@ -273,7 +270,6 @@ class Layer {
 template <typename Dtype>
 inline void Layer<Dtype>::Forward(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  Dtype loss = 0;
   Reshape(bottom, top);
   Forward_cpu(bottom, top);
 }
