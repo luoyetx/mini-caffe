@@ -1,18 +1,10 @@
 #ifndef CAFFE_UTIL_MKL_ALTERNATE_H_
 #define CAFFE_UTIL_MKL_ALTERNATE_H_
 
-#ifdef USE_MKL
-
-#include <mkl.h>
-
-#else  // If use MKL, simply include the MKL header
-
 extern "C" {
 #include <cblas.h>
 }
 #include <math.h>
-
-// Functions that caffe uses but are not present if MKL is not linked.
 
 // A simple way to define the vsl unary functions. The operation should
 // be in the form e.g. y[i] = sqrt(a[i])
@@ -93,5 +85,4 @@ inline void cblas_daxpby(const int N, const double alpha, const double* X,
   cblas_daxpy(N, alpha, X, incX, Y, incY);
 }
 
-#endif  // USE_MKL
 #endif  // CAFFE_UTIL_MKL_ALTERNATE_H_

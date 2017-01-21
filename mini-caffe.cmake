@@ -15,18 +15,18 @@ if(WIN32)
            libopenblas)
 else()
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
-  set(LIBS protobuf openblas)
+  set(LIBS protobuf atlas)
 endif()
 
 file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)
 file(GLOB CAFFE_SOURCE_LAYERS ${CMAKE_CURRENT_LIST_DIR}/src/caffe/layers/*.hpp
-                              ${CMAKE_CURRENT_LIST_DIR}/src/caffe/layers/*.cpp)
-file(GLOB CAFFE_SOURCE_UTIL ${CMAKE_CURRENT_LIST_DIR}/src/caffe/util/*.hpp
-                            ${CMAKE_CURRENT_LIST_DIR}/src/caffe/util/*.cpp)
-file(GLOB CAFFE_SOURCE_OTHER ${CMAKE_CURRENT_LIST_DIR}/src/caffe/*.hpp
-                             ${CMAKE_CURRENT_LIST_DIR}/src/caffe/*.cpp)
-file(GLOB CAFFE_SOURCE_PROTO ${CMAKE_CURRENT_LIST_DIR}/src/caffe/proto/caffe.pb.h
-                             ${CMAKE_CURRENT_LIST_DIR}/src/caffe/proto/caffe.pb.cc)
+                              ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cpp)
+file(GLOB CAFFE_SOURCE_UTIL ${CMAKE_CURRENT_LIST_DIR}/src/util/*.hpp
+                            ${CMAKE_CURRENT_LIST_DIR}/src/util/*.cpp)
+file(GLOB CAFFE_SOURCE_OTHER ${CMAKE_CURRENT_LIST_DIR}/src/*.hpp
+                             ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
+file(GLOB CAFFE_SOURCE_PROTO ${CMAKE_CURRENT_LIST_DIR}/src/proto/caffe.pb.h
+                             ${CMAKE_CURRENT_LIST_DIR}/src/proto/caffe.pb.cc)
 
 source_group(include FILES ${CAFFE_INCLUDE})
 source_group(src FILES ${CAFFE_SOURCE_OTHER})

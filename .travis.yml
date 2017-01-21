@@ -10,9 +10,7 @@ addons:
     packages:
       - protobuf-compiler
       - libprotobuf-dev
-      - libblas-dev
       - libatlas-dev
-      - libopenblas-dev
       - gcc-4.8
       - g++-4.8
 
