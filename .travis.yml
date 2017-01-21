@@ -6,14 +6,15 @@ compiler:
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+      - ubuntu-toolchain-r
     packages:
+      - protobuf-compiler
+      - libprotobuf-dev
+      - libblas-dev
+      - libatlas-dev
+      - libopenblas-dev
       - gcc-4.8
       - g++-4.8
-
-before_install:
-  - sudo apt-get install -y libprotobuf-dev protobuf-compiler
-  - sudo apt-get install -y libopenblas-dev
 
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
