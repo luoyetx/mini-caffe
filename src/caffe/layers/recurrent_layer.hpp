@@ -5,12 +5,10 @@
 #include <utility>
 #include <vector>
 
-#include "caffe/blob.hpp"
-#include "caffe/common.hpp"
-#include "caffe/layer.hpp"
 #include "caffe/net.hpp"
-#include "caffe/proto/caffe.pb.h"
-#include "caffe/util/format.hpp"
+#include "../layer.hpp"
+#include "../util/format.hpp"
+#include "../proto/caffe.pb.h"
 
 namespace caffe {
 

@@ -1,7 +1,7 @@
 #include <vector>
 
 #include "./absval_layer.hpp"
-#include "caffe/util/math_functions.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 

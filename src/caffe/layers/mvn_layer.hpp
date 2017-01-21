@@ -3,9 +3,7 @@
 
 #include <vector>
 
-#include "caffe/blob.hpp"
-#include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+#include "../layer.hpp"
 
 namespace caffe {
 

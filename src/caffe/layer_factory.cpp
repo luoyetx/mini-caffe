@@ -1,7 +1,7 @@
 #include <string>
 
-#include "caffe/layer.hpp"
-#include "caffe/layer_factory.hpp"
+#include "./layer.hpp"
+#include "./layer_factory.hpp"
 #include "./layers/conv_layer.hpp"
 #include "./layers/lrn_layer.hpp"
 #include "./layers/pooling_layer.hpp"
@@ -9,7 +9,7 @@
 #include "./layers/sigmoid_layer.hpp"
 #include "./layers/softmax_layer.hpp"
 #include "./layers/tanh_layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+#include "./proto/caffe.pb.h"
 
 namespace caffe {
 

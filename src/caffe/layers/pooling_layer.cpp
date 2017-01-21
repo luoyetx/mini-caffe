@@ -2,8 +2,8 @@
 #include <cfloat>
 #include <vector>
 
+#include "../util/math_functions.hpp"
 #include "./pooling_layer.hpp"
-#include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 

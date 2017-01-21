@@ -2,8 +2,8 @@
 #include <random>
 
 #include "caffe/common.hpp"
-#include "caffe/util/math_functions.hpp"
-#include "caffe/util/rng.hpp"
+#include "./math_functions.hpp"
+#include "./rng.hpp"
 
 namespace caffe {
 

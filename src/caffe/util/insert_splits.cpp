@@ -5,7 +5,8 @@
 #include <utility>
 
 #include "caffe/common.hpp"
-#include "caffe/util/insert_splits.hpp"
+#include "./insert_splits.hpp"
+#include "../proto/caffe.pb.h"
 
 namespace caffe {
 

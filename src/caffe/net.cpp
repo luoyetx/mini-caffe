@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "caffe/common.hpp"
-#include "caffe/layer.hpp"
 #include "caffe/net.hpp"
-#include "caffe/proto/caffe.pb.h"
-#include "caffe/util/insert_splits.hpp"
-#include "caffe/util/math_functions.hpp"
-#include "caffe/util/upgrade_proto.hpp"
+#include "./layer.hpp"
+#include "./util/insert_splits.hpp"
+#include "./util/math_functions.hpp"
+#include "./util/upgrade_proto.hpp"
+#include "./proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -21,17 +21,14 @@ Net<Dtype>::Net(const NetParameter& param) {
 }
 
 template <typename Dtype>
-Net<Dtype>::Net(const string& param_file, Phase phase) {
+Net<Dtype>::Net(const string& param_file) {
   NetParameter param;
   ReadNetParamsFromTextFileOrDie(param_file, &param);
-  param.mutable_state()->set_phase(phase);
   Init(param);
 }
 
 template <typename Dtype>
 void Net<Dtype>::Init(const NetParameter& in_param) {
-  // Set phase from the state.
-  phase_ = in_param.state().phase();
   // Filter layers based on their include/exclude rules and
   // the current NetState.
   NetParameter filtered_param;
@@ -53,10 +50,6 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   for (int layer_id = 0; layer_id < param.layer_size(); ++layer_id) {
     // For non-root solvers, whether this layer is shared from root_net_.
     bool share_from_root = !true;
-    // Inherit phase from net if unset.
-    if (!param.layer(layer_id).has_phase()) {
-      param.mutable_layer(layer_id)->set_phase(phase_);
-    }
     // Setup layer.
     const LayerParameter& layer_param = param.layer(layer_id);
     if (layer_param.propagate_down_size() > 0) {

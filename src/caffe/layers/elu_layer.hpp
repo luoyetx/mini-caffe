@@ -3,11 +3,8 @@
 
 #include <vector>
 
-#include "caffe/blob.hpp"
-#include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
-
 #include "./neuron_layer.hpp"
+#include "../proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -18,7 +15,7 @@ namespace caffe {
  *            x                  & \mathrm{if} \; x > 0 \\
  *            \alpha (\exp(x)-1) & \mathrm{if} \; x \le 0
  *        \end{array} \right.
- *      @f$.  
+ *      @f$.
  */
 template <typename Dtype>
 class ELULayer : public NeuronLayer<Dtype> {
@@ -47,7 +44,7 @@ class ELULayer : public NeuronLayer<Dtype> {
    *            x                  & \mathrm{if} \; x > 0 \\
    *            \alpha (\exp(x)-1) & \mathrm{if} \; x \le 0
    *        \end{array} \right.
-   *      @f$.  
+   *      @f$.
    */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);

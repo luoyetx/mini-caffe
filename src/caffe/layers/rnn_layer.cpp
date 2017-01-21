@@ -1,9 +1,9 @@
 #include <string>
 #include <vector>
 
-#include "caffe/filler.hpp"
+#include "../filler.hpp"
+#include "../util/math_functions.hpp"
 #include "./rnn_layer.hpp"
-#include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 

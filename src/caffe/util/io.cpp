@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
-#include "caffe/util/io.hpp"
+#include "../proto/caffe.pb.h"
+#include "./io.hpp"
 
 #ifdef WIN32
 #include <io.h>

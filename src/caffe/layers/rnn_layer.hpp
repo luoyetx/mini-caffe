@@ -5,9 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include "./recurrent_layer.hpp"
 #include "caffe/net.hpp"
-#include "caffe/proto/caffe.pb.h"
+#include "./recurrent_layer.hpp"
 
 namespace caffe {
 

@@ -6,12 +6,14 @@
 #include <vector>
 
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
 #include "caffe/syncedmem.hpp"
 
 const int kMaxBlobAxes = 32;
 
 namespace caffe {
+
+class BlobShape;
+class BlobProto;
 
 /**
  * @brief A wrapper around SyncedMemory holders serving as the basic

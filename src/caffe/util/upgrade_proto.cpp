@@ -6,9 +6,9 @@
 #include <string>
 
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
-#include "caffe/util/io.hpp"
-#include "caffe/util/upgrade_proto.hpp"
+#include "./io.hpp"
+#include "./upgrade_proto.hpp"
+#include "../proto/caffe.pb.h"
 
 namespace caffe {
 

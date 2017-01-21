@@ -1,7 +1,7 @@
 #include <vector>
 
+#include "../util/im2col.hpp"
 #include "./im2col_layer.hpp"
-#include "caffe/util/im2col.hpp"
 
 namespace caffe {
 

@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "caffe/proto/caffe.pb.h"
 #include "./bias_layer.hpp"
 
 namespace caffe {

@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/filler.hpp"
+#include "../filler.hpp"
 #include "./prelu_layer.hpp"
 
 namespace caffe {

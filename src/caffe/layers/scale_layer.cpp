@@ -1,10 +1,9 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/filler.hpp"
-#include "caffe/layer_factory.hpp"
+#include "../filler.hpp"
+#include "../util/math_functions.hpp"
 #include "./scale_layer.hpp"
-#include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 

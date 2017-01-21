@@ -13,7 +13,7 @@
 #include <vector>
 #include <memory>
 
-#include "caffe/util/logging.hpp"
+#include "caffe/logging.hpp"
 
 // Convert macro to string
 #define STRINGIFY(m) #m

@@ -44,10 +44,10 @@
 #include <vector>
 
 #include "caffe/common.hpp"
-#include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
+
+class LayerParameter;
 
 template <typename Dtype>
 class Layer;

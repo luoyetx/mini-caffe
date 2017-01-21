@@ -5,8 +5,8 @@
 #include <cmath>  // for std::fabs and std::signbit
 
 #include "caffe/common.hpp"
-#include "caffe/util/logging.hpp"
-#include "caffe/util/mkl_alternate.hpp"
+#include "caffe/logging.hpp"
+#include "./mkl_alternate.hpp"
 
 namespace caffe {
 

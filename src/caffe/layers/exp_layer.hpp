@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#include "caffe/proto/caffe.pb.h"
 #include "./neuron_layer.hpp"
+#include "../proto/caffe.pb.h"
 
 namespace caffe {
 

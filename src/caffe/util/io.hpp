@@ -8,7 +8,7 @@
 #include "google/protobuf/message.h"
 
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
+#include "../proto/caffe.pb.h"
 
 #ifndef CAFFE_TMP_DIR_RETRIES
 #define CAFFE_TMP_DIR_RETRIES 100

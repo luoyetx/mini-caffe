@@ -9,10 +9,15 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
-#include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
+
+template<typename Dtype>
+class Layer;
+
+class NetState;
+class NetStateRule;
+class NetParameter;
 
 /**
  * @brief Connects Layer%s together into a directed acyclic graph (DAG)
@@ -24,7 +29,7 @@ template <typename Dtype>
 class CAFFE_API Net {
  public:
   explicit Net(const NetParameter& param);
-  explicit Net(const string& param_file, Phase phase);
+  explicit Net(const string& param_file);
   virtual ~Net() {}
 
   /// @brief Initialize a network with a NetParameter.
@@ -90,8 +95,6 @@ class CAFFE_API Net {
   inline const vector<shared_ptr<Layer<Dtype> > >& layers() const {
     return layers_;
   }
-  /// @brief returns the phase: TRAIN or TEST
-  inline Phase phase() const { return phase_; }
   /**
    * @brief returns the bottom vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
@@ -181,8 +184,6 @@ class CAFFE_API Net {
 
   /// @brief The network name
   string name_;
-  /// @brief The phase: TRAIN or TEST
-  Phase phase_;
   /// @brief Individual layers in the net
   vector<shared_ptr<Layer<Dtype> > > layers_;
   vector<string> layer_names_;
