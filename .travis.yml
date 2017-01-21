@@ -19,3 +19,7 @@ install:
 
 script:
   - ./travis.sh
+
+branches:
+  only:
+    - master
