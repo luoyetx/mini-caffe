@@ -18,6 +18,7 @@ install:
       cmake .. -DBUILD_TESTING=OFF -G "Visual Studio 12 2013 Win64"
       msbuild protobuf.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
       msbuild protobuf.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
+      cd ../../../../../
 
 before_build:
   - cmd: |
