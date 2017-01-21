@@ -61,14 +61,6 @@ class CAFFE_API Net {
    */
   void Reshape();
 
-  /**
-   * @brief Shares weight data of owner blobs with shared blobs.
-   *
-   * Note: this is called by Net::Init, and thus should normally not be
-   * called manually.
-   */
-  void ShareWeights();
-
   // For an already initialized net, CopyTrainedLayersFrom() copies the already
   // trained layers from another net parameter instance.
   /**
@@ -155,8 +147,6 @@ class CAFFE_API Net {
   bool has_layer(const string& layer_name) const;
   const shared_ptr<Layer<Dtype> > layer_by_name(const string& layer_name) const;
 
-  void set_debug_info(const bool value) { debug_info_ = value; }
-
   // Helpers for Init.
   /**
    * @brief Remove layers that the user specified should be excluded given the current
@@ -223,8 +213,6 @@ class CAFFE_API Net {
   vector<int> learnable_param_ids_;
   /// The bytes of memory used by this net
   size_t memory_used_;
-  /// Whether to compute and display debug info for the net.
-  bool debug_info_;
   DISABLE_COPY_AND_ASSIGN(Net);
 };
 

@@ -118,8 +118,6 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   for (size_t layer_id = 0; layer_id < layer_names_.size(); ++layer_id) {
     layer_names_index_[layer_names_[layer_id]] = layer_id;
   }
-  ShareWeights();
-  debug_info_ = param.debug_info();
 }
 
 template <typename Dtype>
@@ -410,15 +408,6 @@ void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) const {
   for (int i = 0; i < layers_.size(); ++i) {
     LayerParameter* layer_param = param->add_layer();
     layers_[i]->ToProto(layer_param, write_diff);
-  }
-}
-
-template <typename Dtype>
-void Net<Dtype>::ShareWeights() {
-  for (int i = 0; i < params_.size(); ++i) {
-    if (param_owners_[i] < 0) { continue; }
-    params_[i]->ShareData(*params_[param_owners_[i]]);
-    params_[i]->ShareDiff(*params_[param_owners_[i]]);
   }
 }
 
