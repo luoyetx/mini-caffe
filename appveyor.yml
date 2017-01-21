@@ -9,40 +9,28 @@ skip_branch_with_pr: true
 image: Visual Studio 2013
 
 install:
-  - cmd: >-
-    git submodule init
-
-    git submodule update
-
-    cd 3rdparty/src/protobuf/cmake
-
-    mkdir build
-
-    cd build
-
-    cmake .. -DBUILD_TESTING=OFF -G "Visual Studio 12 2013 Win64"
-
-    msbuild protobuf.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
-
-    msbuild protobuf.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
+  - cmd: |
+      git submodule init
+      git submodule update
+      cd 3rdparty/src/protobuf/cmake
+      mkdir build
+      cd build
+      cmake .. -DBUILD_TESTING=OFF -G "Visual Studio 12 2013 Win64"
+      msbuild protobuf.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
+      msbuild protobuf.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
 
 before_build:
-  - cmd: >-
-    call copydeps.bat
-
-    call generatepb.bat
+  - cmd: |
+      call copydeps.bat
+      call generatepb.bat
 
 build:
-  - cmd: >-
-    mkdir build
-
-    cd build
-
-    cmake .. -G "Visual Studio 12 2013 Win64"
-
-    msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
-
-    msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
+  - cmd: |
+      mkdir build
+      cd build
+      cmake .. -G "Visual Studio 12 2013 Win64"
+      msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
+      msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
 
 branches:
   only:
