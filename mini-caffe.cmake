@@ -15,7 +15,7 @@ if(WIN32)
            libopenblas)
 else()
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
-  set(LIBS protobuf atlas)
+  set(LIBS protobuf blas)
 endif()
 
 file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)
@@ -38,5 +38,5 @@ set(SRC ${CAFFE_INCLUDE} ${CAFFE_SOURCE_PROTO}
         ${CAFFE_SOURCE_LAYERS} ${CAFFE_SOURCE_UTIL} ${CAFFE_SOURCE_OTHER})
 
 add_definitions(-DCAFFE_EXPORTS)
-add_library(libcaffe SHARED ${SRC})
-target_link_libraries(libcaffe ${LIBS})
+add_library(caffe SHARED ${SRC})
+target_link_libraries(caffe ${LIBS})
