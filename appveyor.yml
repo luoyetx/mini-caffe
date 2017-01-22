@@ -18,7 +18,7 @@ install:
         appveyor DownloadFile "${env:URL_3rdparty}" -FileName 3rdparty.zip -Timeout 1200000
       }
   - cmd: |
-      7z x 3rdparty.zip -y -o"%APPVEYOR_BUILD_FOLDER%" >NUL
+      7z x 3rdparty.zip -y -aoa -o"%APPVEYOR_BUILD_FOLDER%" >NUL
 
 before_build:
   - cmd: |

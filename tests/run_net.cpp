@@ -1,4 +1,5 @@
 #include <random>
+#include <cstring>
 #include <chrono>
 #include <algorithm>
 #include <caffe/net.hpp>
