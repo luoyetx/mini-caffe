@@ -121,15 +121,15 @@ struct TestFunctor {
   }
 };
 
-struct VGG16 : public TestFunctor {
-  VGG16(const std::string &prototxt, const std::string &caffemodel)
+struct NIN : public TestFunctor {
+  NIN(const std::string &prototxt, const std::string &caffemodel)
     : TestFunctor(prototxt, caffemodel) {}
 
   virtual std::vector<Mat> Generate() override {
     std::vector<Mat> fm;
-    fm.push_back(Mat::Random(224, 224));
-    fm.push_back(Mat::Random(224, 224));
-    fm.push_back(Mat::Random(224, 224));
+    fm.push_back(Mat::Random(224, 224, 128));
+    fm.push_back(Mat::Random(224, 224, 128));
+    fm.push_back(Mat::Random(224, 224, 128));
     return fm;
   }
 };
@@ -162,16 +162,16 @@ struct ResNet : public TestFunctor {
 
 int main(int argc, char *argv[]) {
   Timer timer;
-  // test vgg16
+  // test nin, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#network-in-network-model
   {
-    LOG(INFO) << "Test VGG16";
-    auto test = VGG16("model/vgg16.prototxt", "model/vgg16.caffemodel");
+    LOG(INFO) << "Test NIN";
+    auto test = NIN("model/nin.prototxt", "model/nin.caffemodel");
     timer.Tic();
     test.Forward();
     timer.Toc();
-    LOG(INFO) << "Forward VGG16 costs " << timer.Elasped() << " ms";
+    LOG(INFO) << "Forward NIN costs " << timer.Elasped() << " ms";
   }
-  // test googlenet
+  // test googlenet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#cnn-models-for-salient-object-subitizing
   {
     LOG(INFO) << "Test GoogLeNet";
     auto test = GoogLeNet("model/googlenet.prototxt", "model/googlenet.caffemodel");
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
     timer.Toc();
     LOG(INFO) << "Forward GoogLeNet costs " << timer.Elasped() << " ms";
   }
-  // test resnet
+  // test resnet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#imagenet-pre-trained-models-with-batch-normalization
   {
     LOG(INFO) << "Test ResNet";
     auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");

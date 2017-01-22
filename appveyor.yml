@@ -9,7 +9,8 @@ skip_branch_with_pr: true
 image: Visual Studio 2013
 
 environment:
-  URL_3rdparty: https://www.dropbox.com/s/imis4fbt2r4ywpo/3rdparty.zip?dl=1
+  URL_3rdparty: https://github.com/luoyetx/misc/blob/master/mini-caffe/3rdparty.zip?raw=true
+  URL_model: https://github.com/luoyetx/misc/blob/master/mini-caffe/model.zip?raw=true
 
 install:
   - ps: |
@@ -18,7 +19,7 @@ install:
         appveyor DownloadFile "${env:URL_3rdparty}" -FileName 3rdparty.zip -Timeout 1200000
       }
   - cmd: |
-      7z x 3rdparty.zip -y -aoa -o"%APPVEYOR_BUILD_FOLDER%" >NUL
+      7z x 3rdparty.zip -y -o"%APPVEYOR_BUILD_FOLDER%" >NUL
 
 before_build:
   - cmd: |
@@ -31,6 +32,22 @@ build_script:
       cmake .. -G "Visual Studio 12 2013 Win64"
       msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
       msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
+      cd ..
+
+before_test:
+  - ps: |
+      if (!(Test-Path "model.zip")) {
+        echo "Downloading model.zip from ${env:URL_model}"
+        appveyor DownloadFile "${env:URL_model}" -FileName model.zip -Timeout 1200000
+      }
+  - cmd: |
+      7z x model.zip -y -o"%APPVEYOR_BUILD_FOLDER%/build/Release" >NUL
+      copy 3rdparty\bin\*.dll build\Release
+
+test_script:
+  - cmd: |
+      cd build\Release
+      run_test
 
 branches:
   only:
@@ -38,3 +55,4 @@ branches:
 
 cache:
   - 3rdparty.zip -> appveyor.yml
+  - model.zip -> appveyor.yml
