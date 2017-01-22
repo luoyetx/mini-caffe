@@ -8,21 +8,20 @@ skip_branch_with_pr: true
 
 image: Visual Studio 2013
 
+environment:
+  URL_3rdparty: https://www.dropbox.com/s/imis4fbt2r4ywpo/3rdparty.zip?dl=1
+
 install:
+  - ps: |
+      if (!(Test-Path "3rdparty.zip")) {
+        echo "Downloading 3rdparty.zip from ${env:URL_3rdparty}"
+        appveyor DownloadFile "${env:URL_3rdparty}" -FileName 3rdparty.zip -Timeout 1200000
+      }
   - cmd: |
-      git submodule init
-      git submodule update
-      cd 3rdparty/src/protobuf/cmake
-      mkdir build
-      cd build
-      cmake .. -DBUILD_TESTING=OFF -G "Visual Studio 12 2013 Win64"
-      msbuild protobuf.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
-      msbuild protobuf.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
-      cd ../../../../../
+      7z x %URL_3rdparty% -y -o"%APPVEYOR_BUILD_FOLDER%" >NUL
 
 before_build:
   - cmd: |
-      call copydeps.bat
       call generatepb.bat
 
 build_script:
@@ -36,3 +35,6 @@ build_script:
 branches:
   only:
     - master
+
+cache:
+  - 3rdparty.zip -> appveyor.yml
