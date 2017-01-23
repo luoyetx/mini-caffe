@@ -401,13 +401,13 @@ void Net<Dtype>::CopyTrainedLayersFromBinaryProto(
 }
 
 template <typename Dtype>
-void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) const {
+void Net<Dtype>::ToProto(NetParameter* param) const {
   param->Clear();
   param->set_name(name_);
   // Add bottom and top
   for (int i = 0; i < layers_.size(); ++i) {
     LayerParameter* layer_param = param->add_layer();
-    layers_[i]->ToProto(layer_param, write_diff);
+    layers_[i]->ToProto(layer_param);
   }
 }
 

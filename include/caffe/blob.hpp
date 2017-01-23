@@ -26,7 +26,7 @@ template <typename Dtype>
 class CAFFE_API Blob {
  public:
   Blob()
-       : data_(), diff_(), count_(0), capacity_(0) {}
+       : data_(), count_(0), capacity_(0) {}
 
   /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
   explicit Blob(const int num, const int channels, const int height,
@@ -187,25 +187,15 @@ class CAFFE_API Blob {
    *        of other (and die otherwise); if true, Reshape this Blob to other's
    *        shape if necessary
    */
-  void CopyFrom(const Blob<Dtype>& source, bool copy_diff = false,
-      bool reshape = false);
+  void CopyFrom(const Blob<Dtype>& source, bool reshape = false);
 
   inline Dtype data_at(const int n, const int c, const int h,
       const int w) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 
-  inline Dtype diff_at(const int n, const int c, const int h,
-      const int w) const {
-    return cpu_diff()[offset(n, c, h, w)];
-  }
-
   inline Dtype data_at(const vector<int>& index) const {
     return cpu_data()[offset(index)];
-  }
-
-  inline Dtype diff_at(const vector<int>& index) const {
-    return cpu_diff()[offset(index)];
   }
 
   inline const shared_ptr<SyncedMemory>& data() const {
@@ -213,33 +203,19 @@ class CAFFE_API Blob {
     return data_;
   }
 
-  inline const shared_ptr<SyncedMemory>& diff() const {
-    CHECK(diff_);
-    return diff_;
-  }
-
   const Dtype* cpu_data() const;
   void set_cpu_data(Dtype* data);
-  const Dtype* cpu_diff() const;
   Dtype* mutable_cpu_data();
-  Dtype* mutable_cpu_diff();
-  void Update();
   void FromProto(const BlobProto& proto, bool reshape = true);
-  void ToProto(BlobProto* proto, bool write_diff = false) const;
+  void ToProto(BlobProto* proto) const;
 
   /// @brief Compute the sum of absolute values (L1 norm) of the data.
   Dtype asum_data() const;
-  /// @brief Compute the sum of absolute values (L1 norm) of the diff.
-  Dtype asum_diff() const;
   /// @brief Compute the sum of squares (L2 norm squared) of the data.
   Dtype sumsq_data() const;
-  /// @brief Compute the sum of squares (L2 norm squared) of the diff.
-  Dtype sumsq_diff() const;
 
   /// @brief Scale the blob data by a constant factor.
   void scale_data(Dtype scale_factor);
-  /// @brief Scale the blob diff by a constant factor.
-  void scale_diff(Dtype scale_factor);
 
   /**
    * @brief Set the data_ shared_ptr to point to the SyncedMemory holding the
@@ -250,21 +226,11 @@ class CAFFE_API Blob {
    * shared_ptr calls its destructor when reset with the "=" operator.
    */
   void ShareData(const Blob& other);
-  /**
-   * @brief Set the diff_ shared_ptr to point to the SyncedMemory holding the
-   *        diff_ of Blob other -- useful in Layer%s which simply perform a copy
-   *        in their Forward pass.
-   *
-   * This deallocates the SyncedMemory holding this Blob's diff_, as
-   * shared_ptr calls its destructor when reset with the "=" operator.
-   */
-  void ShareDiff(const Blob& other);
 
   bool ShapeEquals(const BlobProto& other);
 
  protected:
   shared_ptr<SyncedMemory> data_;
-  shared_ptr<SyncedMemory> diff_;
   shared_ptr<SyncedMemory> shape_data_;
   vector<int> shape_;
   int count_;

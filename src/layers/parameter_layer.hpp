@@ -33,7 +33,6 @@ class ParameterLayer : public Layer<Dtype> {
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
     top[0]->ShareData(*(this->blobs_[0]));
-    top[0]->ShareDiff(*(this->blobs_[0]));
   }
 };
 
