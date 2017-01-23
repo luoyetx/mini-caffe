@@ -238,12 +238,12 @@ void Blob<Dtype>::FromProto(const BlobProto& proto, bool reshape) {
   if (proto.double_data_size() > 0) {
     CHECK_EQ(count_, proto.double_data_size());
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = proto.double_data(i);
+      data_vec[i] = static_cast<Dtype>(proto.double_data(i));
     }
   } else {
     CHECK_EQ(count_, proto.data_size());
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = proto.data(i);
+      data_vec[i] = static_cast<Dtype>(proto.data(i));
     }
   }
 }

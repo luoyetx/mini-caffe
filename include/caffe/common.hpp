@@ -44,6 +44,10 @@ private:\
 #define CAFFE_API
 #endif
 
+#ifdef _MSC_VER
+#pragma warning(disable : 4251)
+#endif
+
 namespace caffe {
 
 // Common functions and classes from std that caffe often uses.
