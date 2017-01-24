@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./split_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 

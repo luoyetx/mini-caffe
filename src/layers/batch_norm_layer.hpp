@@ -55,6 +55,8 @@ class BatchNormLayer : public Layer<Dtype> {
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
 
   Blob<Dtype> mean_, variance_, temp_, x_norm_;
   bool use_global_stats_;

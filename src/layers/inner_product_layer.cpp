@@ -1,8 +1,8 @@
 #include <vector>
 
+#include "./inner_product_layer.hpp"
 #include "../filler.hpp"
 #include "../util/math_functions.hpp"
-#include "./inner_product_layer.hpp"
 
 namespace caffe {
 

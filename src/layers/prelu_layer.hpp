@@ -50,6 +50,8 @@ class PReLULayer : public NeuronLayer<Dtype> {
    */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
 
   bool channel_shared_;
   Blob<Dtype> multiplier_;  // dot multiplier for backward computation of params

@@ -215,7 +215,15 @@ class Layer {
   /** @brief Using the CPU device, compute the layer output. */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) = 0;
-
+  /**
+   * @brief Using the GPU device, compute the layer output.
+   *        Fall back to Forward_cpu() if unavailable.
+   */
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
+    // LOG(WARNING) << "Using CPU code as backup.";
+    return Forward_cpu(bottom, top);
+  }
   /**
    * Called by the parent Layer's SetUp to check that the number of bottom
    * and top Blobs provided as input match the expected numbers specified by
@@ -270,8 +278,18 @@ class Layer {
 template <typename Dtype>
 inline void Layer<Dtype>::Forward(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
+  Dtype loss = 0;
   Reshape(bottom, top);
-  Forward_cpu(bottom, top);
+  switch (Caffe::mode()) {
+  case Caffe::CPU:
+    Forward_cpu(bottom, top);
+    break;
+  case Caffe::GPU:
+    Forward_gpu(bottom, top);
+    break;
+  default:
+    LOG(FATAL) << "Unknown caffe mode.";
+  }
 }
 
 // Serialize LayerParameter to protocol buffer

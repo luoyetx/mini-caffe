@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "caffe/common.hpp"
-#include "caffe/syncedmem.hpp"
 
 const int kMaxBlobAxes = 32;
 
@@ -14,6 +13,7 @@ namespace caffe {
 
 class BlobShape;
 class BlobProto;
+class SyncedMemory;
 
 /**
  * @brief A wrapper around SyncedMemory holders serving as the basic
@@ -205,7 +205,11 @@ class CAFFE_API Blob {
 
   const Dtype* cpu_data() const;
   void set_cpu_data(Dtype* data);
+  const int* gpu_shape() const;
+  const Dtype* gpu_data() const;
   Dtype* mutable_cpu_data();
+  Dtype* mutable_gpu_data();
+
   void FromProto(const BlobProto& proto, bool reshape = true);
   void ToProto(BlobProto* proto) const;
 

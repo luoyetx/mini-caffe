@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "../filler.hpp"
 #include "./prelu_layer.hpp"
+#include "../filler.hpp"
 
 namespace caffe {
 

@@ -1,6 +1,5 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./silence_layer.hpp"
 
 namespace caffe {

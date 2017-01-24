@@ -2,8 +2,8 @@
 #include <cfloat>
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./pooling_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -188,9 +188,6 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         top_data += top[0]->offset(0, 1);
       }
     }
-    break;
-  case PoolingParameter_PoolMethod_STOCHASTIC:
-    NOT_IMPLEMENTED;
     break;
   default:
     LOG(FATAL) << "Unknown pooling method.";

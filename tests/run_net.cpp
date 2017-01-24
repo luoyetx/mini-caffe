@@ -161,6 +161,12 @@ struct ResNet : public TestFunctor {
 };
 
 int main(int argc, char *argv[]) {
+#ifdef USE_CUDA
+  Caffe::set_mode(Caffe::GPU);
+  Caffe::SetDevice(0);
+#else
+  Caffe::set_mode(Caffe::CPU);
+#endif  // USE_CUDA
   Timer timer;
   // test nin, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#network-in-network-model
   {

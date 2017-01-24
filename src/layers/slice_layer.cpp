@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./slice_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
