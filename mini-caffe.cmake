@@ -1,6 +1,7 @@
 # mini-caffe.cmake
 
 option(USE_CUDA "Use CUDA support" OFF)
+option(USE_CUDNN "Use CUDNN support" OFF)
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Utils.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Cuda.cmake)
@@ -16,11 +17,11 @@ if(MSVC)
                       ${CMAKE_CURRENT_LIST_DIR}/3rdparty/include/google
                       ${CMAKE_CURRENT_LIST_DIR}/include)
   link_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/lib)
-  set(LIBS debug libprotobufd optimized libprotobuf
-           libopenblas)
+  list(APPEND Caffe_LINKER_LIBS debug libprotobufd optimized libprotobuf
+                                libopenblas)
 else()
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
-  set(LIBS protobuf blas)
+  list(APPEND Caffe_LINKER_LIBS protobuf blas)
 endif()
 
 file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)
@@ -47,9 +48,8 @@ set(SRC ${CAFFE_INCLUDE} ${CAFFE_SOURCE_PROTO}
 if(HAVE_CUDA)
   caffe_cuda_compile(CUDA_OBJS ${CAFFE_CUDA_LAYERS} ${CAFFE_CUDA_UTIL})
   list(APPEND SRC ${CUDA_OBJS})
-  list(APPEND LIBS ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
 endif()
 
 add_definitions(-DCAFFE_EXPORTS)
 add_library(caffe SHARED ${SRC})
-target_link_libraries(caffe ${LIBS})
+target_link_libraries(caffe ${Caffe_LINKER_LIBS})

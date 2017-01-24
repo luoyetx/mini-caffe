@@ -108,11 +108,6 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   if (top.size() > 1) {
     top[1]->ReshapeLike(*top[0]);
   }
-  // If stochastic pooling, not implement
-  if (this->layer_param_.pooling_param().pool() ==
-      PoolingParameter_PoolMethod_STOCHASTIC) {
-    NOT_IMPLEMENTED;
-  }
 }
 
 // TODO(Yangqing): Is there a faster way to do pooling in the channel-first

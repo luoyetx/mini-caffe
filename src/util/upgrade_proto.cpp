@@ -333,10 +333,6 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
           layer_param->mutable_pooling_param()->set_pool(
             PoolingParameter_PoolMethod_AVE);
           break;
-        case V0LayerParameter_PoolMethod_STOCHASTIC:
-          layer_param->mutable_pooling_param()->set_pool(
-            PoolingParameter_PoolMethod_STOCHASTIC);
-          break;
         default:
           LOG(ERROR) << "Unknown pool method " << pool;
           is_fully_compatible = false;
@@ -633,8 +629,6 @@ const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type) {
     return "ReLU";
   case V1LayerParameter_LayerType_SIGMOID:
     return "Sigmoid";
-  case V1LayerParameter_LayerType_SILENCE:
-    return "Silence";
   case V1LayerParameter_LayerType_SOFTMAX:
     return "Softmax";
   case V1LayerParameter_LayerType_SPLIT:

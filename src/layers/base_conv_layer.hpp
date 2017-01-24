@@ -3,7 +3,6 @@
 
 #include <vector>
 
-#include "caffe/blob.hpp"
 #include "../layer.hpp"
 #include "../util/im2col.hpp"
 #include "../proto/caffe.pb.h"

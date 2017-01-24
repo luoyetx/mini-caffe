@@ -523,7 +523,6 @@ message PoolingParameter {
   enum PoolMethod {
     MAX = 0;
     AVE = 1;
-    STOCHASTIC = 2;
   }
   optional PoolMethod pool = 1 [default = MAX]; // The pooling method
   // Pad, kernel size, and stride are all given as a single value for equal
@@ -763,7 +762,6 @@ message SPPParameter {
   enum PoolMethod {
     MAX = 0;
     AVE = 1;
-    STOCHASTIC = 2;
   }
   optional uint32 pyramid_height = 1;
   optional PoolMethod pool = 2 [default = MAX]; // The pooling method
@@ -811,7 +809,6 @@ message V1LayerParameter {
     POWER = 26;
     RELU = 18;
     SIGMOID = 19;
-    SILENCE = 36;
     SOFTMAX = 20;
     SPLIT = 22;
     SLICE = 33;
@@ -868,7 +865,6 @@ message V0LayerParameter {
   enum PoolMethod {
     MAX = 0;
     AVE = 1;
-    STOCHASTIC = 2;
   }
   optional PoolMethod pool = 11 [default = MAX]; // The pooling method
   optional float dropout_ratio = 12 [default = 0.5]; // dropout ratio
