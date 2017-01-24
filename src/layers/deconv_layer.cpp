@@ -39,6 +39,10 @@ void DeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(DeconvolutionLayer);
+#endif
+
 INSTANTIATE_CLASS(DeconvolutionLayer);
 REGISTER_LAYER_CLASS(Deconvolution);
 

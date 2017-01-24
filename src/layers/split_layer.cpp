@@ -30,6 +30,10 @@ void SplitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(SplitLayer);
+#endif
+
 INSTANTIATE_CLASS(SplitLayer);
 REGISTER_LAYER_CLASS(Split);
 

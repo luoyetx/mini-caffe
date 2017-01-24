@@ -81,6 +81,10 @@ void EmbedLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(EmbedLayer);
+#endif
+
 INSTANTIATE_CLASS(EmbedLayer);
 REGISTER_LAYER_CLASS(Embed);
 

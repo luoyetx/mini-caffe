@@ -85,6 +85,10 @@ void BiasLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(BiasLayer);
+#endif
+
 INSTANTIATE_CLASS(BiasLayer);
 REGISTER_LAYER_CLASS(Bias);
 

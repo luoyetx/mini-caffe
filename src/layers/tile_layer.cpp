@@ -34,6 +34,10 @@ void TileLayer<Dtype>::Forward_cpu(
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(TileLayer);
+#endif
+
 INSTANTIATE_CLASS(TileLayer);
 REGISTER_LAYER_CLASS(Tile);
 

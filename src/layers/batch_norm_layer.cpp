@@ -153,6 +153,11 @@ void BatchNormLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       x_norm_.mutable_cpu_data());
 }
 
+#ifndef USE_CUDA
+STUB_GPU(BatchNormLayer);
+#endif
+
 INSTANTIATE_CLASS(BatchNormLayer);
 REGISTER_LAYER_CLASS(BatchNorm);
+
 }  // namespace caffe

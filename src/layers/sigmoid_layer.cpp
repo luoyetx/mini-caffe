@@ -21,6 +21,10 @@ void SigmoidLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(SigmoidLayer);
+#endif
+
 INSTANTIATE_CLASS(SigmoidLayer);
 
 }  // namespace caffe

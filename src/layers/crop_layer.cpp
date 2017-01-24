@@ -109,6 +109,10 @@ void CropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   crop_copy(bottom, top, offsets, indices, 0, bottom_data, top_data, true);
 }
 
+#ifndef USE_CUDA
+STUB_GPU(CropLayer);
+#endif
+
 INSTANTIATE_CLASS(CropLayer);
 REGISTER_LAYER_CLASS(Crop);
 

@@ -60,6 +60,7 @@ class ArgMaxLayer : public Layer<Dtype> {
    */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+
   bool out_max_val_;
   size_t top_k_;
   bool has_axis_;

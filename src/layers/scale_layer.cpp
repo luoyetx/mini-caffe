@@ -131,6 +131,10 @@ void ScaleLayer<Dtype>::Forward_cpu(
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(ScaleLayer);
+#endif
+
 INSTANTIATE_CLASS(ScaleLayer);
 REGISTER_LAYER_CLASS(Scale);
 

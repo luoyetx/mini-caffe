@@ -72,6 +72,10 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(ConcatLayer);
+#endif
+
 INSTANTIATE_CLASS(ConcatLayer);
 REGISTER_LAYER_CLASS(Concat);
 

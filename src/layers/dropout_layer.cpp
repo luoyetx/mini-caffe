@@ -33,6 +33,10 @@ void DropoutLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   caffe_copy(bottom[0]->count(), bottom_data, top_data);
 }
 
+#ifndef USE_CUDA
+STUB_GPU(DropoutLayer);
+#endif
+
 INSTANTIATE_CLASS(DropoutLayer);
 REGISTER_LAYER_CLASS(Dropout);
 

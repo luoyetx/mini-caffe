@@ -53,6 +53,10 @@ void LogLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(LogLayer);
+#endif
+
 INSTANTIATE_CLASS(LogLayer);
 REGISTER_LAYER_CLASS(Log);
 

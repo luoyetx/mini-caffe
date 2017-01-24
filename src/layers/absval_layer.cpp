@@ -21,6 +21,10 @@ void AbsValLayer<Dtype>::Forward_cpu(
   caffe_abs(count, bottom[0]->cpu_data(), top_data);
 }
 
+#ifndef USE_CUDA
+STUB_GPU(AbsValLayer);
+#endif
+
 INSTANTIATE_CLASS(AbsValLayer);
 REGISTER_LAYER_CLASS(AbsVal);
 

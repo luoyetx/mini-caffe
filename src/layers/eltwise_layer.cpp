@@ -96,6 +96,10 @@ void EltwiseLayer<Dtype>::Forward_cpu(
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(EltwiseLayer);
+#endif
+
 INSTANTIATE_CLASS(EltwiseLayer);
 REGISTER_LAYER_CLASS(Eltwise);
 

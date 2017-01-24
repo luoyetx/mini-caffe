@@ -194,6 +194,10 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(PoolingLayer);
+#endif
+
 INSTANTIATE_CLASS(PoolingLayer);
 
 }  // namespace caffe

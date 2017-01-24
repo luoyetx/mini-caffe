@@ -92,6 +92,10 @@ void SliceLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(SliceLayer);
+#endif
+
 INSTANTIATE_CLASS(SliceLayer);
 REGISTER_LAYER_CLASS(Slice);
 

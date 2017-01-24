@@ -40,6 +40,10 @@ void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(PowerLayer);
+#endif
+
 INSTANTIATE_CLASS(PowerLayer);
 REGISTER_LAYER_CLASS(Power);
 

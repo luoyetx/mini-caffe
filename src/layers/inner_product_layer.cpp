@@ -95,6 +95,10 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(InnerProductLayer);
+#endif
+
 INSTANTIATE_CLASS(InnerProductLayer);
 REGISTER_LAYER_CLASS(InnerProduct);
 

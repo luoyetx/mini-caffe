@@ -44,6 +44,10 @@ void ExpLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(ExpLayer);
+#endif
+
 INSTANTIATE_CLASS(ExpLayer);
 REGISTER_LAYER_CLASS(Exp);
 

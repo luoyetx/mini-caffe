@@ -161,6 +161,11 @@ void LRNLayer<Dtype>::WithinChannelForward(
   product_layer_->Forward(product_bottom_vec_, top);
 }
 
+#ifndef USE_CUDA
+STUB_GPU(LRNLayer);
+STUB_GPU_FORWARD(LRNLayer, CrossChannelForward);
+#endif
+
 INSTANTIATE_CLASS(LRNLayer);
 
 }  // namespace caffe

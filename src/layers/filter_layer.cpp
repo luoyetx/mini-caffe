@@ -75,6 +75,10 @@ void FilterLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(FilterLayer);
+#endif
+
 INSTANTIATE_CLASS(FilterLayer);
 REGISTER_LAYER_CLASS(Filter);
 

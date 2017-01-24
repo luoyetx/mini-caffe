@@ -96,6 +96,16 @@ private:                                              \
 #define NOT_IMPLEMENTED LOG(FATAL) << "Not Implemented Yet"
 #define NO_GPU LOG(FATAL) << "Cannot use GPU in CPU-only Caffe: check mode."
 
+#define STUB_GPU(classname)                                               \
+template <typename Dtype>                                                 \
+void classname<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,    \
+    const vector<Blob<Dtype>*>& top) { NO_GPU; }                          
+
+#define STUB_GPU_FORWARD(classname, funcname)                               \
+template <typename Dtype>                                                   \
+void classname<Dtype>::funcname##_##gpu(const vector<Blob<Dtype>*>& bottom, \
+    const vector<Blob<Dtype>*>& top) { NO_GPU; }
+
 #ifdef _MSC_VER
 #ifdef CAFFE_EXPORTS
 #define CAFFE_API __declspec(dllexport)
