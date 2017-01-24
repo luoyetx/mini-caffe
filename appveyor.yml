@@ -18,18 +18,8 @@ install:
         echo "Downloading 3rdparty.zip from ${env:URL_3rdparty}"
         appveyor DownloadFile "${env:URL_3rdparty}" -FileName 3rdparty.zip -Timeout 1200000
       }
-      if (!(Test-Path "cuda_8.0.44_windows.exe")) {
-        echo Downloading CUDA toolkit 8 ...
-        appveyor DownloadFile  https://developer.nvidia.com/compute/cuda/8.0/prod/local_installers/cuda_8.0.44_windows-exe -FileName cuda_8.0.44_windows.exe
-      }
   - cmd: |
       7z x 3rdparty.zip -y -o"%APPVEYOR_BUILD_FOLDER%" >NUL
-  - cmd: |
-      echo Installing CUDA toolkit 8 ...
-      cuda_8.0.44_windows.exe -s compiler_8.0 cublas_8.0 cublas_dev_8.0 cudart_8.0
-      :: Add CUDA toolkit to PATH
-      set PATH=%ProgramFiles%\NVIDIA GPU Computing Toolkit\CUDA\v8.0\bin;%ProgramFiles%\NVIDIA GPU Computing Toolkit\CUDA\v8.0\libnvvp;%PATH%
-      nvcc -V
 
 before_build:
   - cmd: |
@@ -39,10 +29,7 @@ build_script:
   - cmd: |
       mkdir build
       cd build
-      :: CUDA build
-      cmake .. -DUSE_CUDA=ON -G "Visual Studio 12 2013 Win64"
-      msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
-      cmake .. -DUSE_CUDA=OFF -G "Visual Studio 12 2013 Win64"
+      cmake .. -G "Visual Studio 12 2013 Win64"
       msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
       cd ..
 
@@ -68,4 +55,3 @@ branches:
 cache:
   - 3rdparty.zip -> appveyor.yml
   - model.zip -> appveyor.yml
-  - cuda_8.0.44_windows.exe -> appveyor.yml
