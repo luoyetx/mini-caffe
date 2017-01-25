@@ -11,8 +11,7 @@ namespace caffe {
  * @brief Rectified Linear Unit non-linearity @f$ y = \max(0, x) @f$.
  *        The simple max is fast to compute, and the function does not saturate.
  */
-template <typename Dtype>
-class ReLULayer : public NeuronLayer<Dtype> {
+class ReLULayer : public NeuronLayer {
  public:
   /**
    * @param param provides ReLUParameter relu_param,
@@ -21,7 +20,7 @@ class ReLULayer : public NeuronLayer<Dtype> {
    *     the value @f$ \nu @f$ by which negative values are multiplied.
    */
   explicit ReLULayer(const LayerParameter& param)
-      : NeuronLayer<Dtype>(param) {}
+      : NeuronLayer(param) {}
 
   virtual inline const char* type() const { return "ReLU"; }
 
@@ -37,10 +36,10 @@ class ReLULayer : public NeuronLayer<Dtype> {
    *      @f$ by default.  If a non-zero negative_slope @f$ \nu @f$ is provided,
    *      the computed outputs are @f$ y = \max(0, x) + \nu \min(0, x) @f$.
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 };
 
 }  // namespace caffe

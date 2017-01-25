@@ -5,9 +5,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void TileLayer<Dtype>::Reshape(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+void TileLayer::Reshape(const vector<Blob*>& bottom,
+                        const vector<Blob*>& top) {
   const TileParameter& tile_param = this->layer_param_.tile_param();
   axis_ = bottom[0]->CanonicalAxisIndex(tile_param.axis());
   CHECK(tile_param.has_tiles()) << "Number of tiles must be specified";
@@ -20,11 +19,10 @@ void TileLayer<Dtype>::Reshape(
   inner_dim_ = bottom[0]->count(axis_);
 }
 
-template <typename Dtype>
-void TileLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
+void TileLayer::Forward_cpu(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   for (int i = 0; i < outer_dim_; ++i) {
     for (int t = 0; t < tiles_; ++t) {
       caffe_copy(inner_dim_, bottom_data, top_data);
@@ -38,7 +36,6 @@ void TileLayer<Dtype>::Forward_cpu(
 STUB_GPU(TileLayer);
 #endif
 
-INSTANTIATE_CLASS(TileLayer);
 REGISTER_LAYER_CLASS(Tile);
 
 }  // namespace caffe

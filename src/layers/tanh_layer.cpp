@@ -7,11 +7,10 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void TanHLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
+void TanHLayer::Forward_cpu(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
   for (int i = 0; i < count; ++i) {
     top_data[i] = tanh(bottom_data[i]);
@@ -21,7 +20,5 @@ void TanHLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 #ifndef USE_CUDA
 STUB_GPU(TanHLayer);
 #endif
-
-INSTANTIATE_CLASS(TanHLayer);
 
 }  // namespace caffe

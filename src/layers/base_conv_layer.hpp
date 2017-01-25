@@ -13,15 +13,14 @@ namespace caffe {
  * @brief Abstract base class that factors out the BLAS code common to
  *        ConvolutionLayer and DeconvolutionLayer.
  */
-template <typename Dtype>
-class BaseConvolutionLayer : public Layer<Dtype> {
+class BaseConvolutionLayer : public Layer {
  public:
   explicit BaseConvolutionLayer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      : Layer(param) {}
+  virtual void LayerSetUp(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom,
+                       const vector<Blob*>& top);
 
   virtual inline int MinBottomBlobs() const { return 1; }
   virtual inline int MinTopBlobs() const { return 1; }
@@ -31,11 +30,11 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   // Helper functions that abstract away the column buffer and gemm arguments.
   // The last argument in forward_cpu_gemm is so that we can skip the im2col if
   // we just called weight_cpu_gemm with the same input.
-  void forward_cpu_gemm(const Dtype* input, const Dtype* weights,
-      Dtype* output, bool skip_im2col = false);
-  void forward_cpu_bias(Dtype* output, const Dtype* bias);
-  void backward_cpu_gemm(const Dtype* input, const Dtype* weights,
-      Dtype* output);
+  void forward_cpu_gemm(const real_t* input, const real_t* weights,
+                        real_t* output, bool skip_im2col = false);
+  void forward_cpu_bias(real_t* output, const real_t* bias);
+  void backward_cpu_gemm(const real_t* input, const real_t* weights,
+                         real_t* output);
 
 #ifdef USE_CUDA
   void forward_gpu_gemm(const Dtype* col_input, const Dtype* weights,
@@ -56,15 +55,15 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   virtual void compute_output_shape() = 0;
 
   /// @brief The spatial dimensions of a filter kernel.
-  Blob<int> kernel_shape_;
+  BlobInt kernel_shape_;
   /// @brief The spatial dimensions of the stride.
-  Blob<int> stride_;
+  BlobInt stride_;
   /// @brief The spatial dimensions of the padding.
-  Blob<int> pad_;
+  BlobInt pad_;
   /// @brief The spatial dimensions of the dilation.
-  Blob<int> dilation_;
+  BlobInt dilation_;
   /// @brief The spatial dimensions of the convolution input.
-  Blob<int> conv_input_shape_;
+  BlobInt conv_input_shape_;
   /// @brief The spatial dimensions of the col_buffer.
   vector<int> col_buffer_shape_;
   /// @brief The spatial dimensions of the output.
@@ -88,7 +87,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
 
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists
-  inline void conv_im2col_cpu(const Dtype* data, Dtype* col_buff) {
+  inline void conv_im2col_cpu(const real_t* data, real_t* col_buff) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
       im2col_cpu(data, conv_in_channels_,
           conv_input_shape_.cpu_data()[1], conv_input_shape_.cpu_data()[2],
@@ -102,7 +101,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
           pad_.cpu_data(), stride_.cpu_data(), dilation_.cpu_data(), col_buff);
     }
   }
-  inline void conv_col2im_cpu(const Dtype* col_buff, Dtype* data) {
+  inline void conv_col2im_cpu(const real_t* col_buff, real_t* data) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
       col2im_cpu(col_buff, conv_in_channels_,
           conv_input_shape_.cpu_data()[1], conv_input_shape_.cpu_data()[2],
@@ -162,8 +161,8 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   int col_offset_;
   int output_offset_;
 
-  Blob<Dtype> col_buffer_;
-  Blob<Dtype> bias_multiplier_;
+  Blob col_buffer_;
+  Blob bias_multiplier_;
 };
 
 }  // namespace caffe

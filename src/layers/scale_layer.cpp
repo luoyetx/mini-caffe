@@ -7,9 +7,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ScaleLayer::LayerSetUp(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
   const ScaleParameter& param = this->layer_param_.scale_param();
   if (bottom.size() == 1 && this->blobs_.size() > 0) {
     LOG(INFO) << "Skipping parameter initialization";
@@ -30,14 +29,14 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     const vector<int>::const_iterator& shape_end =
         (num_axes == -1) ? bottom[0]->shape().end() : (shape_start + num_axes);
     vector<int> scale_shape(shape_start, shape_end);
-    this->blobs_[0].reset(new Blob<Dtype>(scale_shape));
+    this->blobs_[0].reset(new Blob(scale_shape));
     FillerParameter filler_param(param.filler());
     if (!param.has_filler()) {
       // Default to unit (1) filler for identity operation.
       filler_param.set_type("constant");
       filler_param.set_value(1);
     }
-    shared_ptr<Filler<Dtype> > filler(GetFiller<Dtype>(filler_param));
+    shared_ptr<Filler> filler(GetFiller(filler_param));
     filler->Fill(this->blobs_[0].get());
   }
   if (param.bias_term()) {
@@ -51,7 +50,7 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       bias_param->set_num_axes(param.num_axes());
     }
     bias_param->mutable_filler()->CopyFrom(param.bias_filler());
-    bias_layer_ = LayerRegistry<Dtype>::CreateLayer(layer_param);
+    bias_layer_ = LayerRegistry::CreateLayer(layer_param);
     bias_bottom_vec_.resize(1);
     bias_bottom_vec_[0] = bottom[0];
     bias_layer_->SetUp(bias_bottom_vec_, top);
@@ -62,11 +61,10 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ScaleLayer::Reshape(const vector<Blob*>& bottom,
+                         const vector<Blob*>& top) {
   const ScaleParameter& param = this->layer_param_.scale_param();
-  Blob<Dtype>* scale = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
+  Blob* scale = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
   // Always set axis_ == 0 in special case where scale is a scalar
   // (num_axes == 0). Mathematically equivalent for any choice of axis_, so the
   // actual setting can be safely ignored; and computation is most efficient
@@ -94,8 +92,8 @@ void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   sum_result_.Reshape(vector<int>(1, outer_dim_ * scale_dim_));
   const int sum_mult_size = std::max(outer_dim_, inner_dim_);
   sum_multiplier_.Reshape(vector<int>(1, sum_mult_size));
-  if (sum_multiplier_.cpu_data()[sum_mult_size - 1] != Dtype(1)) {
-    caffe_set(sum_mult_size, Dtype(1), sum_multiplier_.mutable_cpu_data());
+  if (sum_multiplier_.cpu_data()[sum_mult_size - 1] != static_cast<real_t>(1)) {
+    caffe_set(sum_mult_size, static_cast<real_t>(1), sum_multiplier_.mutable_cpu_data());
   }
   if (bias_layer_) {
     bias_bottom_vec_[0] = top[0];
@@ -103,10 +101,9 @@ void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void ScaleLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
+void ScaleLayer::Forward_cpu(const vector<Blob*>& bottom,
+                             const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
   if (bottom[0] == top[0]) {
     // In-place computation; need to store bottom data before overwriting it.
     // Note that this is only necessary for Backward; we could skip this if not
@@ -115,12 +112,12 @@ void ScaleLayer<Dtype>::Forward_cpu(
     caffe_copy(bottom[0]->count(), bottom[0]->cpu_data(),
                temp_.mutable_cpu_data());
   }
-  const Dtype* scale_data =
+  const real_t* scale_data =
       ((bottom.size() > 1) ? bottom[1] : this->blobs_[0].get())->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   for (int n = 0; n < outer_dim_; ++n) {
     for (int d = 0; d < scale_dim_; ++d) {
-      const Dtype factor = scale_data[d];
+      const real_t factor = scale_data[d];
       caffe_cpu_scale(inner_dim_, factor, bottom_data, top_data);
       bottom_data += inner_dim_;
       top_data += inner_dim_;
@@ -135,7 +132,6 @@ void ScaleLayer<Dtype>::Forward_cpu(
 STUB_GPU(ScaleLayer);
 #endif
 
-INSTANTIATE_CLASS(ScaleLayer);
 REGISTER_LAYER_CLASS(Scale);
 
 }  // namespace caffe

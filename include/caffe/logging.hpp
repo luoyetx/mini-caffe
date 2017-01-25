@@ -39,9 +39,6 @@ struct Error : public std::runtime_error {
 #endif
 
 namespace caffe {
-inline void InitLogging(const char* argv0) {
-  // DO NOTHING
-}
 
 class LogCheckError {
  public:
@@ -64,9 +61,9 @@ class LogCheckError {
     return LogCheck##name<int, int>(x, y);                        \
   }
 
-#define CHECK_BINARY_OP(name, op, x, y)                               \
+#define CHECK_BINARY_OP(name, op, x, y)                                 \
   if (caffe::LogCheckError _check_err = caffe::LogCheck##name(x, y))    \
-    caffe::LogMessageFatal(__FILE__, __LINE__).stream()                \
+    caffe::LogMessageFatal(__FILE__, __LINE__).stream()                 \
       << "Check failed: " << #x " " #op " " #y << *(_check_err.str)
 
 DEFINE_CHECK_FUNC(_LT, <)
@@ -77,8 +74,8 @@ DEFINE_CHECK_FUNC(_EQ, ==)
 DEFINE_CHECK_FUNC(_NE, !=)
 
 // Always-on checking
-#define CHECK(x)                                           \
-  if (!(x))                                                \
+#define CHECK(x)                                            \
+  if (!(x))                                                 \
     caffe::LogMessageFatal(__FILE__, __LINE__).stream()     \
       << "Check failed: " #x << ' '
 #define CHECK_LT(x, y) CHECK_BINARY_OP(_LT, <, x, y)

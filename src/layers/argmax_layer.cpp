@@ -7,9 +7,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ArgMaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ArgMaxLayer::LayerSetUp(const vector<Blob*>& bottom,
+                             const vector<Blob*>& top) {
   const ArgMaxParameter& argmax_param = this->layer_param_.argmax_param();
   out_max_val_ = argmax_param.out_max_val();
   top_k_ = argmax_param.top_k();
@@ -29,9 +28,8 @@ void ArgMaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void ArgMaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ArgMaxLayer::Reshape(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top) {
   int num_top_axes = bottom[0]->num_axes();
   if ( num_top_axes < 3 ) num_top_axes = 3;
   std::vector<int> shape(num_top_axes, 1);
@@ -51,11 +49,10 @@ void ArgMaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   top[0]->Reshape(shape);
 }
 
-template <typename Dtype>
-void ArgMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
+void ArgMaxLayer::Forward_cpu(const vector<Blob*>& bottom,
+                              const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   int dim, axis_dist;
   if (has_axis_) {
     dim = bottom[0]->shape(axis_);
@@ -66,7 +63,7 @@ void ArgMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     axis_dist = 1;
   }
   int num = bottom[0]->count() / dim;
-  std::vector<std::pair<Dtype, int> > bottom_data_vector(dim);
+  std::vector<std::pair<real_t, int> > bottom_data_vector(dim);
   for (int i = 0; i < num; ++i) {
     for (int j = 0; j < dim; ++j) {
       bottom_data_vector[j] = std::make_pair(
@@ -74,7 +71,7 @@ void ArgMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
     std::partial_sort(
         bottom_data_vector.begin(), bottom_data_vector.begin() + top_k_,
-        bottom_data_vector.end(), std::greater<std::pair<Dtype, int> >());
+        bottom_data_vector.end(), std::greater<std::pair<real_t, int> >());
     for (int j = 0; j < top_k_; ++j) {
       if (out_max_val_) {
         if (has_axis_) {
@@ -95,7 +92,6 @@ void ArgMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-INSTANTIATE_CLASS(ArgMaxLayer);
 REGISTER_LAYER_CLASS(ArgMax);
 
 }  // namespace caffe

@@ -79,32 +79,20 @@ private:                                              \
   classname(const classname&) = delete;               \
   classname(classname&&) = delete;                    \
   classname& operator=(const classname&) = delete;    \
-  classname& operator=(classname&&) = delete          \
-
-// Instantiate a class with float and double specifications.
-#define INSTANTIATE_CLASS(classname)                  \
-  char gInstantiationGuard##classname;                \
-  template class classname<float>
-
-#define INSTANTIATE_LAYER_GPU_FUNCS(classname) \
-  template void classname<float>::Forward_gpu( \
-      const std::vector<Blob<float>*>& bottom, \
-      const std::vector<Blob<float>*>& top)
+  classname& operator=(classname&&) = delete
 
 // A simple macro to mark codes that are not implemented, so that when the code
 // is executed we will see a fatal log.
 #define NOT_IMPLEMENTED LOG(FATAL) << "Not Implemented Yet"
 #define NO_GPU LOG(FATAL) << "Cannot use GPU in CPU-only Caffe: check mode."
 
-#define STUB_GPU(classname)                                               \
-template <typename Dtype>                                                 \
-void classname<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,    \
-    const vector<Blob<Dtype>*>& top) { NO_GPU; }                          
+#define STUB_GPU(classname)                                        \
+void classname::Forward_gpu(const vector<Blob*>& bottom,           \
+                            const vector<Blob*>& top) { NO_GPU; }                          
 
-#define STUB_GPU_FORWARD(classname, funcname)                               \
-template <typename Dtype>                                                   \
-void classname<Dtype>::funcname##_##gpu(const vector<Blob<Dtype>*>& bottom, \
-    const vector<Blob<Dtype>*>& top) { NO_GPU; }
+#define STUB_GPU_FORWARD(classname, funcname)                          \
+void classname::funcname##_##gpu(const vector<Blob*>& bottom,          \
+                                 const vector<Blob*>& top) { NO_GPU; }
 
 #ifdef _MSC_VER
 #ifdef CAFFE_EXPORTS
@@ -137,6 +125,8 @@ using std::set;
 using std::string;
 using std::stringstream;
 using std::vector;
+
+typedef float real_t;
 
 // A singleton class to hold common caffe stuff, such as the handler that
 // caffe is going to use for cublas, curand, etc.

@@ -15,11 +15,10 @@ namespace caffe {
  * Note that the gradient vanishes as the values move away from 0.
  * The ReLULayer is often a better choice for this reason.
  */
-template <typename Dtype>
-class TanHLayer : public NeuronLayer<Dtype> {
+class TanHLayer : public NeuronLayer {
  public:
   explicit TanHLayer(const LayerParameter& param)
-      : NeuronLayer<Dtype>(param) {}
+      : NeuronLayer(param) {}
 
   virtual inline const char* type() const { return "TanH"; }
 
@@ -34,10 +33,10 @@ class TanHLayer : public NeuronLayer<Dtype> {
    *        y = \frac{\exp(2x) - 1}{\exp(2x) + 1}
    *      @f$
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 };
 
 }  // namespace caffe

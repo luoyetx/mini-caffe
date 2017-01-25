@@ -15,8 +15,7 @@ namespace caffe {
  *        channels. The number of axes of input blob should be greater than or
  *        equal to 2. The 1st axis (0-based) is seen as channels.
  */
-template <typename Dtype>
-class PReLULayer : public NeuronLayer<Dtype> {
+class PReLULayer : public NeuronLayer {
  public:
   /**
    * @param param provides PReLUParameter prelu_param,
@@ -27,13 +26,13 @@ class PReLULayer : public NeuronLayer<Dtype> {
    *     negative slopes are shared across channels.
    */
   explicit PReLULayer(const LayerParameter& param)
-      : NeuronLayer<Dtype>(param) {}
+      : NeuronLayer(param) {}
 
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void LayerSetUp(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top);
 
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom,
+                       const vector<Blob*>& top);
 
   virtual inline const char* type() const { return "PReLU"; }
 
@@ -48,15 +47,15 @@ class PReLULayer : public NeuronLayer<Dtype> {
    *        y_i = \max(0, x_i) + a_i \min(0, x_i)
    *      @f$.
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 
   bool channel_shared_;
-  Blob<Dtype> multiplier_;  // dot multiplier for backward computation of params
-  Blob<Dtype> backward_buff_;  // temporary buffer for backward computation
-  Blob<Dtype> bottom_memory_;  // memory for in-place computation
+  Blob multiplier_;  // dot multiplier for backward computation of params
+  Blob backward_buff_;  // temporary buffer for backward computation
+  Blob bottom_memory_;  // memory for in-place computation
 };
 
 }  // namespace caffe

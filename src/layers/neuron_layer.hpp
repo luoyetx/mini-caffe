@@ -13,13 +13,12 @@ namespace caffe {
  *        each element of the output depends only on the corresponding input
  *        element.
  */
-template <typename Dtype>
-class NeuronLayer : public Layer<Dtype> {
+class NeuronLayer : public Layer {
  public:
   explicit NeuronLayer(const LayerParameter& param)
-     : Layer<Dtype>(param) {}
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+     : Layer(param) {}
+  virtual void Reshape(const vector<Blob*>& bottom,
+                       const vector<Blob*>& top);
 
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }

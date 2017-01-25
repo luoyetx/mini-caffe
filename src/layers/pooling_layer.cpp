@@ -10,9 +10,8 @@ namespace caffe {
 using std::min;
 using std::max;
 
-template <typename Dtype>
-void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void PoolingLayer::LayerSetUp(const vector<Blob*>& bottom,
+                              const vector<Blob*>& top) {
   PoolingParameter pool_param = this->layer_param_.pooling_param();
   if (pool_param.global_pooling()) {
     CHECK(!(pool_param.has_kernel_size() ||
@@ -75,9 +74,8 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void PoolingLayer::Reshape(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top) {
   CHECK_EQ(4, bottom[0]->num_axes()) << "Input must have 4 axes, "
       << "corresponding to (num, channels, height, width)";
   channels_ = bottom[0]->channels();
@@ -112,17 +110,16 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 // TODO(Yangqing): Is there a faster way to do pooling in the channel-first
 // case?
-template <typename Dtype>
-void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
+void PoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
+                               const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   const int top_count = top[0]->count();
   // Different pooling methods. We explicitly do the switch outside the for
   // loop to save time, although this results in more code.
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
-    caffe_set(top_count, Dtype(-FLT_MAX), top_data);
+    caffe_set(top_count, std::numeric_limits<real_t>::min(), top_data);
     // The main loop
     for (int n = 0; n < bottom[0]->num(); ++n) {
       for (int c = 0; c < channels_; ++c) {
@@ -192,7 +189,5 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 #ifndef USE_CUDA
 STUB_GPU(PoolingLayer);
 #endif
-
-INSTANTIATE_CLASS(PoolingLayer);
 
 }  // namespace caffe

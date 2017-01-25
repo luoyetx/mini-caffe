@@ -25,20 +25,19 @@ namespace caffe {
  *         \end{array} \right.
  *      @f$
  */
-template <typename Dtype>
-class BNLLLayer : public NeuronLayer<Dtype> {
+class BNLLLayer : public NeuronLayer {
  public:
   explicit BNLLLayer(const LayerParameter& param)
-      : NeuronLayer<Dtype>(param) {}
+      : NeuronLayer(param) {}
 
   virtual inline const char* type() const { return "BNLL"; }
 
  protected:
   /// @copydoc BNLLLayer
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 };
 
 }  // namespace caffe

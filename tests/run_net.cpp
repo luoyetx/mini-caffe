@@ -9,20 +9,20 @@ using namespace caffe;
 
 struct Mat {
   int rows_, cols_;
-  float *data_;
+  real_t *data_;
 
   Mat()
     : rows_(0), cols_(0), data_(nullptr) {
   }
   Mat(int rows, int cols)
-    : rows_(rows), cols_(cols), data_(new float[rows*cols]) {
+    : rows_(rows), cols_(cols), data_(new real_t[rows*cols]) {
   }
   Mat(const Mat &m) {
     rows_ = m.rows_;
     cols_ = m.cols_;
     int size = rows_ * cols_;
-    data_ = new float[size];
-    memcpy(data_, m.data_, size * sizeof(float));
+    data_ = new real_t[size];
+    memcpy(data_, m.data_, size * sizeof(real_t));
   }
   Mat(Mat &&m) 
     : data_(m.data_) {
@@ -36,8 +36,8 @@ struct Mat {
     cols_ = m.cols_;
     int size = rows_ * cols_;
     if (data_) delete[] data_;
-    data_ = new float[size];
-    memcpy(data_, m.data_, size * sizeof(float));
+    data_ = new real_t[size];
+    memcpy(data_, m.data_, size * sizeof(real_t));
     return *this;
   }
   Mat &operator=(Mat &&m) {
@@ -58,7 +58,7 @@ struct Mat {
     Mat m(rows, cols);
     std::random_device rd;
     std::default_random_engine dre(rd());
-    std::uniform_real_distribution<float> urd(-scale, scale);
+    std::uniform_real_distribution<real_t> urd(-scale, scale);
     std::generate(m.data_, m.data_ + m.rows_*m.cols_, [&]() { return urd(dre); });
     return m;
   }
@@ -86,10 +86,10 @@ private:
 };
 
 struct TestFunctor {
-  std::shared_ptr<caffe::Net<float> > net;
+  std::shared_ptr<caffe::Net> net;
 
   TestFunctor(const std::string &prototxt, const std::string &caffemodel)
-    : net(new caffe::Net<float>(prototxt)) {
+    : net(new caffe::Net(prototxt)) {
     net->CopyTrainedLayersFrom(caffemodel);
   }
   /*!
@@ -104,7 +104,7 @@ struct TestFunctor {
   void Forward() {
     // transform input image to feature map
     auto data = this->Generate();
-    std::shared_ptr<Blob<float> > input = this->net->blob_by_name("data");
+    std::shared_ptr<Blob> input = this->net->blob_by_name("data");
     CHECK_GT(data.size(), 1);
     CHECK_EQ(1, input->num());
     CHECK_EQ(data.size(), input->channels());
@@ -112,7 +112,7 @@ struct TestFunctor {
     CHECK_EQ(data[0].cols(), input->width());
     // copy to network input buffer
     const int bias = input->offset(0, 1);
-    const int bytes = bias * sizeof(float);
+    const int bytes = bias * sizeof(real_t);
     for (int k = 0; k < data.size(); k++) {
       memcpy(input->mutable_cpu_data() + 0 * bias, data[k].data(), bytes);
     }

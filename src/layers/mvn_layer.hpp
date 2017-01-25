@@ -12,29 +12,28 @@ namespace caffe {
  *
  * TODO(dox): thorough documentation for Forward, Backward, and proto params.
  */
-template <typename Dtype>
-class MVNLayer : public Layer<Dtype> {
+class MVNLayer : public Layer {
  public:
   explicit MVNLayer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      : Layer(param) {}
+  virtual void Reshape(const vector<Blob*>& bottom,
+                       const vector<Blob*>& top);
 
   virtual inline const char* type() const { return "MVN"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
  protected:
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 
-  Blob<Dtype> mean_, variance_, temp_;
+  Blob mean_, variance_, temp_;
 
   /// sum_multiplier is used to carry out sum using BLAS
-  Blob<Dtype> sum_multiplier_;
-  Dtype eps_;
+  Blob sum_multiplier_;
+  real_t eps_;
 };
 
 }  // namespace caffe

@@ -12,8 +12,7 @@ namespace caffe {
  *        as specified by the scale @f$ \alpha @f$, shift @f$ \beta @f$,
  *        and power @f$ \gamma @f$.
  */
-template <typename Dtype>
-class PowerLayer : public NeuronLayer<Dtype> {
+class PowerLayer : public NeuronLayer {
  public:
   /**
    * @param param provides PowerParameter power_param,
@@ -23,9 +22,9 @@ class PowerLayer : public NeuronLayer<Dtype> {
    *   - power (\b optional, default 1) the power @f$ \gamma @f$
    */
   explicit PowerLayer(const LayerParameter& param)
-      : NeuronLayer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      : NeuronLayer(param) {}
+  virtual void LayerSetUp(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top);
 
   virtual inline const char* type() const { return "Power"; }
 
@@ -40,19 +39,19 @@ class PowerLayer : public NeuronLayer<Dtype> {
    *        y = (\alpha x + \beta) ^ \gamma
    *      @f$
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 
   /// @brief @f$ \gamma @f$ from layer_param_.power_param()
-  Dtype power_;
+  real_t power_;
   /// @brief @f$ \alpha @f$ from layer_param_.power_param()
-  Dtype scale_;
+  real_t scale_;
   /// @brief @f$ \beta @f$ from layer_param_.power_param()
-  Dtype shift_;
+  real_t shift_;
   /// @brief Result of @f$ \alpha \gamma @f$
-  Dtype diff_scale_;
+  real_t diff_scale_;
 };
 
 }  // namespace caffe
