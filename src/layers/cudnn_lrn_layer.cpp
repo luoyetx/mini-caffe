@@ -6,15 +6,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void CuDNNLRNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  LRNLayer<Dtype>::LayerSetUp(bottom, top);
+void CuDNNLRNLayer::LayerSetUp(const vector<Blob*>& bottom,
+                               const vector<Blob*>& top) {
+  LRNLayer::LayerSetUp(bottom, top);
 
   CUDNN_CHECK(cudnnCreate(&handle_));
   CUDNN_CHECK(cudnnCreateLRNDescriptor(&norm_desc_));
-  cudnn::createTensor4dDesc<Dtype>(&bottom_desc_);
-  cudnn::createTensor4dDesc<Dtype>(&top_desc_);
+  cudnn::createTensor4dDesc(&bottom_desc_);
+  cudnn::createTensor4dDesc(&top_desc_);
 
   // create a LRN handle
   handles_setup_ = true;
@@ -25,19 +24,17 @@ void CuDNNLRNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   k_ = this->layer_param().lrn_param().k();
 }
 
-template <typename Dtype>
-void CuDNNLRNLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  LRNLayer<Dtype>::Reshape(bottom, top);
-  cudnn::setTensor4dDesc<Dtype>(&bottom_desc_, bottom[0]->num(),
+void CuDNNLRNLayer::Reshape(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
+  LRNLayer::Reshape(bottom, top);
+  cudnn::setTensor4dDesc(&bottom_desc_, bottom[0]->num(),
       this->channels_, this->height_, this->width_);
-  cudnn::setTensor4dDesc<Dtype>(&top_desc_, bottom[0]->num(),
+  cudnn::setTensor4dDesc(&top_desc_, bottom[0]->num(),
       this->channels_, this->height_, this->width_);
   CUDNN_CHECK(cudnnSetLRNDescriptor(norm_desc_, size_, alpha_, beta_, k_));
 }
 
-template <typename Dtype>
-CuDNNLRNLayer<Dtype>::~CuDNNLRNLayer() {
+CuDNNLRNLayer::~CuDNNLRNLayer() {
   // Check that handles have been setup before destroying.
   if (!handles_setup_) { return; }
 
@@ -48,8 +45,6 @@ CuDNNLRNLayer<Dtype>::~CuDNNLRNLayer() {
   cudnnDestroy(handle_);
 }
 
-INSTANTIATE_CLASS(CuDNNLRNLayer);
-
 }   // namespace caffe
 
-#endif
+#endif  // USE_CUDNN
