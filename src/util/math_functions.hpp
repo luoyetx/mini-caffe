@@ -66,39 +66,6 @@ real_t caffe_cpu_strided_dot(const int n, const real_t* x, const int incx,
 // Returns the sum of the absolute values of the elements of vector x
 real_t caffe_cpu_asum(const int n, const real_t* x);
 
-// the branchless, type-safe version from
-// http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
-inline int8_t caffe_sign(real_t val) {
-  return (real_t(0) < val) - (val < real_t(0));
-}
-
-// The following two macros are modifications of DEFINE_VSL_UNARY_FUNC
-//   in include/caffe/util/mkl_alternate.hpp authored by @Rowland Depp.
-// Please refer to commit 7e8ef25c7 of the boost-eigen branch.
-// Git cherry picking that commit caused a conflict hard to resolve and
-//   copying that file in convenient for code reviewing.
-// So they have to be pasted here temporarily.
-#define DEFINE_CAFFE_CPU_UNARY_FUNC(name, operation) \
-  template<typename real_t> \
-  void caffe_cpu_##name(const int n, const real_t* x, real_t* y) { \
-    CHECK_GT(n, 0); CHECK(x); CHECK(y); \
-    for (int i = 0; i < n; ++i) { \
-      operation; \
-    } \
-  }
-
-// output is 1 for the positives, 0 for zero, and -1 for the negatives
-DEFINE_CAFFE_CPU_UNARY_FUNC(sign, y[i] = caffe_sign<real_t>(x[i]));
-
-// This returns a nonzero value if the input has its sign bit set.
-// The name sngbit is meant to avoid conflicts with std::signbit in the macro.
-// The extra parens are needed because CUDA < 6.5 defines signbit as a macro,
-// and we don't want that to expand here when CUDA headers are also included.
-DEFINE_CAFFE_CPU_UNARY_FUNC(sgnbit, \
-    y[i] = static_cast<bool>((std::signbit)(x[i])));
-
-DEFINE_CAFFE_CPU_UNARY_FUNC(fabs, y[i] = std::fabs(x[i]));
-
 void caffe_cpu_scale(const int n, const real_t alpha, const real_t *x, real_t* y);
 
 #ifdef USE_CUDA  // GPU
