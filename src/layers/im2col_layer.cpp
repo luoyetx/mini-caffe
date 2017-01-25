@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/im2col.hpp"
 #include "./im2col_layer.hpp"
+#include "../util/im2col.hpp"
 
 namespace caffe {
 
@@ -157,6 +157,10 @@ void Im2colLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(Im2colLayer);
+#endif
 
 INSTANTIATE_CLASS(Im2colLayer);
 REGISTER_LAYER_CLASS(Im2col);

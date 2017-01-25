@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./reduction_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -72,6 +72,10 @@ void ReductionLayer<Dtype>::Forward_cpu(
     caffe_scal(num_, coeff_, top_data);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(ReductionLayer);
+#endif
 
 INSTANTIATE_CLASS(ReductionLayer);
 REGISTER_LAYER_CLASS(Reduction);

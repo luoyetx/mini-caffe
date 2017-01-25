@@ -18,6 +18,10 @@ void ELULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(ELULayer);
+#endif
+
 INSTANTIATE_CLASS(ELULayer);
 REGISTER_LAYER_CLASS(ELU);
 

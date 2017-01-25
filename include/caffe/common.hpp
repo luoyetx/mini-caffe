@@ -15,24 +15,96 @@
 
 #include "caffe/logging.hpp"
 
+#ifdef USE_CUDA
+
+#include <cublas_v2.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <curand.h>
+#include <driver_types.h>  // cuda driver types
+
+//
+// CUDA macros
+//
+
+// CUDA: various checks for different function calls.
+#define CUDA_CHECK(condition) \
+  /* Code block avoids redefinition of cudaError_t error */ \
+  do { \
+    cudaError_t error = condition; \
+    CHECK_EQ(error, cudaSuccess) << " " << cudaGetErrorString(error); \
+    } while (0)
+
+#define CUBLAS_CHECK(condition) \
+  do { \
+    cublasStatus_t status = condition; \
+    CHECK_EQ(status, CUBLAS_STATUS_SUCCESS) << " " \
+      << caffe::cublasGetErrorString(status); \
+    } while (0)
+
+// CUDA: grid stride looping
+#define CUDA_KERNEL_LOOP(i, n) \
+  for (int i = blockIdx.x * blockDim.x + threadIdx.x; \
+       i < (n); \
+       i += blockDim.x * gridDim.x)
+
+// CUDA: check for error after kernel execution and exit loudly if there is one.
+#define CUDA_POST_KERNEL_CHECK CUDA_CHECK(cudaPeekAtLastError())
+
+namespace caffe {
+
+  // CUDA: library error reporting.
+  const char* cublasGetErrorString(cublasStatus_t error);
+  const char* curandGetErrorString(curandStatus_t error);
+
+  // CUDA: use 512 threads per block
+  const int CAFFE_CUDA_NUM_THREADS = 512;
+
+  // CUDA: number of blocks for threads.
+  inline int CAFFE_GET_BLOCKS(const int N) {
+    return (N + CAFFE_CUDA_NUM_THREADS - 1) / CAFFE_CUDA_NUM_THREADS;
+  }
+
+}  // namespace caffe
+
+#endif  // USE_CUDA
+
 // Convert macro to string
 #define STRINGIFY(m) #m
 #define AS_STRING(m) STRINGIFY(m)
 
 // Disable the copy and assignment operator for a class.
-#define DISABLE_COPY_AND_ASSIGN(classname) \
-private:\
-  classname(const classname&);\
-  classname& operator=(const classname&)
+#define DISABLE_COPY_AND_ASSIGN(classname)            \
+private:                                              \
+  classname(const classname&) = delete;               \
+  classname(classname&&) = delete;                    \
+  classname& operator=(const classname&) = delete;    \
+  classname& operator=(classname&&) = delete          \
 
 // Instantiate a class with float and double specifications.
-#define INSTANTIATE_CLASS(classname) \
-  char gInstantiationGuard##classname; \
+#define INSTANTIATE_CLASS(classname)                  \
+  char gInstantiationGuard##classname;                \
   template class classname<float>
+
+#define INSTANTIATE_LAYER_GPU_FUNCS(classname) \
+  template void classname<float>::Forward_gpu( \
+      const std::vector<Blob<float>*>& bottom, \
+      const std::vector<Blob<float>*>& top)
 
 // A simple macro to mark codes that are not implemented, so that when the code
 // is executed we will see a fatal log.
 #define NOT_IMPLEMENTED LOG(FATAL) << "Not Implemented Yet"
+#define NO_GPU LOG(FATAL) << "Cannot use GPU in CPU-only Caffe: check mode."
+
+#define STUB_GPU(classname)                                               \
+template <typename Dtype>                                                 \
+void classname<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,    \
+    const vector<Blob<Dtype>*>& top) { NO_GPU; }                          
+
+#define STUB_GPU_FORWARD(classname, funcname)                               \
+template <typename Dtype>                                                   \
+void classname<Dtype>::funcname##_##gpu(const vector<Blob<Dtype>*>& bottom, \
+    const vector<Blob<Dtype>*>& top) { NO_GPU; }
 
 #ifdef _MSC_VER
 #ifdef CAFFE_EXPORTS
@@ -42,6 +114,10 @@ private:\
 #endif
 #else
 #define CAFFE_API
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(disable:4251)
 #endif
 
 namespace caffe {
@@ -68,12 +144,13 @@ class CAFFE_API Caffe {
 public:
   ~Caffe();
 
-  // Thread local context for Caffe. Moved to common.cpp instead of
-  // including boost/thread.hpp to avoid a boost/NVCC issues (#1009, #1010)
-  // on OSX. Also fails on Linux with CUDA 7.0.18.
   static Caffe& Get();
 
   enum Brew { CPU, GPU };
+
+#ifdef USE_CUDA
+  inline static cublasHandle_t cublas_handle() { return Get().cublas_handle_; }
+#endif  // USE_CUDA
 
   // Returns the mode: running on CPU or GPU.
   inline static Brew mode() { return Get().mode_; }
@@ -86,8 +163,6 @@ public:
   // Sets the device. Since we have cublas and curand stuff, set device also
   // requires us to reset those values.
   static void SetDevice(const int device_id);
-  // Prints the current GPU status.
-  static void DeviceQuery();
   // Check if specified device is available
   static bool CheckDevice(const int device_id);
   // Search from start_id to the highest possible device ordinal,
@@ -95,6 +170,9 @@ public:
   static int FindDevice(const int start_id = 0);
 
 protected:
+#ifdef USE_CUDA
+  cublasHandle_t cublas_handle_;
+#endif
   Brew mode_;
 
 private:

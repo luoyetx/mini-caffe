@@ -4,8 +4,8 @@
 #include <set>
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./crop_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -93,17 +93,9 @@ void CropLayer<Dtype>::crop_copy(const vector<Blob<Dtype>*>& bottom,
       }
       ind_off[cur_dim] = offsets[cur_dim];
       // do the copy
-      if (is_forward) {
-        caffe_copy(top[0]->shape(cur_dim),
-            src_data + bottom[0]->offset(ind_off),
-            dest_data + top[0]->offset(ind_red));
-      } else {
-        // in the backwards pass the src_data is top_diff
-        // and the dest_data is bottom_diff
-        caffe_copy(top[0]->shape(cur_dim),
-            src_data + top[0]->offset(ind_red),
-            dest_data + bottom[0]->offset(ind_off));
-      }
+      caffe_copy(top[0]->shape(cur_dim),
+          src_data + bottom[0]->offset(ind_off),
+          dest_data + top[0]->offset(ind_red));
     }
   }
 }
@@ -116,6 +108,10 @@ void CropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype* top_data = top[0]->mutable_cpu_data();
   crop_copy(bottom, top, offsets, indices, 0, bottom_data, top_data, true);
 }
+
+#ifndef USE_CUDA
+STUB_GPU(CropLayer);
+#endif
 
 INSTANTIATE_CLASS(CropLayer);
 REGISTER_LAYER_CLASS(Crop);

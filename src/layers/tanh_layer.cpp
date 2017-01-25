@@ -18,6 +18,10 @@ void TanHLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(TanHLayer);
+#endif
+
 INSTANTIATE_CLASS(TanHLayer);
 
 }  // namespace caffe

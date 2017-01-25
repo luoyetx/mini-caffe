@@ -8,7 +8,7 @@
 #include <string>
 
 #include "caffe/blob.hpp"
-#include "caffe/syncedmem.hpp"
+#include "./syncedmem.hpp"
 #include "./util/math_functions.hpp"
 #include "./proto/caffe.pb.h"
 

@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./exp_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -43,6 +43,10 @@ void ExpLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     caffe_scal(count, outer_scale_, top_data);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(ExpLayer);
+#endif
 
 INSTANTIATE_CLASS(ExpLayer);
 REGISTER_LAYER_CLASS(Exp);

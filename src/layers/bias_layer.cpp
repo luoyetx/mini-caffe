@@ -1,8 +1,8 @@
 #include <vector>
 
+#include "./bias_layer.hpp"
 #include "../filler.hpp"
 #include "../util/math_functions.hpp"
-#include "./bias_layer.hpp"
 
 namespace caffe {
 
@@ -84,6 +84,10 @@ void BiasLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     top_data += dim_;
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(BiasLayer);
+#endif
 
 INSTANTIATE_CLASS(BiasLayer);
 REGISTER_LAYER_CLASS(Bias);

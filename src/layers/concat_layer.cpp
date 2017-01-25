@@ -49,7 +49,6 @@ void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   CHECK_EQ(bottom_count_sum, top[0]->count());
   if (bottom.size() == 1) {
     top[0]->ShareData(*bottom[0]);
-    top[0]->ShareDiff(*bottom[0]);
   }
 }
 
@@ -72,6 +71,10 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     offset_concat_axis += bottom_concat_axis;
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(ConcatLayer);
+#endif
 
 INSTANTIATE_CLASS(ConcatLayer);
 REGISTER_LAYER_CLASS(Concat);

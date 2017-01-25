@@ -333,10 +333,6 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
           layer_param->mutable_pooling_param()->set_pool(
             PoolingParameter_PoolMethod_AVE);
           break;
-        case V0LayerParameter_PoolMethod_STOCHASTIC:
-          layer_param->mutable_pooling_param()->set_pool(
-            PoolingParameter_PoolMethod_STOCHASTIC);
-          break;
         default:
           LOG(ERROR) << "Unknown pool method " << pool;
           is_fully_compatible = false;
@@ -399,9 +395,7 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
 }
 
 V1LayerParameter_LayerType UpgradeV0LayerType(const string& type) {
-  if (type == "accuracy") {
-    return V1LayerParameter_LayerType_ACCURACY;
-  } else if (type == "bnll") {
+  if (type == "bnll") {
     return V1LayerParameter_LayerType_BNLL;
   } else if (type == "concat") {
     return V1LayerParameter_LayerType_CONCAT;
@@ -522,14 +516,6 @@ bool UpgradeV1LayerParameter(const V1LayerParameter& v1_layer_param,
   for (int i = 0; i < v1_layer_param.loss_weight_size(); ++i) {
     layer_param->add_loss_weight(v1_layer_param.loss_weight(i));
   }
-  if (v1_layer_param.has_accuracy_param()) {
-    layer_param->mutable_accuracy_param()->CopyFrom(
-        v1_layer_param.accuracy_param());
-  }
-  if (v1_layer_param.has_argmax_param()) {
-    layer_param->mutable_argmax_param()->CopyFrom(
-        v1_layer_param.argmax_param());
-  }
   if (v1_layer_param.has_concat_param()) {
     layer_param->mutable_concat_param()->CopyFrom(
         v1_layer_param.concat_param());
@@ -611,10 +597,6 @@ const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type) {
     return "";
   case V1LayerParameter_LayerType_ABSVAL:
     return "AbsVal";
-  case V1LayerParameter_LayerType_ACCURACY:
-    return "Accuracy";
-  case V1LayerParameter_LayerType_ARGMAX:
-    return "ArgMax";
   case V1LayerParameter_LayerType_BNLL:
     return "BNLL";
   case V1LayerParameter_LayerType_CONCAT:
@@ -647,8 +629,6 @@ const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type) {
     return "ReLU";
   case V1LayerParameter_LayerType_SIGMOID:
     return "Sigmoid";
-  case V1LayerParameter_LayerType_SILENCE:
-    return "Silence";
   case V1LayerParameter_LayerType_SOFTMAX:
     return "Softmax";
   case V1LayerParameter_LayerType_SPLIT:

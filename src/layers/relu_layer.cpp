@@ -18,6 +18,10 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(ReLULayer);
+#endif
+
 INSTANTIATE_CLASS(ReLULayer);
 
 }  // namespace caffe

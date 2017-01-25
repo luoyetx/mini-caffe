@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./mvn_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -69,6 +69,10 @@ void MVNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     caffe_div(temp_.count(), top_data, temp_.cpu_data(), top_data);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(MVNLayer);
+#endif
 
 INSTANTIATE_CLASS(MVNLayer);
 REGISTER_LAYER_CLASS(MVN);

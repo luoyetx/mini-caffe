@@ -2,8 +2,8 @@
 #include <cfloat>
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./pooling_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -108,11 +108,6 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   if (top.size() > 1) {
     top[1]->ReshapeLike(*top[0]);
   }
-  // If stochastic pooling, not implement
-  if (this->layer_param_.pooling_param().pool() ==
-      PoolingParameter_PoolMethod_STOCHASTIC) {
-    NOT_IMPLEMENTED;
-  }
 }
 
 // TODO(Yangqing): Is there a faster way to do pooling in the channel-first
@@ -189,13 +184,14 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       }
     }
     break;
-  case PoolingParameter_PoolMethod_STOCHASTIC:
-    NOT_IMPLEMENTED;
-    break;
   default:
     LOG(FATAL) << "Unknown pooling method.";
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(PoolingLayer);
+#endif
 
 INSTANTIATE_CLASS(PoolingLayer);
 

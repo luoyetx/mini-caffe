@@ -1,8 +1,8 @@
 #include <vector>
 
+#include "./inner_product_layer.hpp"
 #include "../filler.hpp"
 #include "../util/math_functions.hpp"
-#include "./inner_product_layer.hpp"
 
 namespace caffe {
 
@@ -94,6 +94,10 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         this->blobs_[1]->cpu_data(), (Dtype)1., top_data);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(InnerProductLayer);
+#endif
 
 INSTANTIATE_CLASS(InnerProductLayer);
 REGISTER_LAYER_CLASS(InnerProduct);

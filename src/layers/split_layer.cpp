@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./split_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -29,6 +29,10 @@ void SplitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     top[i]->ShareData(*bottom[0]);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(SplitLayer);
+#endif
 
 INSTANTIATE_CLASS(SplitLayer);
 REGISTER_LAYER_CLASS(Split);

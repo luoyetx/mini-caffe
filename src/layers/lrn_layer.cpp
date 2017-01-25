@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./lrn_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -160,6 +160,11 @@ void LRNLayer<Dtype>::WithinChannelForward(
   power_layer_->Forward(pool_top_vec_, power_top_vec_);
   product_layer_->Forward(product_bottom_vec_, top);
 }
+
+#ifndef USE_CUDA
+STUB_GPU(LRNLayer);
+STUB_GPU_FORWARD(LRNLayer, CrossChannelForward);
+#endif
 
 INSTANTIATE_CLASS(LRNLayer);
 

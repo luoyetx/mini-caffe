@@ -71,7 +71,7 @@ class CAFFE_API Net {
   void CopyTrainedLayersFrom(const string& trained_filename);
   void CopyTrainedLayersFromBinaryProto(const string& trained_filename);
   /// @brief Writes the net to a proto.
-  void ToProto(NetParameter* param, bool write_diff = false) const;
+  void ToProto(NetParameter* param) const;
 
   /// @brief returns the network name.
   inline const string& name() const { return name_; }

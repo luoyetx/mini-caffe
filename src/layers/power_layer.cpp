@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./power_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -39,6 +39,10 @@ void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     caffe_powx(count, top_data, power_, top_data);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(PowerLayer);
+#endif
 
 INSTANTIATE_CLASS(PowerLayer);
 REGISTER_LAYER_CLASS(Power);

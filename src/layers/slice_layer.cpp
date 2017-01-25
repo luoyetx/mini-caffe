@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./slice_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -68,7 +68,6 @@ void SliceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   CHECK_EQ(count, bottom[0]->count());
   if (top.size() == 1) {
     top[0]->ShareData(*bottom[0]);
-    top[0]->ShareDiff(*bottom[0]);
   }
 }
 
@@ -92,6 +91,10 @@ void SliceLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     offset_slice_axis += top_slice_axis;
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(SliceLayer);
+#endif
 
 INSTANTIATE_CLASS(SliceLayer);
 REGISTER_LAYER_CLASS(Slice);

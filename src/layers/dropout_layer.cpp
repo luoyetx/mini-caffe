@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./dropout_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -32,6 +32,10 @@ void DropoutLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int count = bottom[0]->count();
   caffe_copy(bottom[0]->count(), bottom_data, top_data);
 }
+
+#ifndef USE_CUDA
+STUB_GPU(DropoutLayer);
+#endif
 
 INSTANTIATE_CLASS(DropoutLayer);
 REGISTER_LAYER_CLASS(Dropout);

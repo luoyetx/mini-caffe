@@ -59,6 +59,10 @@ void SoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(SoftmaxLayer);
+#endif
+
 INSTANTIATE_CLASS(SoftmaxLayer);
 
 }  // namespace caffe

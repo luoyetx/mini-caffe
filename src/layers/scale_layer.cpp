@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <vector>
 
+#include "./scale_layer.hpp"
 #include "../filler.hpp"
 #include "../util/math_functions.hpp"
-#include "./scale_layer.hpp"
 
 namespace caffe {
 
@@ -130,6 +130,10 @@ void ScaleLayer<Dtype>::Forward_cpu(
     bias_layer_->Forward(bias_bottom_vec_, top);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(ScaleLayer);
+#endif
 
 INSTANTIATE_CLASS(ScaleLayer);
 REGISTER_LAYER_CLASS(Scale);

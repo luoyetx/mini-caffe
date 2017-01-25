@@ -22,6 +22,10 @@ void ThresholdLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
+#ifndef USE_CUDA
+STUB_GPU(ThresholdLayer);
+#endif
+
 INSTANTIATE_CLASS(ThresholdLayer);
 REGISTER_LAYER_CLASS(Threshold);
 

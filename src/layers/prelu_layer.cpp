@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "../filler.hpp"
 #include "./prelu_layer.hpp"
+#include "../filler.hpp"
 
 namespace caffe {
 
@@ -83,6 +83,10 @@ void PReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         + slope_data[c] * std::min(bottom_data[i], Dtype(0));
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(PReLULayer);
+#endif
 
 INSTANTIATE_CLASS(PReLULayer);
 REGISTER_LAYER_CLASS(PReLU);

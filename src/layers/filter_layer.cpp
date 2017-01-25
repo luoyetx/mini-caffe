@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./filter_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -74,6 +74,10 @@ void FilterLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(FilterLayer);
+#endif
 
 INSTANTIATE_CLASS(FilterLayer);
 REGISTER_LAYER_CLASS(Filter);

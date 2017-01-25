@@ -1,8 +1,8 @@
 #include <cfloat>
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./eltwise_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -95,6 +95,10 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     LOG(FATAL) << "Unknown elementwise operation.";
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(EltwiseLayer);
+#endif
 
 INSTANTIATE_CLASS(EltwiseLayer);
 REGISTER_LAYER_CLASS(Eltwise);

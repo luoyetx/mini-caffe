@@ -42,6 +42,8 @@ class PowerLayer : public NeuronLayer<Dtype> {
    */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
 
   /// @brief @f$ \gamma @f$ from layer_param_.power_param()
   Dtype power_;

@@ -188,7 +188,6 @@ message LayerParameter {
   // for their implementation. These layers include an Engine type and
   // engine parameter for selecting the implementation.
   // The default for the engine is set by the ENGINE switch at compile-time.
-  optional AccuracyParameter accuracy_param = 102;
   optional ArgMaxParameter argmax_param = 103;
   optional BatchNormParameter batch_norm_param = 139;
   optional BiasParameter bias_param = 141;
@@ -252,23 +251,6 @@ message LossParameter {
 
 // Messages that store parameters used by individual layer types follow, in
 // alphabetical order.
-
-message AccuracyParameter {
-  // When computing accuracy, count as correct by comparing the true label to
-  // the top k scoring classes.  By default, only compare to the top scoring
-  // class (i.e. argmax).
-  optional uint32 top_k = 1 [default = 1];
-
-  // The "label" axis of the prediction blob, whose argmax corresponds to the
-  // predicted label -- may be negative to index from the end (e.g., -1 for the
-  // last axis).  For example, if axis == 1 and the predictions are
-  // (N x C x H x W), the label blob is expected to contain N*H*W ground truth
-  // labels with integer values in {0, 1, ..., C-1}.
-  optional int32 axis = 2 [default = 1];
-
-  // If specified, ignore instances with the given label.
-  optional int32 ignore_label = 3;
-}
 
 message ArgMaxParameter {
   // If true produce pairs (argmax, maxval)
@@ -541,7 +523,6 @@ message PoolingParameter {
   enum PoolMethod {
     MAX = 0;
     AVE = 1;
-    STOCHASTIC = 2;
   }
   optional PoolMethod pool = 1 [default = MAX]; // The pooling method
   // Pad, kernel size, and stride are all given as a single value for equal
@@ -781,7 +762,6 @@ message SPPParameter {
   enum PoolMethod {
     MAX = 0;
     AVE = 1;
-    STOCHASTIC = 2;
   }
   optional uint32 pyramid_height = 1;
   optional PoolMethod pool = 2 [default = MAX]; // The pooling method
@@ -813,8 +793,6 @@ message V1LayerParameter {
   enum LayerType {
     NONE = 0;
     ABSVAL = 35;
-    ACCURACY = 1;
-    ARGMAX = 30;
     BNLL = 2;
     CONCAT = 3;
     CONVOLUTION = 4;
@@ -831,7 +809,6 @@ message V1LayerParameter {
     POWER = 26;
     RELU = 18;
     SIGMOID = 19;
-    SILENCE = 36;
     SOFTMAX = 20;
     SPLIT = 22;
     SLICE = 33;
@@ -849,8 +826,6 @@ message V1LayerParameter {
   repeated float blobs_lr = 7;
   repeated float weight_decay = 8;
   repeated float loss_weight = 35;
-  optional AccuracyParameter accuracy_param = 27;
-  optional ArgMaxParameter argmax_param = 23;
   optional ConcatParameter concat_param = 9;
   optional ConvolutionParameter convolution_param = 10;
   optional DropoutParameter dropout_param = 12;
@@ -890,7 +865,6 @@ message V0LayerParameter {
   enum PoolMethod {
     MAX = 0;
     AVE = 1;
-    STOCHASTIC = 2;
   }
   optional PoolMethod pool = 11 [default = MAX]; // The pooling method
   optional float dropout_ratio = 12 [default = 0.5]; // dropout ratio

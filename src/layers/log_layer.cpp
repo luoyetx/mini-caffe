@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./log_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -52,6 +52,10 @@ void LogLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     caffe_scal(count, base_scale_, top_data);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(LogLayer);
+#endif
 
 INSTANTIATE_CLASS(LogLayer);
 REGISTER_LAYER_CLASS(Log);

@@ -1,7 +1,7 @@
 #include <vector>
 
-#include "../util/math_functions.hpp"
 #include "./tile_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -33,6 +33,10 @@ void TileLayer<Dtype>::Forward_cpu(
     bottom_data += inner_dim_;
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(TileLayer);
+#endif
 
 INSTANTIATE_CLASS(TileLayer);
 REGISTER_LAYER_CLASS(Tile);

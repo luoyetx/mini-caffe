@@ -1,8 +1,8 @@
 #include <vector>
 
+#include "./embed_layer.hpp"
 #include "../filler.hpp"
 #include "../util/math_functions.hpp"
-#include "./embed_layer.hpp"
 
 namespace caffe {
 
@@ -80,6 +80,10 @@ void EmbedLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         bias_multiplier_.cpu_data(), bias, Dtype(1), top_data);
   }
 }
+
+#ifndef USE_CUDA
+STUB_GPU(EmbedLayer);
+#endif
 
 INSTANTIATE_CLASS(EmbedLayer);
 REGISTER_LAYER_CLASS(Embed);
