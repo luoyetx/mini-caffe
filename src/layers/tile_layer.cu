@@ -5,10 +5,9 @@
 
 namespace caffe {
 
-template <typename Dtype>
-__global__ void Tile(const int nthreads, const Dtype* bottom_data,
+__global__ void Tile(const int nthreads, const real_t* bottom_data,
     const int tile_size, const int num_tiles, const int bottom_tile_axis,
-    Dtype* top_data) {
+    real_t* top_data) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int d = index % tile_size;
     const int b = (index / tile_size / num_tiles) % bottom_tile_axis;
@@ -18,18 +17,15 @@ __global__ void Tile(const int nthreads, const Dtype* bottom_data,
   }
 }
 
-template <typename Dtype>
-void TileLayer<Dtype>::Forward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
+void TileLayer::Forward_gpu(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->gpu_data();
+  real_t* top_data = top[0]->mutable_gpu_data();
   const int bottom_tile_axis = bottom[0]->shape(axis_);
   const int nthreads = top[0]->count();
-  Tile<Dtype>  // NOLINT_NEXT_LINE(whitespace/operators)
+  Tile  // NOLINT_NEXT_LINE(whitespace/operators)
       <<<CAFFE_GET_BLOCKS(nthreads), CAFFE_CUDA_NUM_THREADS>>>(
       nthreads, bottom_data, inner_dim_, tiles_, bottom_tile_axis, top_data);
 }
-
-INSTANTIATE_LAYER_GPU_FUNCS(TileLayer);
 
 }  // namespace caffe

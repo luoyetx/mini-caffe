@@ -37,11 +37,11 @@ class BaseConvolutionLayer : public Layer {
                          real_t* output);
 
 #ifdef USE_CUDA
-  void forward_gpu_gemm(const Dtype* col_input, const Dtype* weights,
-      Dtype* output, bool skip_im2col = false);
-  void forward_gpu_bias(Dtype* output, const Dtype* bias);
-  void backward_gpu_gemm(const Dtype* input, const Dtype* weights,
-      Dtype* col_output);
+  void forward_gpu_gemm(const real_t* col_input, const real_t* weights,
+                        real_t* output, bool skip_im2col = false);
+  void forward_gpu_bias(real_t* output, const real_t* bias);
+  void backward_gpu_gemm(const real_t* input, const real_t* weights,
+                         real_t* col_output);
 #endif
 
   /// @brief The spatial dimensions of the input.
@@ -117,7 +117,7 @@ class BaseConvolutionLayer : public Layer {
   }
 
 #ifdef USE_CUDA
-  inline void conv_im2col_gpu(const Dtype* data, Dtype* col_buff) {
+  inline void conv_im2col_gpu(const real_t* data, real_t* col_buff) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
       im2col_gpu(data, conv_in_channels_,
         conv_input_shape_.cpu_data()[1], conv_input_shape_.cpu_data()[2],
@@ -133,7 +133,7 @@ class BaseConvolutionLayer : public Layer {
         stride_.gpu_data(), dilation_.gpu_data(), col_buff);
     }
   }
-  inline void conv_col2im_gpu(const Dtype* col_buff, Dtype* data) {
+  inline void conv_col2im_gpu(const real_t* col_buff, real_t* data) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
       col2im_gpu(col_buff, conv_in_channels_,
         conv_input_shape_.cpu_data()[1], conv_input_shape_.cpu_data()[2],

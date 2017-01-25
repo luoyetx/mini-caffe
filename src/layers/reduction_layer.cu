@@ -5,15 +5,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ReductionLayer<Dtype>::Forward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  const Dtype* mult_data = NULL;
+void ReductionLayer::Forward_gpu(const vector<Blob*>& bottom,
+                                 const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->gpu_data();
+  const real_t* mult_data = NULL;
   if (sum_multiplier_.count() > 0) {
     mult_data = sum_multiplier_.gpu_data();
   }
-  Dtype* top_data = top[0]->mutable_cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   for (int i = 0; i < num_; ++i) {
     switch (op_) {
     case ReductionParameter_ReductionOp_SUM:
@@ -33,13 +32,11 @@ void ReductionLayer<Dtype>::Forward_gpu(
     bottom_data += dim_;
     ++top_data;
   }
-  if (coeff_ != Dtype(1)) {
+  if (coeff_ != static_cast<real_t>(1)) {
     // Reset the top_data pointer.
     top_data = top[0]->mutable_gpu_data();
     caffe_gpu_scal(num_, coeff_, top_data);
   }
 }
-
-INSTANTIATE_LAYER_GPU_FUNCS(ReductionLayer);
 
 }  // namespace caffe

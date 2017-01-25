@@ -6,11 +6,10 @@ namespace caffe {
 
 // Copy (one line per thread) from one array to another, with arbitrary
 // strides in the last two dimensions.
-template <typename Dtype>
 __global__ void copy_kernel(const int n, const int height, const int width,
     const int src_outer_stride, const int src_inner_stride,
     const int dest_outer_stride, const int dest_inner_stride,
-    const Dtype* src, Dtype* dest) {
+    const real_t* src, real_t* dest) {
   CUDA_KERNEL_LOOP(index, n) {
     int src_start = index / height * src_outer_stride
                   + index % height * src_inner_stride;
@@ -22,15 +21,14 @@ __global__ void copy_kernel(const int n, const int height, const int width,
   }
 }
 
-template <typename Dtype>
-void CropLayer<Dtype>::crop_copy_gpu(const vector<Blob<Dtype>*>& bottom,
-             const vector<Blob<Dtype>*>& top,
-             const vector<int>& offsets,
-             vector<int> indices,
-             int cur_dim,
-             const Dtype* src_data,
-             Dtype* dest_data,
-             bool is_forward) {
+void CropLayer::crop_copy_gpu(const vector<Blob*>& bottom,
+                              const vector<Blob*>& top,
+                              const vector<int>& offsets,
+                              vector<int> indices,
+                              int cur_dim,
+                              const real_t* src_data,
+                              real_t* dest_data,
+                              bool is_forward) {
   if (cur_dim + 2 < top[0]->num_axes()) {
     // We are not yet at the final dimension, call copy recursivley
     for (int i = 0; i < top[0]->shape(cur_dim); ++i) {
@@ -60,9 +58,9 @@ void CropLayer<Dtype>::crop_copy_gpu(const vector<Blob<Dtype>*>& bottom,
         top[0]->shape(cur_dim)*top[0]->shape(cur_dim+1);
     const int dest_inner_stride = top[0]->shape(cur_dim+1);
 
-    const Dtype* bottom_data = bottom[0]->gpu_data() +
+    const real_t* bottom_data = bottom[0]->gpu_data() +
         bottom[0]->offset(ind_off);
-    Dtype* top_data = top[0]->mutable_gpu_data() +
+    real_t* top_data = top[0]->mutable_gpu_data() +
         top[0]->offset(indices);
     // NOLINT_NEXT_LINE(whitespace/operators)
     copy_kernel<<<CAFFE_GET_BLOCKS(lines), CAFFE_CUDA_NUM_THREADS>>>(
@@ -73,15 +71,12 @@ void CropLayer<Dtype>::crop_copy_gpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void CropLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void CropLayer::Forward_gpu(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
   std::vector<int> indices(top[0]->num_axes(), 0);
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
+  const real_t* bottom_data = bottom[0]->gpu_data();
+  real_t* top_data = top[0]->mutable_gpu_data();
   crop_copy_gpu(bottom, top, offsets, indices, 0, bottom_data, top_data, true);
 }
-
-INSTANTIATE_LAYER_GPU_FUNCS(CropLayer);
 
 }  // namespace caffe

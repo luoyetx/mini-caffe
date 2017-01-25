@@ -5,11 +5,10 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void Im2colLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
+void Im2colLayer::Forward_gpu(const vector<Blob*>& bottom,
+                              const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->gpu_data();
+  real_t* top_data = top[0]->mutable_gpu_data();
   const int num_kernels = channels_ * top[0]->count(channel_axis_ + 1);
   for (int n = 0; n < num_; ++n) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
@@ -30,7 +29,5 @@ void Im2colLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     }
   }
 }
-
-INSTANTIATE_LAYER_GPU_FUNCS(Im2colLayer);
 
 }  // namespace caffe

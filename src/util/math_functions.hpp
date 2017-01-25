@@ -120,22 +120,7 @@ void caffe_gpu_dot(const int n, const real_t* x, const real_t* y, real_t* out);
 
 void caffe_gpu_asum(const int n, const real_t* x, real_t* y);
 
-template<typename real_t>
-void caffe_gpu_sign(const int n, const real_t* x, real_t* y);
-
-template<typename real_t>
-void caffe_gpu_sgnbit(const int n, const real_t* x, real_t* y);
-
-void caffe_gpu_fabs(const int n, const real_t* x, real_t* y);
-
 void caffe_gpu_scale(const int n, const real_t alpha, const real_t *x, real_t* y);
-
-#define DEFINE_AND_INSTANTIATE_GPU_UNARY_FUNC(name, operation)            \
-__global__ void name##_kernel(const int n, const real_t* x, real_t* y) {  \
-  CUDA_KERNEL_LOOP(index, n) {                                            \
-    operation;                                                            \
-  }                                                                       \
-}
 
 #endif  // USE_CUDA
 
