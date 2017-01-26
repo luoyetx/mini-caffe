@@ -5,11 +5,10 @@
 
 namespace caffe {
 
-template <typename Dtype>
-__global__ void LRNFillScale(const int nthreads, const Dtype* const in,
+__global__ void LRNFillScale(const int nthreads, const real_t* const in,
     const int num, const int channels, const int height,
-    const int width, const int size, const Dtype alpha_over_size,
-    const Dtype k, Dtype* const scale) {
+    const int width, const int size, const real_t alpha_over_size,
+    const real_t k, real_t* const scale) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     // find out the local offset
     const int w = index % width;
@@ -17,12 +16,12 @@ __global__ void LRNFillScale(const int nthreads, const Dtype* const in,
     const int n = index / width / height;
     const int offset = (n * channels * height + h) * width + w;
     const int step = height * width;
-    const Dtype* const in_off = in + offset;
-    Dtype* const scale_off = scale + offset;
+    const real_t* const in_off = in + offset;
+    real_t* const scale_off = scale + offset;
     int head = 0;
     const int pre_pad = (size - 1) / 2;
     const int post_pad = size - pre_pad - 1;
-    Dtype accum_scale = 0;
+    real_t accum_scale = 0;
     // fill the scale at [n, :, h, w]
     // accumulate values
     while (head < post_pad && head < channels) {
@@ -51,10 +50,8 @@ __global__ void LRNFillScale(const int nthreads, const Dtype* const in,
   }
 }
 
-
-template <typename Dtype>
-void LRNLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void LRNLayer::Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top) {
   switch (this->layer_param_.lrn_param().norm_region()) {
   case LRNParameter_NormRegion_ACROSS_CHANNELS:
     CrossChannelForward_gpu(bottom, top);
@@ -68,21 +65,19 @@ void LRNLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 // TODO: check if it would be faster to just put it into the previous kernel.
-template <typename Dtype>
-__global__ void LRNComputeOutput(const int nthreads, const Dtype* const in,
-    const Dtype* const scale, const Dtype negative_beta, Dtype* const out) {
+__global__ void LRNComputeOutput(const int nthreads, const real_t* const in,
+    const real_t* const scale, const real_t negative_beta, real_t* const out) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     out[index] = in[index] * pow(scale[index], negative_beta);
   }
 }
 
-template <typename Dtype>
-void LRNLayer<Dtype>::CrossChannelForward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+void LRNLayer::CrossChannelForward_gpu(const vector<Blob*>& bottom,
+                                       const vector<Blob*>& top) {
   // First, compute scale
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
-  Dtype* scale_data = scale_.mutable_gpu_data();
+  const real_t* bottom_data = bottom[0]->gpu_data();
+  real_t* top_data = top[0]->mutable_gpu_data();
+  real_t* scale_data = scale_.mutable_gpu_data();
   // We will launch one kernel for each pixel location, and have the kernel
   // go through all the channels.
   int n_threads = num_ * height_ * width_;
@@ -97,9 +92,5 @@ void LRNLayer<Dtype>::CrossChannelForward_gpu(
       n_threads, bottom_data, scale_data, -beta_, top_data);
   CUDA_POST_KERNEL_CHECK;
 }
-template void LRNLayer<float>::CrossChannelForward_gpu(
-    const vector<Blob<float>*>& bottom, const vector<Blob<float>*>& top);
-
-INSTANTIATE_LAYER_GPU_FUNCS(LRNLayer);
 
 }  // namespace caffe

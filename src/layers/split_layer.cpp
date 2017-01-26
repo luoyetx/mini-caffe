@@ -5,9 +5,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void SplitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void SplitLayer::Reshape(const vector<Blob*>& bottom,
+                         const vector<Blob*>& top) {
   count_ = bottom[0]->count();
   for (int i = 0; i < top.size(); ++i) {
     // Do not allow in-place computation in the SplitLayer.  Instead, share data
@@ -22,9 +21,8 @@ void SplitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void SplitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void SplitLayer::Forward_cpu(const vector<Blob*>& bottom,
+                             const vector<Blob*>& top) {
   for (int i = 0; i < top.size(); ++i) {
     top[i]->ShareData(*bottom[0]);
   }
@@ -34,7 +32,6 @@ void SplitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 STUB_GPU(SplitLayer);
 #endif
 
-INSTANTIATE_CLASS(SplitLayer);
 REGISTER_LAYER_CLASS(Split);
 
 }  // namespace caffe

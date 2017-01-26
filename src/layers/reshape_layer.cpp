@@ -4,9 +4,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ReshapeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void ReshapeLayer::LayerSetUp(const vector<Blob*>& bottom,
+                              const vector<Blob*>& top) {
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
       "allow in-place computation.";
   inferred_axis_ = -1;
@@ -28,9 +27,8 @@ void ReshapeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void ReshapeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void ReshapeLayer::Reshape(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top) {
   const int input_start_axis = this->layer_param_.reshape_param().axis();
   const int start_axis = (input_start_axis >= 0) ? input_start_axis :
       bottom[0]->num_axes() + input_start_axis + 1;
@@ -89,7 +87,6 @@ void ReshapeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   top[0]->ShareData(*bottom[0]);
 }
 
-INSTANTIATE_CLASS(ReshapeLayer);
 REGISTER_LAYER_CLASS(Reshape);
 
 }  // namespace caffe

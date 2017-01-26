@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 protoc -I="./src/proto" --cpp_out="./src/proto" "./src/proto/caffe.proto"
 
 # build

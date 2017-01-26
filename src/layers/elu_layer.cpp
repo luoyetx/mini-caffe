@@ -5,16 +5,15 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void ELULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
+void ELULayer::Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
-  Dtype alpha = this->layer_param_.elu_param().alpha();
+  real_t alpha = this->layer_param_.elu_param().alpha();
   for (int i = 0; i < count; ++i) {
-    top_data[i] = std::max(bottom_data[i], Dtype(0))
-        + alpha * (exp(std::min(bottom_data[i], Dtype(0))) - Dtype(1));
+    top_data[i] = std::max(bottom_data[i], static_cast<real_t>(0))
+        + alpha * (exp(std::min(bottom_data[i], static_cast<real_t>(0))) - 1);
   }
 }
 
@@ -22,7 +21,6 @@ void ELULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 STUB_GPU(ELULayer);
 #endif
 
-INSTANTIATE_CLASS(ELULayer);
 REGISTER_LAYER_CLASS(ELU);
 
 }  // namespace caffe

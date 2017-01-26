@@ -5,16 +5,14 @@
 
 namespace caffe {
 
-template <typename Dtype>
-inline Dtype sigmoid(Dtype x) {
+inline real_t sigmoid(real_t x) {
   return 1. / (1. + exp(-x));
 }
 
-template <typename Dtype>
-void SigmoidLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
+void SigmoidLayer::Forward_cpu(const vector<Blob*>& bottom,
+                               const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
   for (int i = 0; i < count; ++i) {
     top_data[i] = sigmoid(bottom_data[i]);
@@ -24,7 +22,5 @@ void SigmoidLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 #ifndef USE_CUDA
 STUB_GPU(SigmoidLayer);
 #endif
-
-INSTANTIATE_CLASS(SigmoidLayer);
 
 }  // namespace caffe

@@ -11,20 +11,19 @@ namespace caffe {
 /**
  * @brief CuDNN acceleration of ReLULayer.
  */
-template <typename Dtype>
-class CuDNNReLULayer : public ReLULayer<Dtype> {
+class CuDNNReLULayer : public ReLULayer {
  public:
   explicit CuDNNReLULayer(const LayerParameter& param)
-      : ReLULayer<Dtype>(param), handles_setup_(false) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      : ReLULayer(param), handles_setup_(false) {}
+  virtual void LayerSetUp(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom,
+                       const vector<Blob*>& top);
   virtual ~CuDNNReLULayer();
 
  protected:
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 
   bool handles_setup_;
   cudnnHandle_t handle_;
@@ -32,7 +31,7 @@ class CuDNNReLULayer : public ReLULayer<Dtype> {
   cudnnTensorDescriptor_t top_desc_;
   cudnnActivationDescriptor_t activ_desc_;
 };
-#endif
+#endif  // USE_CUDNN
 
 }  // namespace caffe
 

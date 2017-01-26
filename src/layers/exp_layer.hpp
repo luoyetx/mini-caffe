@@ -13,8 +13,7 @@ namespace caffe {
  *        as specified by the scale @f$ \alpha @f$, shift @f$ \beta @f$,
  *        and base @f$ \gamma @f$.
  */
-template <typename Dtype>
-class ExpLayer : public NeuronLayer<Dtype> {
+class ExpLayer : public NeuronLayer {
  public:
   /**
    * @param param provides ExpParameter exp_param,
@@ -25,9 +24,9 @@ class ExpLayer : public NeuronLayer<Dtype> {
    *         the base @f$ \gamma @f$
    */
   explicit ExpLayer(const LayerParameter& param)
-      : NeuronLayer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      : NeuronLayer(param) {}
+  virtual void LayerSetUp(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top);
 
   virtual inline const char* type() const { return "Exp"; }
 
@@ -42,12 +41,12 @@ class ExpLayer : public NeuronLayer<Dtype> {
    *        y = \gamma ^ {\alpha x + \beta}
    *      @f$
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 
-  Dtype inner_scale_, outer_scale_;
+  real_t inner_scale_, outer_scale_;
 };
 
 }  // namespace caffe

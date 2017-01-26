@@ -6,11 +6,10 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void BatchNormLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
+void BatchNormLayer::Forward_gpu(const vector<Blob*>& bottom,
+                                 const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->gpu_data();
+  real_t* top_data = top[0]->mutable_gpu_data();
   int num = bottom[0]->shape(0);
   int spatial_dim = bottom[0]->count()/(channels_*bottom[0]->shape(0));
 
@@ -20,7 +19,7 @@ void BatchNormLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 
   if (use_global_stats_) {
     // use the stored mean/variance estimates.
-    const Dtype scale_factor = this->blobs_[2]->cpu_data()[0] == 0 ?
+    const real_t scale_factor = this->blobs_[2]->cpu_data()[0] == 0 ?
         0 : 1 / this->blobs_[2]->cpu_data()[0];
     caffe_gpu_scale(variance_.count(), scale_factor,
         this->blobs_[0]->gpu_data(), mean_.mutable_gpu_data());
@@ -28,66 +27,63 @@ void BatchNormLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         this->blobs_[1]->gpu_data(), variance_.mutable_gpu_data());
   } else {
     // compute mean
-    caffe_gpu_gemv<Dtype>(CblasNoTrans, channels_ * num, spatial_dim,
-        1. / (num * spatial_dim), bottom_data,
-        spatial_sum_multiplier_.gpu_data(), 0.,
-        num_by_chans_.mutable_gpu_data());
-    caffe_gpu_gemv<Dtype>(CblasTrans, num, channels_, 1.,
-        num_by_chans_.gpu_data(), batch_sum_multiplier_.gpu_data(), 0.,
-        mean_.mutable_gpu_data());
+    caffe_gpu_gemv(CblasNoTrans, channels_ * num, spatial_dim,
+      1. / (num * spatial_dim), bottom_data,
+      spatial_sum_multiplier_.gpu_data(), 0,
+      num_by_chans_.mutable_gpu_data());
+    caffe_gpu_gemv(CblasTrans, num, channels_, 1,
+      num_by_chans_.gpu_data(), batch_sum_multiplier_.gpu_data(), 0,
+      mean_.mutable_gpu_data());
   }
 
   // subtract mean
-  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,
-      batch_sum_multiplier_.gpu_data(), mean_.gpu_data(), 0.,
-      num_by_chans_.mutable_gpu_data());
-  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, channels_ * num,
+  caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,
+    batch_sum_multiplier_.gpu_data(), mean_.gpu_data(), 0,
+    num_by_chans_.mutable_gpu_data());
+  caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, channels_ * num,
       spatial_dim, 1, -1, num_by_chans_.gpu_data(),
-      spatial_sum_multiplier_.gpu_data(), 1., top_data);
+      spatial_sum_multiplier_.gpu_data(), 1, top_data);
 
   if (!use_global_stats_) {
     // compute variance using var(X) = E((X-EX)^2)
-    caffe_gpu_powx(top[0]->count(), top_data, Dtype(2),
-        temp_.mutable_gpu_data());  // (X-EX)^2
-    caffe_gpu_gemv<Dtype>(CblasNoTrans, channels_ * num, spatial_dim,
-        1. / (num * spatial_dim), temp_.gpu_data(),
-        spatial_sum_multiplier_.gpu_data(), 0.,
-        num_by_chans_.mutable_gpu_data());
-    caffe_gpu_gemv<Dtype>(CblasTrans, num, channels_, 1.,
-        num_by_chans_.gpu_data(), batch_sum_multiplier_.gpu_data(), 0.,
-        variance_.mutable_gpu_data());  // E((X_EX)^2)
+    caffe_gpu_powx(top[0]->count(), top_data, 2,
+      temp_.mutable_gpu_data());  // (X-EX)^2
+    caffe_gpu_gemv(CblasNoTrans, channels_ * num, spatial_dim,
+      1. / (num * spatial_dim), temp_.gpu_data(),
+      spatial_sum_multiplier_.gpu_data(), 0,
+      num_by_chans_.mutable_gpu_data());
+    caffe_gpu_gemv(CblasTrans, num, channels_, 1,
+      num_by_chans_.gpu_data(), batch_sum_multiplier_.gpu_data(), 0,
+      variance_.mutable_gpu_data());  // E((X_EX)^2)
 
     // compute and save moving average
     this->blobs_[2]->mutable_cpu_data()[0] *= moving_average_fraction_;
     this->blobs_[2]->mutable_cpu_data()[0] += 1;
-    caffe_gpu_axpby(mean_.count(), Dtype(1), mean_.gpu_data(),
-        moving_average_fraction_, this->blobs_[0]->mutable_gpu_data());
+    caffe_gpu_axpby(mean_.count(), 1, mean_.gpu_data(),
+      moving_average_fraction_, this->blobs_[0]->mutable_gpu_data());
     int m = bottom[0]->count()/channels_;
-    Dtype bias_correction_factor = m > 1 ? Dtype(m)/(m-1) : 1;
+    real_t bias_correction_factor = m > 1 ? static_cast<real_t>(m)/(m-1) : 1;
     caffe_gpu_axpby(variance_.count(), bias_correction_factor,
-        variance_.gpu_data(), moving_average_fraction_,
-        this->blobs_[1]->mutable_gpu_data());
+      variance_.gpu_data(), moving_average_fraction_,
+      this->blobs_[1]->mutable_gpu_data());
   }
 
   // normalize variance
   caffe_gpu_add_scalar(variance_.count(), eps_, variance_.mutable_gpu_data());
-  caffe_gpu_powx(variance_.count(), variance_.gpu_data(), Dtype(0.5),
-      variance_.mutable_gpu_data());
+  caffe_gpu_powx(variance_.count(), variance_.gpu_data(), static_cast<real_t>(0.5),
+    variance_.mutable_gpu_data());
 
   // replicate variance to input size
-  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,
-      batch_sum_multiplier_.gpu_data(), variance_.gpu_data(), 0.,
-      num_by_chans_.mutable_gpu_data());
-  caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, channels_ * num,
-      spatial_dim, 1, 1., num_by_chans_.gpu_data(),
-      spatial_sum_multiplier_.gpu_data(), 0., temp_.mutable_gpu_data());
+  caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,
+    batch_sum_multiplier_.gpu_data(), variance_.gpu_data(), 0.,
+    num_by_chans_.mutable_gpu_data());
+  caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, channels_ * num,
+    spatial_dim, 1, 1., num_by_chans_.gpu_data(),
+    spatial_sum_multiplier_.gpu_data(), 0., temp_.mutable_gpu_data());
   caffe_gpu_div(temp_.count(), top_data, temp_.gpu_data(), top_data);
   // TODO(cdoersch): The caching is only needed because later in-place layers
   //                 might clobber the data.  Can we skip this if they won't?
-  caffe_copy(x_norm_.count(), top_data,
-      x_norm_.mutable_gpu_data());
+  caffe_copy(x_norm_.count(), top_data, x_norm_.mutable_gpu_data());
 }
-
-INSTANTIATE_LAYER_GPU_FUNCS(BatchNormLayer);
 
 }  // namespace caffe

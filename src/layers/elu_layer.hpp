@@ -17,8 +17,7 @@ namespace caffe {
  *        \end{array} \right.
  *      @f$.
  */
-template <typename Dtype>
-class ELULayer : public NeuronLayer<Dtype> {
+class ELULayer : public NeuronLayer {
  public:
   /**
    * @param param provides ELUParameter elu_param,
@@ -27,7 +26,7 @@ class ELULayer : public NeuronLayer<Dtype> {
    *     the value @f$ \alpha @f$ by which controls saturation for negative inputs.
    */
   explicit ELULayer(const LayerParameter& param)
-      : NeuronLayer<Dtype>(param) {}
+      : NeuronLayer(param) {}
 
   virtual inline const char* type() const { return "ELU"; }
 
@@ -46,10 +45,10 @@ class ELULayer : public NeuronLayer<Dtype> {
    *        \end{array} \right.
    *      @f$.
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 };
 
 }  // namespace caffe

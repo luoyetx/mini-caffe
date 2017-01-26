@@ -9,9 +9,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void Blob<Dtype>::Reshape(const int num, const int channels, const int height,
-    const int width) {
+void Blob::Reshape(const int num, const int channels,
+                   const int height, const int width) {
   vector<int> shape(4);
   shape[0] = num;
   shape[1] = channels;
@@ -20,8 +19,7 @@ void Blob<Dtype>::Reshape(const int num, const int channels, const int height,
   Reshape(shape);
 }
 
-template <typename Dtype>
-void Blob<Dtype>::Reshape(const vector<int>& shape) {
+void Blob::Reshape(const vector<int>& shape) {
   CHECK_LE(shape.size(), kMaxBlobAxes);
   count_ = 1;
   shape_.resize(shape.size());
@@ -40,12 +38,11 @@ void Blob<Dtype>::Reshape(const vector<int>& shape) {
   }
   if (count_ > capacity_) {
     capacity_ = count_;
-    data_.reset(new SyncedMemory(capacity_ * sizeof(Dtype)));
+    data_.reset(new SyncedMemory(capacity_ * sizeof(real_t)));
   }
 }
 
-template <typename Dtype>
-void Blob<Dtype>::Reshape(const BlobShape& shape) {
+void Blob::Reshape(const BlobShape& shape) {
   CHECK_LE(shape.dim_size(), kMaxBlobAxes);
   vector<int> shape_vec(shape.dim_size());
   for (int i = 0; i < shape.dim_size(); ++i) {
@@ -54,146 +51,59 @@ void Blob<Dtype>::Reshape(const BlobShape& shape) {
   Reshape(shape_vec);
 }
 
-template <typename Dtype>
-void Blob<Dtype>::ReshapeLike(const Blob<Dtype>& other) {
+void Blob::ReshapeLike(const Blob& other) {
   Reshape(other.shape());
 }
 
-template <typename Dtype>
-Blob<Dtype>::Blob(const int num, const int channels, const int height,
-    const int width)
-  // capacity_ must be initialized before calling Reshape
-  : capacity_(0) {
+Blob::Blob(const int num, const int channels,
+           const int height, const int width)
+    // capacity_ must be initialized before calling Reshape
+    : capacity_(0) {
   Reshape(num, channels, height, width);
 }
 
-template <typename Dtype>
-Blob<Dtype>::Blob(const vector<int>& shape)
-  // capacity_ must be initialized before calling Reshape
-  : capacity_(0) {
+Blob::Blob(const vector<int>& shape)
+    // capacity_ must be initialized before calling Reshape
+    : capacity_(0) {
   Reshape(shape);
 }
 
-template <typename Dtype>
-const int* Blob<Dtype>::gpu_shape() const {
+const int* Blob::gpu_shape() const {
   CHECK(shape_data_);
-  return (const int*)shape_data_->gpu_data();
+  return static_cast<const int*>(shape_data_->gpu_data());
 }
 
-template <typename Dtype>
-const Dtype* Blob<Dtype>::cpu_data() const {
+const real_t* Blob::cpu_data() const {
   CHECK(data_);
-  return (const Dtype*)data_->cpu_data();
+  return static_cast<const real_t*>(data_->cpu_data());
 }
 
-template <typename Dtype>
-void Blob<Dtype>::set_cpu_data(Dtype* data) {
+void Blob::set_cpu_data(real_t* data) {
   CHECK(data);
   data_->set_cpu_data(data);
 }
 
-template <typename Dtype>
-Dtype* Blob<Dtype>::mutable_cpu_data() {
+real_t* Blob::mutable_cpu_data() {
   CHECK(data_);
-  return static_cast<Dtype*>(data_->mutable_cpu_data());
+  return static_cast<real_t*>(data_->mutable_cpu_data());
 }
 
-template <typename Dtype>
-const Dtype* Blob<Dtype>::gpu_data() const {
+const real_t* Blob::gpu_data() const {
   CHECK(data_);
-  return (const Dtype*)data_->gpu_data();
+  return static_cast<const real_t*>(data_->gpu_data());
 }
 
-template <typename Dtype>
-Dtype* Blob<Dtype>::mutable_gpu_data() {
+real_t* Blob::mutable_gpu_data() {
   CHECK(data_);
-  return static_cast<Dtype*>(data_->mutable_gpu_data());
+  return static_cast<real_t*>(data_->mutable_gpu_data());
 }
 
-template <typename Dtype>
-void Blob<Dtype>::ShareData(const Blob& other) {
+void Blob::ShareData(const Blob& other) {
   CHECK_EQ(count_, other.count());
   data_ = other.data();
 }
 
-template <> unsigned int Blob<unsigned int>::asum_data() const {
-  NOT_IMPLEMENTED;
-  return 0;
-}
-
-template <> int Blob<int>::asum_data() const {
-  NOT_IMPLEMENTED;
-  return 0;
-}
-
-template <typename Dtype>
-Dtype Blob<Dtype>::asum_data() const {
-  if (!data_) { return 0; }
-  switch (data_->head()) {
-  case SyncedMemory::HEAD_AT_CPU:
-    return caffe_cpu_asum(count_, cpu_data());
-  case SyncedMemory::UNINITIALIZED:
-    return 0;
-  default:
-    LOG(FATAL) << "Unknown SyncedMemory head state: " << data_->head();
-  }
-  return 0;
-}
-
-template <> unsigned int Blob<unsigned int>::sumsq_data() const {
-  NOT_IMPLEMENTED;
-  return 0;
-}
-
-template <> int Blob<int>::sumsq_data() const {
-  NOT_IMPLEMENTED;
-  return 0;
-}
-
-template <typename Dtype>
-Dtype Blob<Dtype>::sumsq_data() const {
-  Dtype sumsq;
-  const Dtype* data;
-  if (!data_) { return 0; }
-  switch (data_->head()) {
-  case SyncedMemory::HEAD_AT_CPU:
-    data = cpu_data();
-    sumsq = caffe_cpu_dot(count_, data, data);
-    break;
-  case SyncedMemory::UNINITIALIZED:
-    return 0;
-  default:
-    LOG(FATAL) << "Unknown SyncedMemory head state: " << data_->head();
-  }
-  return sumsq;
-}
-
-template <> void Blob<unsigned int>::scale_data(unsigned int scale_factor) {
-  NOT_IMPLEMENTED;
-}
-
-template <> void Blob<int>::scale_data(int scale_factor) {
-  NOT_IMPLEMENTED;
-}
-
-template <typename Dtype>
-void Blob<Dtype>::scale_data(Dtype scale_factor) {
-  Dtype* data;
-  if (!data_) { return; }
-  switch (data_->head()) {
-  case SyncedMemory::HEAD_AT_CPU:
-    data = mutable_cpu_data();
-    caffe_scal(count_, scale_factor, data);
-    return;
-  case SyncedMemory::UNINITIALIZED:
-    return;
-  default:
-    LOG(FATAL) << "Unknown SyncedMemory head state: " << data_->head();
-  }
-}
-
-template <typename Dtype>
-bool Blob<Dtype>::ShapeEquals(const BlobProto& other) {
+bool Blob::ShapeEquals(const BlobProto& other) {
   if (other.has_num() || other.has_channels() ||
       other.has_height() || other.has_width()) {
     // Using deprecated 4D Blob dimensions --
@@ -215,8 +125,7 @@ bool Blob<Dtype>::ShapeEquals(const BlobProto& other) {
   return shape_ == other_shape;
 }
 
-template <typename Dtype>
-void Blob<Dtype>::CopyFrom(const Blob& source, bool reshape) {
+void Blob::CopyFrom(const Blob& source, bool reshape) {
   if (source.count() != count_ || source.shape() != shape_) {
     if (reshape) {
       ReshapeLike(source);
@@ -225,11 +134,10 @@ void Blob<Dtype>::CopyFrom(const Blob& source, bool reshape) {
     }
   }
   caffe_copy(count_, source.cpu_data(),
-      static_cast<Dtype*>(data_->mutable_cpu_data()));
+      static_cast<real_t*>(data_->mutable_cpu_data()));
 }
 
-template <typename Dtype>
-void Blob<Dtype>::FromProto(const BlobProto& proto, bool reshape) {
+void Blob::FromProto(const BlobProto& proto, bool reshape) {
   if (reshape) {
     vector<int> shape;
     if (proto.has_num() || proto.has_channels() ||
@@ -252,22 +160,21 @@ void Blob<Dtype>::FromProto(const BlobProto& proto, bool reshape) {
     CHECK(ShapeEquals(proto)) << "shape mismatch (reshape not set)";
   }
   // copy data
-  Dtype* data_vec = mutable_cpu_data();
+  real_t* data_vec = mutable_cpu_data();
   if (proto.double_data_size() > 0) {
     CHECK_EQ(count_, proto.double_data_size());
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = static_cast<Dtype>(proto.double_data(i));
+      data_vec[i] = static_cast<real_t>(proto.double_data(i));
     }
   } else {
     CHECK_EQ(count_, proto.data_size());
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = static_cast<Dtype>(proto.data(i));
+      data_vec[i] = static_cast<real_t>(proto.data(i));
     }
   }
 }
 
-template <>
-void Blob<float>::ToProto(BlobProto* proto) const {
+void Blob::ToProto(BlobProto* proto) const {
   proto->clear_shape();
   for (int i = 0; i < shape_.size(); ++i) {
     proto->mutable_shape()->add_dim(shape_[i]);
@@ -280,9 +187,29 @@ void Blob<float>::ToProto(BlobProto* proto) const {
   }
 }
 
-INSTANTIATE_CLASS(Blob);
-template class Blob<int>;
-template class Blob<unsigned int>;
+const int* BlobInt::cpu_data() const {
+  CHECK(data_);
+  return static_cast<const int*>(data_->cpu_data());
+}
+
+void BlobInt::set_cpu_data(int* data) {
+  CHECK(data);
+  data_->set_cpu_data(data);
+}
+
+int* BlobInt::mutable_cpu_data() {
+  CHECK(data_);
+  return static_cast<int*>(data_->mutable_cpu_data());
+}
+
+const int* BlobInt::gpu_data() const {
+  CHECK(data_);
+  return static_cast<const int*>(data_->gpu_data());
+}
+
+int* BlobInt::mutable_gpu_data() {
+  CHECK(data_);
+  return static_cast<int*>(data_->mutable_gpu_data());
+}
 
 }  // namespace caffe
-

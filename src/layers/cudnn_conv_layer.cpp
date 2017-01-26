@@ -15,10 +15,9 @@ namespace caffe {
 /**
  * TODO(dox) explain cuDNN interface
  */
-template <typename Dtype>
-void CuDNNConvolutionLayer<Dtype>::LayerSetUp(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  ConvolutionLayer<Dtype>::LayerSetUp(bottom, top);
+void CuDNNConvolutionLayer::LayerSetUp(const vector<Blob*>& bottom,
+                                       const vector<Blob*>& top) {
+  ConvolutionLayer::LayerSetUp(bottom, top);
   // Initialize CUDA streams and cuDNN.
   stream_         = new cudaStream_t[this->group_ * CUDNN_STREAMS_PER_GROUP];
   handle_         = new cudnnHandle_t[this->group_ * CUDNN_STREAMS_PER_GROUP];
@@ -63,35 +62,34 @@ void CuDNNConvolutionLayer<Dtype>::LayerSetUp(
   const int* kernel_shape_data = this->kernel_shape_.cpu_data();
   const int kernel_h = kernel_shape_data[0];
   const int kernel_w = kernel_shape_data[1];
-  cudnn::createFilterDesc<Dtype>(&filter_desc_,
+  cudnn::createFilterDesc(&filter_desc_,
       this->num_output_ / this->group_, this->channels_ / this->group_,
       kernel_h, kernel_w);
 
   // Create tensor descriptor(s) for data and corresponding convolution(s).
   for (int i = 0; i < bottom.size(); i++) {
     cudnnTensorDescriptor_t bottom_desc;
-    cudnn::createTensor4dDesc<Dtype>(&bottom_desc);
+    cudnn::createTensor4dDesc(&bottom_desc);
     bottom_descs_.push_back(bottom_desc);
     cudnnTensorDescriptor_t top_desc;
-    cudnn::createTensor4dDesc<Dtype>(&top_desc);
+    cudnn::createTensor4dDesc(&top_desc);
     top_descs_.push_back(top_desc);
     cudnnConvolutionDescriptor_t conv_desc;
-    cudnn::createConvolutionDesc<Dtype>(&conv_desc);
+    cudnn::createConvolutionDesc(&conv_desc);
     conv_descs_.push_back(conv_desc);
   }
 
   // Tensor descriptor for bias.
   if (this->bias_term_) {
-    cudnn::createTensor4dDesc<Dtype>(&bias_desc_);
+    cudnn::createTensor4dDesc(&bias_desc_);
   }
 
   handles_setup_ = true;
 }
 
-template <typename Dtype>
-void CuDNNConvolutionLayer<Dtype>::Reshape(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  ConvolutionLayer<Dtype>::Reshape(bottom, top);
+void CuDNNConvolutionLayer::Reshape(const vector<Blob*>& bottom,
+                                    const vector<Blob*>& top) {
+  ConvolutionLayer::Reshape(bottom, top);
   CHECK_EQ(2, this->num_spatial_axes_)
       << "CuDNNConvolution input must have 2 spatial axes "
       << "(e.g., height and width). "
@@ -114,17 +112,17 @@ void CuDNNConvolutionLayer<Dtype>::Reshape(
   size_t workspace_limit_bytes = 8*1024*1024;
 
   for (int i = 0; i < bottom.size(); i++) {
-    cudnn::setTensor4dDesc<Dtype>(&bottom_descs_[i],
+    cudnn::setTensor4dDesc(&bottom_descs_[i],
         this->num_,
         this->channels_ / this->group_, height, width,
         this->channels_ * height * width,
         height * width, width, 1);
-    cudnn::setTensor4dDesc<Dtype>(&top_descs_[i],
+    cudnn::setTensor4dDesc(&top_descs_[i],
         this->num_,
         this->num_output_ / this->group_, height_out, width_out,
         this->num_output_ * this->out_spatial_dim_,
         this->out_spatial_dim_, width_out, 1);
-    cudnn::setConvolutionDesc<Dtype>(&conv_descs_[i], bottom_descs_[i],
+    cudnn::setConvolutionDesc(&conv_descs_[i], bottom_descs_[i],
         filter_desc_, pad_h, pad_w,
         stride_h, stride_w);
 
@@ -227,13 +225,12 @@ void CuDNNConvolutionLayer<Dtype>::Reshape(
 
   // Tensor descriptor for bias.
   if (this->bias_term_) {
-    cudnn::setTensor4dDesc<Dtype>(&bias_desc_,
+    cudnn::setTensor4dDesc(&bias_desc_,
         1, this->num_output_ / this->group_, 1, 1);
   }
 }
 
-template <typename Dtype>
-CuDNNConvolutionLayer<Dtype>::~CuDNNConvolutionLayer() {
+CuDNNConvolutionLayer::~CuDNNConvolutionLayer() {
   // Check that handles have been setup before destroying.
   if (!handles_setup_) { return; }
 
@@ -263,8 +260,6 @@ CuDNNConvolutionLayer<Dtype>::~CuDNNConvolutionLayer() {
   delete [] workspace_bwd_filter_sizes_;
 }
 
-INSTANTIATE_CLASS(CuDNNConvolutionLayer);
-
 }   // namespace caffe
 
-#endif
+#endif  // USE_CUDNN

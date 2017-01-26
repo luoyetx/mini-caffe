@@ -5,15 +5,12 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void DropoutLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->gpu_data();
-  Dtype* top_data = top[0]->mutable_gpu_data();
+void DropoutLayer::Forward_gpu(const vector<Blob*>& bottom,
+                               const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->gpu_data();
+  real_t* top_data = top[0]->mutable_gpu_data();
   const int count = bottom[0]->count();
   caffe_copy(count, bottom_data, top_data);
 }
-
-INSTANTIATE_LAYER_GPU_FUNCS(DropoutLayer);
 
 }  // namespace caffe

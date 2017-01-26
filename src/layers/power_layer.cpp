@@ -5,10 +5,9 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void PowerLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-  NeuronLayer<Dtype>::LayerSetUp(bottom, top);
+void PowerLayer::LayerSetUp(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
+  NeuronLayer::LayerSetUp(bottom, top);
   power_ = this->layer_param_.power_param().power();
   scale_ = this->layer_param_.power_param().scale();
   shift_ = this->layer_param_.power_param().shift();
@@ -16,26 +15,25 @@ void PowerLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 // Compute y = (shift + scale * x)^power
-template <typename Dtype>
-void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  Dtype* top_data = top[0]->mutable_cpu_data();
+void PowerLayer::Forward_cpu(const vector<Blob*>& bottom,
+                             const vector<Blob*>& top) {
+  real_t* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
   // Special case where we can ignore the input: scale or power is 0.
-  if (diff_scale_ == Dtype(0)) {
-    Dtype value = (power_ == 0) ? Dtype(1) : pow(shift_, power_);
+  if (diff_scale_ == static_cast<real_t>(0)) {
+    real_t value = (power_ == 0) ? 1 : pow(shift_, power_);
     caffe_set(count, value, top_data);
     return;
   }
-  const Dtype* bottom_data = bottom[0]->cpu_data();
+  const real_t* bottom_data = bottom[0]->cpu_data();
   caffe_copy(count, bottom_data, top_data);
-  if (scale_ != Dtype(1)) {
+  if (scale_ != static_cast<real_t>(1)) {
     caffe_scal(count, scale_, top_data);
   }
-  if (shift_ != Dtype(0)) {
+  if (shift_ != static_cast<real_t>(0)) {
     caffe_add_scalar(count, shift_, top_data);
   }
-  if (power_ != Dtype(1)) {
+  if (power_ != static_cast<real_t>(1)) {
     caffe_powx(count, top_data, power_, top_data);
   }
 }
@@ -44,7 +42,6 @@ void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 STUB_GPU(PowerLayer);
 #endif
 
-INSTANTIATE_CLASS(PowerLayer);
 REGISTER_LAYER_CLASS(Power);
 
 }  // namespace caffe

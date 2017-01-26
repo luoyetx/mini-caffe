@@ -22,20 +22,19 @@ class SyncedMemory;
  *
  * TODO(dox): more thorough description.
  */
-template <typename Dtype>
 class CAFFE_API Blob {
  public:
   Blob()
        : data_(), count_(0), capacity_(0) {}
 
   /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
-  explicit Blob(const int num, const int channels, const int height,
-      const int width);
+  explicit Blob(const int num, const int channels,
+                const int height, const int width);
   explicit Blob(const vector<int>& shape);
 
   /// @brief Deprecated; use <code>Reshape(const vector<int>& shape)</code>.
-  void Reshape(const int num, const int channels, const int height,
-      const int width);
+  void Reshape(const int num, const int channels,
+               const int height, const int width);
   /**
    * @brief Change the dimensions of the blob, allocating new memory if
    *        necessary.
@@ -187,14 +186,14 @@ class CAFFE_API Blob {
    *        of other (and die otherwise); if true, Reshape this Blob to other's
    *        shape if necessary
    */
-  void CopyFrom(const Blob<Dtype>& source, bool reshape = false);
+  void CopyFrom(const Blob& source, bool reshape = false);
 
-  inline Dtype data_at(const int n, const int c, const int h,
-      const int w) const {
+  inline real_t data_at(const int n, const int c,
+                        const int h, const int w) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 
-  inline Dtype data_at(const vector<int>& index) const {
+  inline real_t data_at(const vector<int>& index) const {
     return cpu_data()[offset(index)];
   }
 
@@ -203,23 +202,15 @@ class CAFFE_API Blob {
     return data_;
   }
 
-  const Dtype* cpu_data() const;
-  void set_cpu_data(Dtype* data);
+  const real_t* cpu_data() const;
+  void set_cpu_data(real_t* data);
   const int* gpu_shape() const;
-  const Dtype* gpu_data() const;
-  Dtype* mutable_cpu_data();
-  Dtype* mutable_gpu_data();
+  const real_t* gpu_data() const;
+  real_t* mutable_cpu_data();
+  real_t* mutable_gpu_data();
 
   void FromProto(const BlobProto& proto, bool reshape = true);
   void ToProto(BlobProto* proto) const;
-
-  /// @brief Compute the sum of absolute values (L1 norm) of the data.
-  Dtype asum_data() const;
-  /// @brief Compute the sum of squares (L2 norm squared) of the data.
-  Dtype sumsq_data() const;
-
-  /// @brief Scale the blob data by a constant factor.
-  void scale_data(Dtype scale_factor);
 
   /**
    * @brief Set the data_ shared_ptr to point to the SyncedMemory holding the
@@ -242,6 +233,40 @@ class CAFFE_API Blob {
 
   DISABLE_COPY_AND_ASSIGN(Blob);
 };  // class Blob
+
+class BlobInt : public Blob {
+ public:
+  BlobInt()
+    : Blob() {}
+
+  /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
+  explicit BlobInt(const int num, const int channels,
+                   const int height, const int width)
+    : Blob(num, channels, height, width) {}
+  explicit BlobInt(const vector<int>& shape)
+    : Blob(shape) {}
+
+  inline int data_at(const int n, const int c,
+                     const int h, const int w) const {
+    return cpu_data()[offset(n, c, h, w)];
+  }
+
+  inline int data_at(const vector<int>& index) const {
+    return cpu_data()[offset(index)];
+  }
+
+  const int* cpu_data() const;
+  void set_cpu_data(int* data);
+  const int* gpu_data() const;
+  int* mutable_cpu_data();
+  int* mutable_gpu_data();
+
+  void FromProto(const BlobProto& proto, bool reshape = true) = delete;
+  void ToProto(BlobProto* proto) const = delete;
+
+ protected:
+  DISABLE_COPY_AND_ASSIGN(BlobInt);
+};
 
 }  // namespace caffe
 

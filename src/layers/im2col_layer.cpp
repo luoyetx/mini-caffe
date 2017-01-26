@@ -5,9 +5,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void Im2colLayer::LayerSetUp(const vector<Blob*>& bottom,
+                             const vector<Blob*>& top) {
   ConvolutionParameter conv_param = this->layer_param_.convolution_param();
   force_nd_im2col_ = conv_param.force_nd_im2col();
   const int input_num_dims = bottom[0]->shape().size();
@@ -103,9 +102,8 @@ void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-void Im2colLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void Im2colLayer::Reshape(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top) {
   vector<int> top_shape = bottom[0]->shape();
   const int* kernel_shape_data = kernel_shape_.cpu_data();
   const int* stride_data = stride_.cpu_data();
@@ -127,11 +125,10 @@ void Im2colLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   channels_ = bottom[0]->shape(channel_axis_);
 }
 
-template <typename Dtype>
-void Im2colLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
+void Im2colLayer::Forward_cpu(const vector<Blob*>& bottom,
+                              const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
   for (int n = 0; n < num_; ++n) {
     DCHECK_EQ(bottom[0]->shape().size() - channel_axis_, num_spatial_axes_ + 1);
     DCHECK_EQ(top[0]->shape().size() - channel_axis_, num_spatial_axes_ + 1);
@@ -162,7 +159,6 @@ void Im2colLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 STUB_GPU(Im2colLayer);
 #endif
 
-INSTANTIATE_CLASS(Im2colLayer);
 REGISTER_LAYER_CLASS(Im2col);
 
 }  // namespace caffe

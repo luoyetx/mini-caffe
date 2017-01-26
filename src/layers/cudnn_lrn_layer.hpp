@@ -8,20 +8,19 @@
 namespace caffe {
 
 #ifdef USE_CUDNN
-template <typename Dtype>
-class CuDNNLRNLayer : public LRNLayer<Dtype> {
+class CuDNNLRNLayer : public LRNLayer {
  public:
   explicit CuDNNLRNLayer(const LayerParameter& param)
-      : LRNLayer<Dtype>(param), handles_setup_(false) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      : LRNLayer(param), handles_setup_(false) {}
+  virtual void LayerSetUp(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top);
+  virtual void Reshape(const vector<Blob*>& bottom,
+                       const vector<Blob*>& top);
   virtual ~CuDNNLRNLayer();
 
  protected:
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_gpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top);
 
   bool handles_setup_;
   cudnnHandle_t handle_;
@@ -29,9 +28,9 @@ class CuDNNLRNLayer : public LRNLayer<Dtype> {
   cudnnTensorDescriptor_t bottom_desc_, top_desc_;
 
   int size_;
-  Dtype alpha_, beta_, k_;
+  real_t alpha_, beta_, k_;
 };
-#endif
+#endif  // USE_CUDNN
 
 }  // namespace caffe
 

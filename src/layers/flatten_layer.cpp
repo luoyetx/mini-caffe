@@ -4,9 +4,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void FlattenLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void FlattenLayer::Reshape(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top) {
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
       "allow in-place computation.";
   const int start_axis = bottom[0]->CanonicalAxisIndex(
@@ -26,13 +25,11 @@ void FlattenLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   CHECK_EQ(top[0]->count(), bottom[0]->count());
 }
 
-template <typename Dtype>
-void FlattenLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void FlattenLayer::Forward_cpu(const vector<Blob*>& bottom,
+                               const vector<Blob*>& top) {
   top[0]->ShareData(*bottom[0]);
 }
 
-INSTANTIATE_CLASS(FlattenLayer);
 REGISTER_LAYER_CLASS(Flatten);
 
 }  // namespace caffe

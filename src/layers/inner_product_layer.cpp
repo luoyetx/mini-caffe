@@ -6,9 +6,8 @@
 
 namespace caffe {
 
-template <typename Dtype>
-void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void InnerProductLayer::LayerSetUp(const vector<Blob*>& bottom,
+                                   const vector<Blob*>& top) {
   const int num_output = this->layer_param_.inner_product_param().num_output();
   bias_term_ = this->layer_param_.inner_product_param().bias_term();
   transpose_ = this->layer_param_.inner_product_param().transpose();
@@ -37,25 +36,24 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       weight_shape[0] = N_;
       weight_shape[1] = K_;
     }
-    this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
+    this->blobs_[0].reset(new Blob(weight_shape));
     // fill the weights
-    shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
+    shared_ptr<Filler> weight_filler(GetFiller(
         this->layer_param_.inner_product_param().weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
     // If necessary, intiialize and fill the bias term
     if (bias_term_) {
       vector<int> bias_shape(1, N_);
-      this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
-      shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
+      this->blobs_[1].reset(new Blob(bias_shape));
+      shared_ptr<Filler> bias_filler(GetFiller(
           this->layer_param_.inner_product_param().bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
     }
   }  // parameter initialization
 }
 
-template <typename Dtype>
-void InnerProductLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void InnerProductLayer::Reshape(const vector<Blob*>& bottom,
+                                const vector<Blob*>& top) {
   // Figure out the dimensions
   const int axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.inner_product_param().axis());
@@ -75,23 +73,22 @@ void InnerProductLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   if (bias_term_) {
     vector<int> bias_shape(1, M_);
     bias_multiplier_.Reshape(bias_shape);
-    caffe_set(M_, Dtype(1), bias_multiplier_.mutable_cpu_data());
+    caffe_set(M_, static_cast<real_t>(1), bias_multiplier_.mutable_cpu_data());
   }
 }
 
-template <typename Dtype>
-void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* top_data = top[0]->mutable_cpu_data();
-  const Dtype* weight = this->blobs_[0]->cpu_data();
-  caffe_cpu_gemm<Dtype>(CblasNoTrans, transpose_ ? CblasNoTrans : CblasTrans,
-      M_, N_, K_, (Dtype)1.,
-      bottom_data, weight, (Dtype)0., top_data);
+void InnerProductLayer::Forward_cpu(const vector<Blob*>& bottom,
+                                    const vector<Blob*>& top) {
+  const real_t* bottom_data = bottom[0]->cpu_data();
+  real_t* top_data = top[0]->mutable_cpu_data();
+  const real_t* weight = this->blobs_[0]->cpu_data();
+  caffe_cpu_gemm(CblasNoTrans, transpose_ ? CblasNoTrans : CblasTrans,
+    M_, N_, K_, static_cast<real_t>(1),
+    bottom_data, weight, static_cast<real_t>(0), top_data);
   if (bias_term_) {
-    caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, M_, N_, 1, (Dtype)1.,
-        bias_multiplier_.cpu_data(),
-        this->blobs_[1]->cpu_data(), (Dtype)1., top_data);
+    caffe_cpu_gemm(CblasNoTrans, CblasNoTrans, M_, N_, 1, static_cast<real_t>(1),
+      bias_multiplier_.cpu_data(),
+      this->blobs_[1]->cpu_data(), static_cast<real_t>(1), top_data);
   }
 }
 
@@ -99,7 +96,6 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 STUB_GPU(InnerProductLayer);
 #endif
 
-INSTANTIATE_CLASS(InnerProductLayer);
 REGISTER_LAYER_CLASS(InnerProduct);
 
 }  // namespace caffe

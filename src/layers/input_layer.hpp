@@ -14,24 +14,23 @@ namespace caffe {
  * This data layer is a container that merely holds the data assigned to it;
  * forward, backward, and reshape are all no-ops.
  */
-template <typename Dtype>
-class InputLayer : public Layer<Dtype> {
+class InputLayer : public Layer {
  public:
   explicit InputLayer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      : Layer(param) {}
+  virtual void LayerSetUp(const vector<Blob*>& bottom,
+                          const vector<Blob*>& top);
   // Data layers have no bottoms, so reshaping is trivial.
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {}
+  virtual void Reshape(const vector<Blob*>& bottom,
+                       const vector<Blob*>& top) {}
 
   virtual inline const char* type() const { return "Input"; }
   virtual inline int ExactNumBottomBlobs() const { return 0; }
   virtual inline int MinTopBlobs() const { return 1; }
 
  protected:
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {}
+  virtual void Forward_cpu(const vector<Blob*>& bottom,
+                           const vector<Blob*>& top) {}
 };
 
 }  // namespace caffe
