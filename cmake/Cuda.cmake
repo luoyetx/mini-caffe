@@ -7,6 +7,18 @@ endif()
 set(Caffe_known_gpu_archs "30 35 50 60 61")
 
 ################################################################################################
+# Removes duplicates from list(s)
+# Usage:
+#   caffe_list_unique(<list_variable> [<list_variable>] [...])
+macro(caffe_list_unique)
+  foreach(__lst ${ARGN})
+    if(${__lst})
+      list(REMOVE_DUPLICATES ${__lst})
+    endif()
+  endforeach()
+endmacro()
+
+################################################################################################
 # A function for automatic detection of GPUs installed  (if autodetection is enabled)
 # Usage:
 #   caffe_detect_installed_gpus(out_variable)
