@@ -13,8 +13,6 @@
 namespace caffe {
 
 class Layer;
-class NetState;
-class NetStateRule;
 class NetParameter;
 
 /**
@@ -36,7 +34,9 @@ class CAFFE_API Net {
    * @brief Run Forward and return the result.
    *
    */
-  const vector<Blob*>& Forward();
+  const void Forward() {
+    ForwardFromTo(0, layers_.size() - 1);
+  }
 
   /**
    * The From and To variants of Forward and Backward operate on the
@@ -66,7 +66,6 @@ class CAFFE_API Net {
    */
   void CopyTrainedLayersFrom(const NetParameter& param);
   void CopyTrainedLayersFrom(const string& trained_filename);
-  void CopyTrainedLayersFromBinaryProto(const string& trained_filename);
   /// @brief Writes the net to a proto.
   void ToProto(NetParameter* param) const;
 
@@ -110,50 +109,10 @@ class CAFFE_API Net {
     CHECK_LT(i, bottom_id_vecs_.size()) << "Invalid layer id";
     return bottom_id_vecs_[i];
   }
-  /// @brief returns the parameters
-  inline const vector<shared_ptr<Blob> >& params() const {
-    return params_;
-  }
-  inline const vector<Blob*>& learnable_params() const {
-    return learnable_params_;
-  }
-  const map<string, int>& param_names_index() const {
-    return param_names_index_;
-  }
-  inline const vector<int>& param_owners() const { return param_owners_; }
-  inline const vector<string>& param_display_names() const {
-    return param_display_names_;
-  }
-  /// @brief Input and output blob numbers
-  inline int num_inputs() const { return net_input_blobs_.size(); }
-  inline int num_outputs() const { return net_output_blobs_.size(); }
-  inline const vector<Blob*>& input_blobs() const {
-    return net_input_blobs_;
-  }
-  inline const vector<Blob*>& output_blobs() const {
-    return net_output_blobs_;
-  }
-  inline const vector<int>& input_blob_indices() const {
-    return net_input_blob_indices_;
-  }
-  inline const vector<int>& output_blob_indices() const {
-    return net_output_blob_indices_;
-  }
   bool has_blob(const string& blob_name) const;
   const shared_ptr<Blob> blob_by_name(const string& blob_name) const;
   bool has_layer(const string& layer_name) const;
   const shared_ptr<Layer> layer_by_name(const string& layer_name) const;
-
-  // Helpers for Init.
-  /**
-   * @brief Remove layers that the user specified should be excluded given the current
-   *        phase, level, and stage.
-   */
-  static void FilterNet(const NetParameter& param,
-                        NetParameter* param_filtered);
-  /// @brief return whether NetState state meets NetStateRule rule
-  static bool StateMeetsRule(const NetState& state, const NetStateRule& rule,
-                             const string& layer_name);
 
  protected:
   // Helpers for Init.
@@ -187,27 +146,6 @@ class CAFFE_API Net {
   /// top_vecs stores the vectors containing the output for each layer
   vector<vector<Blob*> > top_vecs_;
   vector<vector<int> > top_id_vecs_;
-  vector<vector<int> > param_id_vecs_;
-  vector<int> param_owners_;
-  vector<string> param_display_names_;
-  vector<pair<int, int> > param_layer_indices_;
-  map<string, int> param_names_index_;
-  /// blob indices for the input and the output of the net
-  vector<int> net_input_blob_indices_;
-  vector<int> net_output_blob_indices_;
-  vector<Blob*> net_input_blobs_;
-  vector<Blob*> net_output_blobs_;
-  /// The parameters in the network.
-  vector<shared_ptr<Blob> > params_;
-  vector<Blob*> learnable_params_;
-  /**
-   * The mapping from params_ -> learnable_params_: we have
-   * learnable_param_ids_.size() == params_.size(),
-   * and learnable_params_[learnable_param_ids_[i]] == params_[i].get()
-   * if and only if params_[i] is an "owner"; otherwise, params_[i] is a sharer
-   * and learnable_params_[learnable_param_ids_[i]] gives its owner.
-   */
-  vector<int> learnable_param_ids_;
   /// The bytes of memory used by this net
   size_t memory_used_;
   DISABLE_COPY_AND_ASSIGN(Net);
