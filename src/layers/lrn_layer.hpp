@@ -7,7 +7,6 @@
 #include "./pooling_layer.hpp"
 #include "./power_layer.hpp"
 #include "./split_layer.hpp"
-#include "../proto/caffe.pb.h"
 
 namespace caffe {
 

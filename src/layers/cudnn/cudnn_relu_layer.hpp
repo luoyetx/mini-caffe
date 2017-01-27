@@ -1,9 +1,8 @@
 #ifndef CAFFE_CUDNN_RELU_LAYER_HPP_
 #define CAFFE_CUDNN_RELU_LAYER_HPP_
 
-#include "./relu_layer.hpp"
-#include "../util/cudnn.hpp"
-#include "../proto/caffe.pb.h"
+#include "./cudnn.hpp"
+#include "../relu_layer.hpp"
 
 namespace caffe {
 

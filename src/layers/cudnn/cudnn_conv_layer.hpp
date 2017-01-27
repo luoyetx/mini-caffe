@@ -1,9 +1,8 @@
 #ifndef CAFFE_CUDNN_CONV_LAYER_HPP_
 #define CAFFE_CUDNN_CONV_LAYER_HPP_
 
-#include "./conv_layer.hpp"
-#include "../util/cudnn.hpp"
-#include "../proto/caffe.pb.h"
+#include "./cudnn.hpp"
+#include "../conv_layer.hpp"
 
 namespace caffe {
 

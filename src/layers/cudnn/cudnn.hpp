@@ -6,7 +6,7 @@
 #include <cudnn.h>
 
 #include "caffe/common.hpp"
-#include "../proto/caffe.pb.h"
+#include "../../proto/caffe.pb.h"
 
 #define CUDNN_VERSION_MIN(major, minor, patch) \
     (CUDNN_VERSION >= (major * 1000 + minor * 100 + patch))

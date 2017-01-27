@@ -28,34 +28,29 @@ endif()
 # source file structure
 file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)
 file(GLOB CAFFE_SRC ${CMAKE_CURRENT_LIST_DIR}/src/*.hpp
-                    ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp
-                    ${CMAKE_CURRENT_LIST_DIR}/src/*.cu)
+                    ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
 file(GLOB CAFFE_SRC_LAYERS ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.hpp
-                           ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cpp
-                           ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cu)
+                           ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cpp)
 file(GLOB CAFFE_SRC_UTIL ${CMAKE_CURRENT_LIST_DIR}/src/util/*.hpp
-                         ${CMAKE_CURRENT_LIST_DIR}/src/util/*.cpp
-                         ${CMAKE_CURRENT_LIST_DIR}/src/util/*.cu)
+                         ${CMAKE_CURRENT_LIST_DIR}/src/util/*.cpp)
 file(GLOB CAFFE_SRC_PROTO ${CMAKE_CURRENT_LIST_DIR}/src/proto/caffe.pb.h
                           ${CMAKE_CURRENT_LIST_DIR}/src/proto/caffe.pb.cc)
-source_group(include FILES ${CAFFE_INCLUDE})
-source_group(src FILES ${CAFFE_SRC})
-source_group(src\\layers FILES ${CAFFE_SRC_LAYERS})
-source_group(src\\util FILES ${CAFFE_SRC_UTIL})
-source_group(src\\proto FILES ${CAFFE_SRC_PROTO})
 
 # cpp code
-file(GLOB CAFFE_COMPILE_CODE ${CAFFE_INCLUDE}
-                             ${CAFFE_SRC}
-                             ${CAFFE_SRC_LAYERS}
-                             ${CAFFE_SRC_UTIL}
-                             ${CAFFE_SRC_PROTO})
+set(CAFFE_COMPILE_CODE ${CAFFE_INCLUDE}
+                       ${CAFFE_SRC}
+                       ${CAFFE_SRC_LAYERS}
+                       ${CAFFE_SRC_UTIL}
+                       ${CAFFE_SRC_PROTO})
 
 if(HAVE_CUDA)
   # cuda code
-  file(GLOB CAFFE_CUDA_CODE ${CMAKE_CURRENT_LIST_DIR}/src/util/*.cu
-                            ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cu)
-  caffe_cuda_compile(CAFFE_CUDA_OBJS ${CAFFE_CUDA_CODE})
+  file(GLOB CAFFE_SRC_UTIL_CU ${CMAKE_CURRENT_LIST_DIR}/src/util/*.cu)
+  file(GLOB CAFFE_SRC_LAYERS_CU ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cu)
+  caffe_cuda_compile(CAFFE_CUDA_OBJS ${CAFFE_SRC_UTIL_CU}
+                                     ${CAFFE_SRC_LAYERS_CU})
+  list(APPEND CAFFE_SRC_UTIL ${CAFFE_SRC_UTIL_CU})
+  list(APPEND CAFFE_SRC_LAYERS ${CAFFE_SRC_LAYERS_CU})
   list(APPEND CAFFE_COMPILE_CODE ${CAFFE_CUDA_OBJS})
   # cudnn code
   if(HAVE_CUDNN)
@@ -63,7 +58,6 @@ if(HAVE_CUDA)
     file(GLOB CAFFE_SRC_LAYERS_CUDNN ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.hpp
                                      ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.cpp
                                      ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.cu)
-    source_group(src\\layers\\cudnn FILES ${CAFFE_SRC_LAYERS_CUDNN})
     # cuda code
     file(GLOB CAFFE_CUDNN_CUDA_CODE ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.cu)
     caffe_cuda_compile(CAFFE_CUDNN_OBJS ${CAFFE_CUDNN_CUDA_CODE})
@@ -72,8 +66,18 @@ if(HAVE_CUDA)
     file(GLOB CAFFR_CUDNN_CPP_CODE ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.hpp
                                    ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.cpp)
     list(APPEND CAFFE_COMPILE_CODE ${CAFFR_CUDNN_CPP_CODE})
+    set(CAFFE_SRC_LAYERS_CUDNN ${CAFFR_CUDNN_CPP_CODE}
+                               ${CAFFE_CUDNN_CUDA_CODE})
   endif()
 endif()
+
+# file structure
+source_group(include FILES ${CAFFE_INCLUDE})
+source_group(src FILES ${CAFFE_SRC})
+source_group(src\\layers FILES ${CAFFE_SRC_LAYERS})
+source_group(src\\util FILES ${CAFFE_SRC_UTIL})
+source_group(src\\proto FILES ${CAFFE_SRC_PROTO})
+source_group(src\\layers\\cudnn FILES ${CAFFE_SRC_LAYERS_CUDNN})
 
 add_definitions(-DCAFFE_EXPORTS)
 add_library(caffe SHARED ${CAFFE_COMPILE_CODE})

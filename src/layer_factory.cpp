@@ -12,21 +12,20 @@
 #include "./proto/caffe.pb.h"
 
 #ifdef USE_CUDNN
-#include "./layers/cudnn_conv_layer.hpp"
-#include "./layers/cudnn_lcn_layer.hpp"
-#include "./layers/cudnn_lrn_layer.hpp"
-#include "./layers/cudnn_pooling_layer.hpp"
-#include "./layers/cudnn_relu_layer.hpp"
-#include "./layers/cudnn_sigmoid_layer.hpp"
-#include "./layers/cudnn_softmax_layer.hpp"
-#include "./layers/cudnn_tanh_layer.hpp"
+#include "./layers/cudnn/cudnn_conv_layer.hpp"
+#include "./layers/cudnn/cudnn_lcn_layer.hpp"
+#include "./layers/cudnn/cudnn_lrn_layer.hpp"
+#include "./layers/cudnn/cudnn_pooling_layer.hpp"
+#include "./layers/cudnn/cudnn_relu_layer.hpp"
+#include "./layers/cudnn/cudnn_sigmoid_layer.hpp"
+#include "./layers/cudnn/cudnn_softmax_layer.hpp"
+#include "./layers/cudnn/cudnn_tanh_layer.hpp"
 #endif  // USE_CUDNN
 
 namespace caffe {
 
 // Get convolution layer according to engine.
-shared_ptr<Layer> GetConvolutionLayer(
-    const LayerParameter& param) {
+shared_ptr<Layer> GetConvolutionLayer(const LayerParameter& param) {
   ConvolutionParameter conv_param = param.convolution_param();
   ConvolutionParameter_Engine engine = conv_param.engine();
 #ifdef USE_CUDNN

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "./base_conv_layer.hpp"
-#include "../proto/caffe.pb.h"
 
 namespace caffe {
 

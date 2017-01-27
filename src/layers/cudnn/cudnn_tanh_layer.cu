@@ -1,4 +1,5 @@
 #ifdef USE_CUDNN
+
 #include <vector>
 
 #include "./cudnn_tanh_layer.hpp"

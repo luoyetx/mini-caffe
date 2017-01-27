@@ -1,9 +1,8 @@
 #ifndef CAFFE_CUDNN_TANH_LAYER_HPP_
 #define CAFFE_CUDNN_TANH_LAYER_HPP_
 
-#include "./tanh_layer.hpp"
-#include "../util/cudnn.hpp"
-#include "../proto/caffe.pb.h"
+#include "./cudnn.hpp"
+#include "../tanh_layer.hpp"
 
 namespace caffe {
 

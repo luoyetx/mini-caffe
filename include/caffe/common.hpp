@@ -53,17 +53,17 @@
 
 namespace caffe {
 
-  // CUDA: library error reporting.
-  const char* cublasGetErrorString(cublasStatus_t error);
-  const char* curandGetErrorString(curandStatus_t error);
+// CUDA: library error reporting.
+const char* cublasGetErrorString(cublasStatus_t error);
+const char* curandGetErrorString(curandStatus_t error);
 
-  // CUDA: use 512 threads per block
-  const int CAFFE_CUDA_NUM_THREADS = 512;
+// CUDA: use 512 threads per block
+const int CAFFE_CUDA_NUM_THREADS = 512;
 
-  // CUDA: number of blocks for threads.
-  inline int CAFFE_GET_BLOCKS(const int N) {
-    return (N + CAFFE_CUDA_NUM_THREADS - 1) / CAFFE_CUDA_NUM_THREADS;
-  }
+// CUDA: number of blocks for threads.
+inline int CAFFE_GET_BLOCKS(const int N) {
+  return (N + CAFFE_CUDA_NUM_THREADS - 1) / CAFFE_CUDA_NUM_THREADS;
+}
 
 }  // namespace caffe
 
