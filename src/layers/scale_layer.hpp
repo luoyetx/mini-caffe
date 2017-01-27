@@ -25,11 +25,11 @@ class ScaleLayer: public Layer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "Scale"; }
+  virtual const char* type() const { return "Scale"; }
   // Scale
-  virtual inline int MinBottomBlobs() const { return 1; }
-  virtual inline int MaxBottomBlobs() const { return 2; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual int MinBottomBlobs() const { return 1; }
+  virtual int MaxBottomBlobs() const { return 2; }
+  virtual int ExactNumTopBlobs() const { return 1; }
 
  protected:
   /**

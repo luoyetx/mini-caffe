@@ -60,14 +60,14 @@ class ConvolutionLayer : public BaseConvolutionLayer {
   explicit ConvolutionLayer(const LayerParameter& param)
       : BaseConvolutionLayer(param) {}
 
-  virtual inline const char* type() const { return "Convolution"; }
+  virtual const char* type() const { return "Convolution"; }
 
  protected:
   virtual void Forward_cpu(const vector<Blob*>& bottom,
                            const vector<Blob*>& top);
   virtual void Forward_gpu(const vector<Blob*>& bottom,
                            const vector<Blob*>& top);
-  virtual inline bool reverse_dimensions() { return false; }
+  virtual bool reverse_dimensions() { return false; }
   virtual void compute_output_shape();
 };
 

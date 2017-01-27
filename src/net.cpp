@@ -15,10 +15,6 @@
 
 namespace caffe {
 
-Net::Net(const NetParameter& param) {
-  Init(param);
-}
-
 Net::Net(const string& param_file) {
   NetParameter param;
   ReadNetParamsFromTextFileOrDie(param_file, &param);
@@ -53,20 +49,6 @@ void Net::Init(const NetParameter& in_param) {
     int num_top = layer_param.top_size();
     for (int top_id = 0; top_id < num_top; ++top_id) {
       AppendTop(param, layer_id, top_id, &available_blobs, &blob_name_to_idx);
-    }
-    // If the layer specifies that AutoTopBlobs() -> true and the LayerParameter
-    // specified fewer than the required number (as specified by
-    // ExactNumTopBlobs() or MinTopBlobs()), allocate them here.
-    Layer* layer = layers_[layer_id].get();
-    if (layer->AutoTopBlobs()) {
-      const int needed_num_top =
-          std::max(layer->MinTopBlobs(), layer->ExactNumTopBlobs());
-      for (; num_top < needed_num_top; ++num_top) {
-        // Add "anonymous" top blobs -- do not modify available_blobs or
-        // blob_name_to_idx as we don't want these blobs to be usable as input
-        // to other layers.
-        AppendTop(param, layer_id, num_top, NULL, NULL);
-      }
     }
     // After this layer is connected, set it up.
     layers_[layer_id]->SetUp(bottom_vecs_[layer_id], top_vecs_[layer_id]);

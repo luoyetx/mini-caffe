@@ -22,9 +22,9 @@ class BaseConvolutionLayer : public Layer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
 
-  virtual inline int MinBottomBlobs() const { return 1; }
-  virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline bool EqualNumBottomTopBlobs() const { return true; }
+  virtual int MinBottomBlobs() const { return 1; }
+  virtual int MinTopBlobs() const { return 1; }
+  virtual bool EqualNumBottomTopBlobs() const { return true; }
 
  protected:
   // Helper functions that abstract away the column buffer and gemm arguments.

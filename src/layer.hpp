@@ -35,7 +35,7 @@ class Layer {
     if (layer_param_.blobs_size() > 0) {
       blobs_.resize(layer_param_.blobs_size());
       for (int i = 0; i < layer_param_.blobs_size(); ++i) {
-        blobs_[i].reset(new Blob());
+        blobs_[i].reset(new Blob);
         blobs_[i]->FromProto(layer_param_.blobs(i));
       }
     }
@@ -135,7 +135,7 @@ class Layer {
   /**
    * @brief Returns the layer type.
    */
-  virtual inline const char* type() const { return ""; }
+  virtual const char* type() const = 0;
 
   /**
    * @brief Returns the exact number of bottom blobs required by the layer,
@@ -144,7 +144,7 @@ class Layer {
    * This method should be overridden to return a non-negative value if your
    * layer expects some exact number of bottom blobs.
    */
-  virtual inline int ExactNumBottomBlobs() const { return -1; }
+  virtual int ExactNumBottomBlobs() const { return -1; }
   /**
    * @brief Returns the minimum number of bottom blobs required by the layer,
    *        or -1 if no minimum number is required.
@@ -152,7 +152,7 @@ class Layer {
    * This method should be overridden to return a non-negative value if your
    * layer expects some minimum number of bottom blobs.
    */
-  virtual inline int MinBottomBlobs() const { return -1; }
+  virtual int MinBottomBlobs() const { return -1; }
   /**
    * @brief Returns the maximum number of bottom blobs required by the layer,
    *        or -1 if no maximum number is required.
@@ -160,7 +160,7 @@ class Layer {
    * This method should be overridden to return a non-negative value if your
    * layer expects some maximum number of bottom blobs.
    */
-  virtual inline int MaxBottomBlobs() const { return -1; }
+  virtual int MaxBottomBlobs() const { return -1; }
   /**
    * @brief Returns the exact number of top blobs required by the layer,
    *        or -1 if no exact number is required.
@@ -168,7 +168,7 @@ class Layer {
    * This method should be overridden to return a non-negative value if your
    * layer expects some exact number of top blobs.
    */
-  virtual inline int ExactNumTopBlobs() const { return -1; }
+  virtual int ExactNumTopBlobs() const { return -1; }
   /**
    * @brief Returns the minimum number of top blobs required by the layer,
    *        or -1 if no minimum number is required.
@@ -176,7 +176,7 @@ class Layer {
    * This method should be overridden to return a non-negative value if your
    * layer expects some minimum number of top blobs.
    */
-  virtual inline int MinTopBlobs() const { return -1; }
+  virtual int MinTopBlobs() const { return -1; }
   /**
    * @brief Returns the maximum number of top blobs required by the layer,
    *        or -1 if no maximum number is required.
@@ -184,7 +184,7 @@ class Layer {
    * This method should be overridden to return a non-negative value if your
    * layer expects some maximum number of top blobs.
    */
-  virtual inline int MaxTopBlobs() const { return -1; }
+  virtual int MaxTopBlobs() const { return -1; }
   /**
    * @brief Returns true if the layer requires an equal number of bottom and
    *        top blobs.
@@ -192,17 +192,7 @@ class Layer {
    * This method should be overridden to return true if your layer expects an
    * equal number of bottom and top blobs.
    */
-  virtual inline bool EqualNumBottomTopBlobs() const { return false; }
-
-  /**
-   * @brief Return whether "anonymous" top blobs are created automatically
-   *        by the layer.
-   *
-   * If this method returns true, Net::Init will create enough "anonymous" top
-   * blobs to fulfill the requirement specified by ExactNumTopBlobs() or
-   * MinTopBlobs().
-   */
-  virtual inline bool AutoTopBlobs() const { return false; }
+  virtual bool EqualNumBottomTopBlobs() const { return false; }
 
  protected:
   /** The protobuf that stores the layer parameters */

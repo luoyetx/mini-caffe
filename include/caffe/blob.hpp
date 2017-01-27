@@ -25,7 +25,7 @@ class SyncedMemory;
 class CAFFE_API Blob {
  public:
   Blob()
-       : data_(), count_(0), capacity_(0) {}
+      : data_(), count_(0), capacity_(0) {}
 
   /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
   explicit Blob(const int num, const int channels,
@@ -52,15 +52,15 @@ class CAFFE_API Blob {
   void Reshape(const vector<int>& shape);
   void Reshape(const BlobShape& shape);
   void ReshapeLike(const Blob& other);
-  inline string shape_string() const {
-    ostringstream stream;
+  std::string shape_string() const {
+    std::ostringstream stream;
     for (int i = 0; i < shape_.size(); ++i) {
       stream << shape_[i] << " ";
     }
     stream << "(" << count_ << ")";
     return stream.str();
   }
-  inline const vector<int>& shape() const { return shape_; }
+  const vector<int>& shape() const { return shape_; }
   /**
    * @brief Returns the dimension of the index-th axis (or the negative index-th
    *        axis from the end, if index is negative).
@@ -69,11 +69,11 @@ class CAFFE_API Blob {
    *        "canonicalized" using CanonicalAxisIndex.
    *        Dies on out of range index.
    */
-  inline int shape(int index) const {
+  int shape(int index) const {
     return shape_[CanonicalAxisIndex(index)];
   }
-  inline int num_axes() const { return static_cast<int>(shape_.size()); }
-  inline int count() const { return count_; }
+  int num_axes() const { return static_cast<int>(shape_.size()); }
+  int count() const { return count_; }
 
   /**
    * @brief Compute the volume of a slice; i.e., the product of dimensions
@@ -83,7 +83,7 @@ class CAFFE_API Blob {
    *
    * @param end_axis The first axis to exclude from the slice.
    */
-  inline int count(int start_axis, int end_axis) const {
+  int count(int start_axis, int end_axis) const {
     CHECK_LE(start_axis, end_axis);
     CHECK_GE(start_axis, 0);
     CHECK_GE(end_axis, 0);
@@ -101,7 +101,7 @@ class CAFFE_API Blob {
    *
    * @param start_axis The first axis to include in the slice.
    */
-  inline int count(int start_axis) const {
+  int count(int start_axis) const {
     return count(start_axis, num_axes());
   }
 
@@ -116,7 +116,7 @@ class CAFFE_API Blob {
    *        the second to last if index == -2, etc.
    *        Dies on out of range index.
    */
-  inline int CanonicalAxisIndex(int axis_index) const {
+  int CanonicalAxisIndex(int axis_index) const {
     CHECK_GE(axis_index, -num_axes())
         << "axis " << axis_index << " out of range for " << num_axes()
         << "-D Blob with shape " << shape_string();
@@ -130,14 +130,14 @@ class CAFFE_API Blob {
   }
 
   /// @brief Deprecated legacy shape accessor num: use shape(0) instead.
-  inline int num() const { return LegacyShape(0); }
+  int num() const { return LegacyShape(0); }
   /// @brief Deprecated legacy shape accessor channels: use shape(1) instead.
-  inline int channels() const { return LegacyShape(1); }
+  int channels() const { return LegacyShape(1); }
   /// @brief Deprecated legacy shape accessor height: use shape(2) instead.
-  inline int height() const { return LegacyShape(2); }
+  int height() const { return LegacyShape(2); }
   /// @brief Deprecated legacy shape accessor width: use shape(3) instead.
-  inline int width() const { return LegacyShape(3); }
-  inline int LegacyShape(int index) const {
+  int width() const { return LegacyShape(3); }
+  int LegacyShape(int index) const {
     CHECK_LE(num_axes(), 4)
         << "Cannot use legacy accessors on Blobs with > 4 axes.";
     CHECK_LT(index, 4);
@@ -151,8 +151,8 @@ class CAFFE_API Blob {
     return shape(index);
   }
 
-  inline int offset(const int n, const int c = 0, const int h = 0,
-      const int w = 0) const {
+  int offset(const int n, const int c = 0,
+                    const int h = 0, const int w = 0) const {
     CHECK_GE(n, 0);
     CHECK_LE(n, num());
     CHECK_GE(channels(), 0);
@@ -164,7 +164,7 @@ class CAFFE_API Blob {
     return ((n * channels() + c) * height() + h) * width() + w;
   }
 
-  inline int offset(const vector<int>& indices) const {
+  int offset(const vector<int>& indices) const {
     CHECK_LE(indices.size(), num_axes());
     int offset = 0;
     for (int i = 0; i < num_axes(); ++i) {
@@ -181,25 +181,19 @@ class CAFFE_API Blob {
    * @brief Copy from a source Blob.
    *
    * @param source the Blob to copy from
-   * @param copy_diff if false, copy the data; if true, copy the diff
    * @param reshape if false, require this Blob to be pre-shaped to the shape
    *        of other (and die otherwise); if true, Reshape this Blob to other's
    *        shape if necessary
    */
   void CopyFrom(const Blob& source, bool reshape = false);
 
-  inline real_t data_at(const int n, const int c,
+  real_t data_at(const int n, const int c,
                         const int h, const int w) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 
-  inline real_t data_at(const vector<int>& index) const {
+  real_t data_at(const vector<int>& index) const {
     return cpu_data()[offset(index)];
-  }
-
-  inline const shared_ptr<SyncedMemory>& data() const {
-    CHECK(data_);
-    return data_;
   }
 
   const real_t* cpu_data() const;
@@ -246,12 +240,12 @@ class BlobInt : public Blob {
   explicit BlobInt(const vector<int>& shape)
     : Blob(shape) {}
 
-  inline int data_at(const int n, const int c,
+  int data_at(const int n, const int c,
                      const int h, const int w) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 
-  inline int data_at(const vector<int>& index) const {
+  int data_at(const vector<int>& index) const {
     return cpu_data()[offset(index)];
   }
 

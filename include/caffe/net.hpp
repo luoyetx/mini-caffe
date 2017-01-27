@@ -23,9 +23,10 @@ class NetParameter;
  */
 class CAFFE_API Net {
  public:
-  explicit Net(const NetParameter& param);
   explicit Net(const string& param_file);
-  virtual ~Net() {}
+  explicit Net(const NetParameter& param) {
+    Init(param);
+  }
 
   /// @brief Initialize a network with a NetParameter.
   void Init(const NetParameter& param);
@@ -70,41 +71,41 @@ class CAFFE_API Net {
   void ToProto(NetParameter* param) const;
 
   /// @brief returns the network name.
-  inline const string& name() const { return name_; }
+  const string& name() const { return name_; }
   /// @brief returns the layer names
-  inline const vector<string>& layer_names() const { return layer_names_; }
+  const vector<string>& layer_names() const { return layer_names_; }
   /// @brief returns the blob names
-  inline const vector<string>& blob_names() const { return blob_names_; }
+  const vector<string>& blob_names() const { return blob_names_; }
   /// @brief returns the blobs
-  inline const vector<shared_ptr<Blob> >& blobs() const {
+  const vector<shared_ptr<Blob> >& blobs() const {
     return blobs_;
   }
   /// @brief returns the layers
-  inline const vector<shared_ptr<Layer> >& layers() const {
+  const vector<shared_ptr<Layer> >& layers() const {
     return layers_;
   }
   /**
    * @brief returns the bottom vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
    */
-  inline const vector<vector<Blob*> >& bottom_vecs() const {
+  const vector<vector<Blob*> >& bottom_vecs() const {
     return bottom_vecs_;
   }
   /**
    * @brief returns the top vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
    */
-  inline const vector<vector<Blob*> >& top_vecs() const {
+  const vector<vector<Blob*> >& top_vecs() const {
     return top_vecs_;
   }
   /// @brief returns the ids of the top blobs of layer i
-  inline const vector<int> & top_ids(int i) const {
+  const vector<int> & top_ids(int i) const {
     CHECK_GE(i, 0) << "Invalid layer id";
     CHECK_LT(i, top_id_vecs_.size()) << "Invalid layer id";
     return top_id_vecs_[i];
   }
   /// @brief returns the ids of the bottom blobs of layer i
-  inline const vector<int> & bottom_ids(int i) const {
+  const vector<int> & bottom_ids(int i) const {
     CHECK_GE(i, 0) << "Invalid layer id";
     CHECK_LT(i, bottom_id_vecs_.size()) << "Invalid layer id";
     return bottom_id_vecs_[i];

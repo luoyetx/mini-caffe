@@ -28,7 +28,7 @@ class ELULayer : public NeuronLayer {
   explicit ELULayer(const LayerParameter& param)
       : NeuronLayer(param) {}
 
-  virtual inline const char* type() const { return "ELU"; }
+  virtual const char* type() const { return "ELU"; }
 
  protected:
   /**

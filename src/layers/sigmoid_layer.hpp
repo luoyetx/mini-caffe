@@ -20,7 +20,7 @@ class SigmoidLayer : public NeuronLayer {
   explicit SigmoidLayer(const LayerParameter& param)
       : NeuronLayer(param) {}
 
-  virtual inline const char* type() const { return "Sigmoid"; }
+  virtual const char* type() const { return "Sigmoid"; }
 
  protected:
   /**

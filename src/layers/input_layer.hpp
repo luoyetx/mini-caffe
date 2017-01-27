@@ -24,9 +24,9 @@ class InputLayer : public Layer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top) {}
 
-  virtual inline const char* type() const { return "Input"; }
-  virtual inline int ExactNumBottomBlobs() const { return 0; }
-  virtual inline int MinTopBlobs() const { return 1; }
+  virtual const char* type() const { return "Input"; }
+  virtual int ExactNumBottomBlobs() const { return 0; }
+  virtual int MinTopBlobs() const { return 1; }
 
  protected:
   virtual void Forward_cpu(const vector<Blob*>& bottom,

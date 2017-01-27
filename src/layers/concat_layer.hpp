@@ -21,9 +21,9 @@ class ConcatLayer : public Layer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "Concat"; }
-  virtual inline int MinBottomBlobs() const { return 1; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual const char* type() const { return "Concat"; }
+  virtual int MinBottomBlobs() const { return 1; }
+  virtual int ExactNumTopBlobs() const { return 1; }
 
  protected:
   /**

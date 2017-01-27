@@ -26,10 +26,10 @@ class BiasLayer : public Layer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "Bias"; }
-  virtual inline int MinBottomBlobs() const { return 1; }
-  virtual inline int MaxBottomBlobs() const { return 2; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual const char* type() const { return "Bias"; }
+  virtual int MinBottomBlobs() const { return 1; }
+  virtual int MaxBottomBlobs() const { return 2; }
+  virtual int ExactNumTopBlobs() const { return 1; }
 
   virtual void Forward_cpu(const vector<Blob*>& bottom,
                            const vector<Blob*>& top);

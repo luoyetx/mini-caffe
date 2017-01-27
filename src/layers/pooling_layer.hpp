@@ -21,12 +21,12 @@ class PoolingLayer : public Layer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "Pooling"; }
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
-  virtual inline int MinTopBlobs() const { return 1; }
+  virtual const char* type() const { return "Pooling"; }
+  virtual int ExactNumBottomBlobs() const { return 1; }
+  virtual int MinTopBlobs() const { return 1; }
   // MAX POOL layers can output an extra top blob for the mask;
   // others can only output the pooled inputs.
-  virtual inline int MaxTopBlobs() const {
+  virtual int MaxTopBlobs() const {
     return (this->layer_param_.pooling_param().pool() ==
             PoolingParameter_PoolMethod_MAX) ? 2 : 1;
   }
