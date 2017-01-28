@@ -17,22 +17,22 @@ void CuDNNConvolutionLayer::Forward_gpu(const vector<Blob*>& bottom,
     for (int g = 0; g < this->group_; g++) {
       // Filters.
       CUDNN_CHECK(cudnnConvolutionForward(handle_[g],
-            cudnn::dataType<real_t>::one,
-            bottom_descs_[i], bottom_data + bottom_offset_ * g,
-            filter_desc_, weight + this->weight_offset_ * g,
-            conv_descs_[i],
-            fwd_algo_[i], workspace[g], workspace_fwd_sizes_[i],
-            cudnn::dataType<real_t>::zero,
-            top_descs_[i], top_data + top_offset_ * g));
+                  cudnn::dataType<real_t>::one,
+                  bottom_descs_[i], bottom_data + bottom_offset_ * g,
+                  filter_desc_, weight + this->weight_offset_ * g,
+                  conv_descs_[i],
+                  fwd_algo_[i], workspace[g], workspace_fwd_sizes_[i],
+                  cudnn::dataType<real_t>::zero,
+                  top_descs_[i], top_data + top_offset_ * g));
 
       // Bias.
       if (this->bias_term_) {
         const real_t* bias_data = this->blobs_[1]->gpu_data();
         CUDNN_CHECK(cudnnAddTensor(handle_[g],
-              cudnn::dataType<real_t>::one,
-              bias_desc_, bias_data + bias_offset_ * g,
-              cudnn::dataType<real_t>::one,
-              top_descs_[i], top_data + top_offset_ * g));
+                    cudnn::dataType<real_t>::one,
+                    bias_desc_, bias_data + bias_offset_ * g,
+                    cudnn::dataType<real_t>::one,
+                    top_descs_[i], top_data + top_offset_ * g));
       }
     }
 

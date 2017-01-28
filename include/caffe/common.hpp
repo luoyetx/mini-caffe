@@ -1,15 +1,7 @@
 #ifndef CAFFE_COMMON_HPP_
 #define CAFFE_COMMON_HPP_
 
-#include <climits>
-#include <cmath>
-#include <fstream>  // NOLINT(readability/streams)
-#include <iostream>  // NOLINT(readability/streams)
-#include <map>
-#include <set>
-#include <sstream>
 #include <string>
-#include <utility>  // pair
 #include <vector>
 #include <memory>
 
@@ -20,7 +12,6 @@
 #include <cublas_v2.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <curand.h>
 #include <driver_types.h>  // cuda driver types
 
 //
@@ -33,14 +24,14 @@
   do { \
     cudaError_t error = condition; \
     CHECK_EQ(error, cudaSuccess) << " " << cudaGetErrorString(error); \
-    } while (0)
+  } while (0)
 
 #define CUBLAS_CHECK(condition) \
   do { \
     cublasStatus_t status = condition; \
     CHECK_EQ(status, CUBLAS_STATUS_SUCCESS) << " " \
       << caffe::cublasGetErrorString(status); \
-    } while (0)
+  } while (0)
 
 // CUDA: grid stride looping
 #define CUDA_KERNEL_LOOP(i, n) \
@@ -55,7 +46,6 @@ namespace caffe {
 
 // CUDA: library error reporting.
 const char* cublasGetErrorString(cublasStatus_t error);
-const char* curandGetErrorString(curandStatus_t error);
 
 // CUDA: use 512 threads per block
 const int CAFFE_CUDA_NUM_THREADS = 512;
@@ -111,20 +101,9 @@ void classname::funcname##_##gpu(const vector<Blob*>& bottom,          \
 namespace caffe {
 
 // Common functions and classes from std that caffe often uses.
-using std::shared_ptr;
-using std::fstream;
-using std::ios;
-using std::isnan;
-using std::isinf;
-using std::iterator;
-using std::make_pair;
-using std::map;
-using std::ostringstream;
-using std::pair;
-using std::set;
-using std::string;
-using std::stringstream;
 using std::vector;
+using std::string;
+using std::shared_ptr;
 
 typedef float real_t;
 

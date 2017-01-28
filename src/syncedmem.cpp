@@ -138,19 +138,4 @@ void* SyncedMemory::mutable_gpu_data() {
 #endif  // USE_CUDA
 }
 
-#ifdef USE_CUDA
-void SyncedMemory::async_gpu_push(const cudaStream_t& stream) {
-  CHECK(head_ == HEAD_AT_CPU);
-  if (gpu_ptr_ == NULL) {
-    CUDA_CHECK(cudaGetDevice(&gpu_device_));
-    CUDA_CHECK(cudaMalloc(&gpu_ptr_, size_));
-    own_gpu_data_ = true;
-  }
-  const cudaMemcpyKind put = cudaMemcpyHostToDevice;
-  CUDA_CHECK(cudaMemcpyAsync(gpu_ptr_, cpu_ptr_, size_, put, stream));
-  // Assume caller will synchronize on the stream before use
-  head_ = SYNCED;
-}
-#endif  // USE_CUDA
-
 }  // namespace caffe

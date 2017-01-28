@@ -27,8 +27,8 @@ void Net::Init(const NetParameter& in_param) {
   InsertSplits(in_param, &param);
   // Basically, build all the layers and set up their connections.
   name_ = param.name();
-  map<string, int> blob_name_to_idx;
-  set<string> available_blobs;
+  std::map<string, int> blob_name_to_idx;
+  std::set<string> available_blobs;
   memory_used_ = 0;
   // For each layer, set up its input and output
   bottom_vecs_.resize(param.layer_size());
@@ -66,8 +66,8 @@ void Net::Init(const NetParameter& in_param) {
 
 // Helper for Net::Init: add a new top blob to the net.
 void Net::AppendTop(const NetParameter& param, const int layer_id,
-                    const int top_id, set<string>* available_blobs,
-                    map<string, int>* blob_name_to_idx) {
+                    const int top_id, std::set<string>* available_blobs,
+                    std::map<string, int>* blob_name_to_idx) {
   shared_ptr<LayerParameter> layer_param(
       new LayerParameter(param.layer(layer_id)));
   const string& blob_name = (layer_param->top_size() > top_id) ?
@@ -99,8 +99,8 @@ void Net::AppendTop(const NetParameter& param, const int layer_id,
 
 // Helper for Net::Init: add a new bottom blob to the net.
 int Net::AppendBottom(const NetParameter& param, const int layer_id,
-                      const int bottom_id, set<string>* available_blobs,
-                      map<string, int>* blob_name_to_idx) {
+                      const int bottom_id, std::set<string>* available_blobs,
+                      std::map<string, int>* blob_name_to_idx) {
   const LayerParameter& layer_param = param.layer(layer_id);
   const string& blob_name = layer_param.bottom(bottom_id);
   if (available_blobs->find(blob_name) == available_blobs->end()) {

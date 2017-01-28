@@ -65,7 +65,7 @@ bool ReadProtoFromBinaryFile(const char* filename, Message* proto) {
 }
 
 void WriteProtoToBinaryFile(const Message& proto, const char* filename) {
-  fstream output(filename, ios::out | ios::trunc | ios::binary);
+  std::fstream output(filename, std::ios::out | std::ios::trunc | std::ios::binary);
   CHECK(proto.SerializeToOstream(&output));
 }
 

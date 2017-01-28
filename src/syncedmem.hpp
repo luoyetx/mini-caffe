@@ -56,10 +56,6 @@ public:
   SyncedHead head() { return head_; }
   size_t size() { return size_; }
 
-#ifdef USE_CUDA
-  void async_gpu_push(const cudaStream_t& stream);
-#endif
-
 private:
   void to_cpu();
   void to_gpu();

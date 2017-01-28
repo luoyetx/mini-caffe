@@ -172,6 +172,7 @@ int main(int argc, char *argv[]) {
   {
     LOG(INFO) << "Test NIN";
     auto test = NIN("model/nin.prototxt", "model/nin.caffemodel");
+    LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
     test.Forward();
     timer.Toc();
@@ -181,6 +182,7 @@ int main(int argc, char *argv[]) {
   {
     LOG(INFO) << "Test GoogLeNet";
     auto test = GoogLeNet("model/googlenet.prototxt", "model/googlenet.caffemodel");
+    LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
     test.Forward();
     timer.Toc();
@@ -190,6 +192,7 @@ int main(int argc, char *argv[]) {
   {
     LOG(INFO) << "Test ResNet";
     auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
+    LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
     test.Forward();
     timer.Toc();

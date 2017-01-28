@@ -115,16 +115,20 @@ class CAFFE_API Net {
   bool has_layer(const string& layer_name) const;
   const shared_ptr<Layer> layer_by_name(const string& layer_name) const;
 
+  real_t MemSize() const {
+    return static_cast<real_t>(memory_used_) / (1024 * 1024);
+  }
+
  protected:
   // Helpers for Init.
   /// @brief Append a new top blob to the net.
   void AppendTop(const NetParameter& param, const int layer_id,
-                 const int top_id, set<string>* available_blobs,
-                 map<string, int>* blob_name_to_idx);
+                 const int top_id, std::set<string>* available_blobs,
+                 std::map<string, int>* blob_name_to_idx);
   /// @brief Append a new bottom blob to the net.
   int AppendBottom(const NetParameter& param, const int layer_id,
-                   const int bottom_id, set<string>* available_blobs,
-                   map<string, int>* blob_name_to_idx);
+                   const int bottom_id, std::set<string>* available_blobs,
+                   std::map<string, int>* blob_name_to_idx);
   /// @brief Append a new parameter blob to the net.
   void AppendParam(const NetParameter& param, const int layer_id,
                    const int param_id);
@@ -134,11 +138,11 @@ class CAFFE_API Net {
   /// @brief Individual layers in the net
   vector<shared_ptr<Layer> > layers_;
   vector<string> layer_names_;
-  map<string, int> layer_names_index_;
+  std::map<string, int> layer_names_index_;
   /// @brief the blobs storing intermediate results between the layer.
   vector<shared_ptr<Blob> > blobs_;
   vector<string> blob_names_;
-  map<string, int> blob_names_index_;
+  std::map<string, int> blob_names_index_;
   /// bottom_vecs stores the vectors containing the input for each layer.
   /// They don't actually host the blobs (blobs_ does), so we simply store
   /// pointers.
