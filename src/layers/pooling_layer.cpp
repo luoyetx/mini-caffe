@@ -5,6 +5,10 @@
 #include "./pooling_layer.hpp"
 #include "../util/math_functions.hpp"
 
+#ifdef USE_CUDNN
+#include "./cudnn/cudnn_pooling_layer.hpp"
+#endif  // USE_CUDNN
+
 namespace caffe {
 
 using std::min;
@@ -189,5 +193,33 @@ void PoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
 #ifndef USE_CUDA
 STUB_GPU(PoolingLayer);
 #endif
+
+// Creator
+
+static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
+    PoolingParameter_Engine engine = param.pooling_param().engine();
+  if (engine == PoolingParameter_Engine_DEFAULT) {
+    engine = PoolingParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = PoolingParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == PoolingParameter_Engine_CAFFE) {
+    return shared_ptr<Layer>(new PoolingLayer(param));
+#ifdef USE_CUDNN
+  } else if (engine == PoolingParameter_Engine_CUDNN) {
+    if (param.top_size() > 1) {
+      LOG(INFO) << "cuDNN does not support multiple tops. "
+                << "Using Caffe's own pooling layer.";
+      return shared_ptr<Layer>(new PoolingLayer(param));
+    }
+    return shared_ptr<Layer>(new CuDNNPoolingLayer(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(Pooling, CreateLayer);
 
 }  // namespace caffe

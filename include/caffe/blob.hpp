@@ -152,7 +152,7 @@ class CAFFE_API Blob {
   }
 
   int offset(const int n, const int c = 0,
-                    const int h = 0, const int w = 0) const {
+             const int h = 0, const int w = 0) const {
     CHECK_GE(n, 0);
     CHECK_LE(n, num());
     CHECK_GE(channels(), 0);

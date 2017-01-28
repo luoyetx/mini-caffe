@@ -3,6 +3,11 @@
 #include "./lrn_layer.hpp"
 #include "../util/math_functions.hpp"
 
+#ifdef USE_CUDNN
+#include "./cudnn/cudnn_lcn_layer.hpp"
+#include "./cudnn/cudnn_lrn_layer.hpp"
+#endif  // USE_CUDNN
+
 namespace caffe {
 
 void LRNLayer::LayerSetUp(const vector<Blob*>& bottom,
@@ -160,5 +165,43 @@ void LRNLayer::WithinChannelForward(const vector<Blob*>& bottom,
 STUB_GPU(LRNLayer);
 STUB_GPU_FORWARD(LRNLayer, CrossChannelForward);
 #endif
+
+// Creator
+
+// Get LRN layer according to engine
+static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
+  LRNParameter_Engine engine = param.lrn_param().engine();
+
+  if (engine == LRNParameter_Engine_DEFAULT) {
+#ifdef USE_CUDNN
+    engine = LRNParameter_Engine_CUDNN;
+#else
+    engine = LRNParameter_Engine_CAFFE;
+#endif
+  }
+
+  if (engine == LRNParameter_Engine_CAFFE) {
+    return shared_ptr<Layer>(new LRNLayer(param));
+#ifdef USE_CUDNN
+  } else if (engine == LRNParameter_Engine_CUDNN) {
+    LRNParameter lrn_param = param.lrn_param();
+
+    if (lrn_param.norm_region() ==LRNParameter_NormRegion_WITHIN_CHANNEL) {
+      return shared_ptr<Layer>(new CuDNNLCNLayer(param));
+    } else {
+      // local size is too big to be handled through cuDNN
+      if (param.lrn_param().local_size() > CUDNN_LRN_MAX_N) {
+        return shared_ptr<Layer>(new LRNLayer(param));
+      } else {
+        return shared_ptr<Layer>(new CuDNNLRNLayer(param));
+      }
+    }
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(LRN, CreateLayer);
 
 }  // namespace caffe

@@ -3,6 +3,10 @@
 
 #include "./sigmoid_layer.hpp"
 
+#ifdef USE_CUDNN
+#include "./cudnn/cudnn_sigmoid_layer.hpp"
+#endif  // USE_CUDNN
+
 namespace caffe {
 
 inline real_t sigmoid(real_t x) {
@@ -22,5 +26,28 @@ void SigmoidLayer::Forward_cpu(const vector<Blob*>& bottom,
 #ifndef USE_CUDA
 STUB_GPU(SigmoidLayer);
 #endif
+
+// Creator
+
+static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
+  SigmoidParameter_Engine engine = param.sigmoid_param().engine();
+  if (engine == SigmoidParameter_Engine_DEFAULT) {
+    engine = SigmoidParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = SigmoidParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == SigmoidParameter_Engine_CAFFE) {
+    return shared_ptr<Layer>(new SigmoidLayer(param));
+#ifdef USE_CUDNN
+  } else if (engine == SigmoidParameter_Engine_CUDNN) {
+    return shared_ptr<Layer>(new CuDNNSigmoidLayer(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(Sigmoid, CreateLayer);
 
 }  // namespace caffe
