@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "./neuron_layer.hpp"
-#include "../proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -30,7 +29,7 @@ class BNLLLayer : public NeuronLayer {
   explicit BNLLLayer(const LayerParameter& param)
       : NeuronLayer(param) {}
 
-  virtual inline const char* type() const { return "BNLL"; }
+  virtual const char* type() const { return "BNLL"; }
 
  protected:
   /// @copydoc BNLLLayer

@@ -4,6 +4,10 @@
 #include "./softmax_layer.hpp"
 #include "../util/math_functions.hpp"
 
+#ifdef USE_CUDNN
+#include "./cudnn/cudnn_softmax_layer.hpp"
+#endif  // USE_CUDNN
+
 namespace caffe {
 
 void SoftmaxLayer::Reshape(const vector<Blob*>& bottom,
@@ -61,5 +65,28 @@ void SoftmaxLayer::Forward_cpu(const vector<Blob*>& bottom,
 #ifndef USE_CUDA
 STUB_GPU(SoftmaxLayer);
 #endif
+
+// Creator
+
+static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
+  SoftmaxParameter_Engine engine = param.softmax_param().engine();
+  if (engine == SoftmaxParameter_Engine_DEFAULT) {
+    engine = SoftmaxParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = SoftmaxParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == SoftmaxParameter_Engine_CAFFE) {
+    return shared_ptr<Layer>(new SoftmaxLayer(param));
+#ifdef USE_CUDNN
+  } else if (engine == SoftmaxParameter_Engine_CUDNN) {
+    return shared_ptr<Layer>(new CuDNNSoftmaxLayer(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+  }
+}
+
+REGISTER_LAYER_CREATOR(Softmax, CreateLayer);
 
 }  // namespace caffe

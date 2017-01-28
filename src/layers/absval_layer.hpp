@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "./neuron_layer.hpp"
-#include "../proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -22,12 +21,8 @@ class AbsValLayer : public NeuronLayer {
  public:
   explicit AbsValLayer(const LayerParameter& param)
       : NeuronLayer(param) {}
-  virtual void LayerSetUp(const vector<Blob*>& bottom,
-      const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "AbsVal"; }
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual const char* type() const { return "AbsVal"; }
 
  protected:
   /// @copydoc AbsValLayer

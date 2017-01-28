@@ -2,9 +2,24 @@ if(NOT USE_CUDA)
   return()
 endif()
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-std=c++11"   SUPPORT_CXX11)
+
+################################################################################################
+# Removes duplicates from list(s)
+# Usage:
+#   caffe_list_unique(<list_variable> [<list_variable>] [...])
+macro(caffe_list_unique)
+  foreach(__lst ${ARGN})
+    if(${__lst})
+      list(REMOVE_DUPLICATES ${__lst})
+    endif()
+  endforeach()
+endmacro()
+
 # Known NVIDIA GPU achitectures Caffe can be compiled for.
 # This list will be used for CUDA_ARCH_NAME = All option
-set(Caffe_known_gpu_archs "30 35 50 60 61")
+set(Caffe_known_gpu_archs "20 21(20) 30 35 50 60 61")
 
 ################################################################################################
 # A function for automatic detection of GPUs installed  (if autodetection is enabled)
@@ -29,20 +44,32 @@ function(caffe_detect_installed_gpus out_variable)
       "  }\n"
       "  return 0;\n"
       "}\n")
-
+    if(MSVC)
+      # Add directory of "cl.exe" to system path, otherwise "nvcc --run" will fail with "Cannot find compiler 'cl.exe' in PATH"
+      get_filename_component(CL_DIR ${CMAKE_C_COMPILER} DIRECTORY)
+      set(ENV{PATH} "$ENV{PATH};${CL_DIR}")
+    endif()
     execute_process(COMMAND "${CUDA_NVCC_EXECUTABLE}" "--run" "${__cufile}"
                     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/CMakeFiles/"
                     RESULT_VARIABLE __nvcc_res OUTPUT_VARIABLE __nvcc_out
-                    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+                    ERROR_QUIET
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     if(__nvcc_res EQUAL 0)
-      set(CUDA_gpu_detect_output ${__nvcc_out} CACHE INTERNAL "Returned GPU architetures from caffe_detect_gpus tool" FORCE)
+      # nvcc outputs text containing line breaks when building with MSVC.
+      # The line below prevents CMake from inserting a variable with line
+      # breaks in the cache
+      string(REGEX MATCH "([1-9].[0-9])" __nvcc_out "${__nvcc_out}")
+      string(REPLACE "2.1" "2.1(2.0)" __nvcc_out "${__nvcc_out}")
+      set(CUDA_gpu_detect_output ${__nvcc_out} CACHE INTERNAL "Returned GPU architetures from mshadow_detect_gpus tool" FORCE)
+    else()
+      message(WARNING "Running GPU detection script with nvcc failed: ${__nvcc_out}")
     endif()
   endif()
 
   if(NOT CUDA_gpu_detect_output)
-    message(STATUS "Automatic GPU detection failed. Building for all known architectures.")
-    set(${out_variable} ${Caffe_known_gpu_archs} PARENT_SCOPE)
+    message(WARNING "Automatic GPU detection failed. Building for all known architectures (${mshadow_known_gpu_archs}).")
+    set(${out_variable} ${mshadow_known_gpu_archs} PARENT_SCOPE)
   else()
     set(${out_variable} ${CUDA_gpu_detect_output} PARENT_SCOPE)
   endif()
@@ -55,7 +82,7 @@ endfunction()
 #   caffe_select_nvcc_arch_flags(out_variable)
 function(caffe_select_nvcc_arch_flags out_variable)
   # List of arch names
-  set(__archs_names "Kepler" "Maxwell" "Pascal" "All" "Manual")
+  set(__archs_names "Fermi" "Kepler" "Maxwell" "Pascal" "All" "Manual")
   set(__archs_name_default "All")
   if(NOT CMAKE_CROSSCOMPILING)
     list(APPEND __archs_names "Auto")
@@ -82,7 +109,9 @@ function(caffe_select_nvcc_arch_flags out_variable)
     unset(CUDA_ARCH_PTX CACHE)
   endif()
 
-  if(${CUDA_ARCH_NAME} STREQUAL "Kepler")
+  if(${CUDA_ARCH_NAME} STREQUAL "Fermi")
+    set(__cuda_arch_bin "20 21(20)")
+  elseif(${CUDA_ARCH_NAME} STREQUAL "Kepler")
     set(__cuda_arch_bin "30 35")
   elseif(${CUDA_ARCH_NAME} STREQUAL "Maxwell")
     set(__cuda_arch_bin "50")
@@ -137,14 +166,15 @@ endfunction()
 macro(caffe_cuda_compile objlist_variable)
   foreach(var CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_RELEASE CMAKE_CXX_FLAGS_DEBUG)
     set(${var}_backup_in_cuda_compile_ "${${var}}")
-
     # we remove /EHa as it generates warnings under windows
     string(REPLACE "/EHa" "" ${var} "${${var}}")
-
   endforeach()
 
   if(UNIX OR APPLE)
     list(APPEND CUDA_NVCC_FLAGS -Xcompiler -fPIC)
+    if(SUPPORT_CXX11)
+      list(APPEND CUDA_NVCC_FLAGS -Xcompiler -fPIC --std=c++11)
+    endif()
   endif()
 
   if(APPLE)
@@ -152,6 +182,8 @@ macro(caffe_cuda_compile objlist_variable)
   endif()
 
   if(MSVC)
+    # disable noisy warnings:
+    # 4819: The file contains a character that cannot be represented in the current code page (number).
     list(APPEND CUDA_NVCC_FLAGS -Xcompiler "/wd4819")
   endif()
 
@@ -177,56 +209,17 @@ function(detect_cuDNN)
             PATHS ${CUDNN_ROOT} $ENV{CUDNN_ROOT} ${CUDA_TOOLKIT_INCLUDE}
             DOC "Path to cuDNN include directory." )
 
-  # dynamic libs have different suffix in mac and linux
-  if(APPLE)
-    set(CUDNN_LIB_NAME "libcudnn.dylib")
-  elseif(WIN32)
-    set(CUDNN_LIB_NAME "cudnn.lib")
-  else()
-    set(CUDNN_LIB_NAME "libcudnn.so")
-  endif()
-
   get_filename_component(__libpath_hist ${CUDA_CUDART_LIBRARY} PATH)
-  find_library(CUDNN_LIBRARY NAMES ${CUDNN_LIB_NAME}
-    PATHS ${CUDNN_ROOT} $ENV{CUDNN_ROOT} ${CUDNN_INCLUDE} ${__libpath_hist} ${__libpath_hist}/../lib
-    DOC "Path to cuDNN library.")
+  find_library(CUDNN_LIBRARY NAMES libcudnn.so cudnn.lib # libcudnn_static.a
+                             PATHS ${CUDNN_ROOT} $ENV{CUDNN_ROOT} ${CUDNN_INCLUDE} ${__libpath_hist}
+                             DOC "Path to cuDNN library.")
 
   if(CUDNN_INCLUDE AND CUDNN_LIBRARY)
     set(HAVE_CUDNN  TRUE PARENT_SCOPE)
     set(CUDNN_FOUND TRUE PARENT_SCOPE)
 
-    file(READ ${CUDNN_INCLUDE}/cudnn.h CUDNN_VERSION_FILE_CONTENTS)
-
-    # cuDNN v3 and beyond
-    string(REGEX MATCH "define CUDNN_MAJOR * +([0-9]+)"
-           CUDNN_VERSION_MAJOR "${CUDNN_VERSION_FILE_CONTENTS}")
-    string(REGEX REPLACE "define CUDNN_MAJOR * +([0-9]+)" "\\1"
-           CUDNN_VERSION_MAJOR "${CUDNN_VERSION_MAJOR}")
-    string(REGEX MATCH "define CUDNN_MINOR * +([0-9]+)"
-           CUDNN_VERSION_MINOR "${CUDNN_VERSION_FILE_CONTENTS}")
-    string(REGEX REPLACE "define CUDNN_MINOR * +([0-9]+)" "\\1"
-           CUDNN_VERSION_MINOR "${CUDNN_VERSION_MINOR}")
-    string(REGEX MATCH "define CUDNN_PATCHLEVEL * +([0-9]+)"
-           CUDNN_VERSION_PATCH "${CUDNN_VERSION_FILE_CONTENTS}")
-    string(REGEX REPLACE "define CUDNN_PATCHLEVEL * +([0-9]+)" "\\1"
-           CUDNN_VERSION_PATCH "${CUDNN_VERSION_PATCH}")
-
-    if(NOT CUDNN_VERSION_MAJOR)
-      set(CUDNN_VERSION "???")
-    else()
-      set(CUDNN_VERSION "${CUDNN_VERSION_MAJOR}.${CUDNN_VERSION_MINOR}.${CUDNN_VERSION_PATCH}")
-    endif()
-
-    message(STATUS "Found cuDNN: ver. ${CUDNN_VERSION} found (include: ${CUDNN_INCLUDE}, library: ${CUDNN_LIBRARY})")
-
-    string(COMPARE LESS "${CUDNN_VERSION_MAJOR}" 3 cuDNNVersionIncompatible)
-    if(cuDNNVersionIncompatible)
-      message(FATAL_ERROR "cuDNN version >3 is required.")
-    endif()
-
-    set(CUDNN_VERSION "${CUDNN_VERSION}" PARENT_SCOPE)
     mark_as_advanced(CUDNN_INCLUDE CUDNN_LIBRARY CUDNN_ROOT)
-
+    message(STATUS "Found cuDNN (include: ${CUDNN_INCLUDE}, library: ${CUDNN_LIBRARY})")
   endif()
 endfunction()
 

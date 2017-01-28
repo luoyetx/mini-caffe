@@ -1,6 +1,6 @@
 #ifdef USE_CUDNN
 
-#include "../util/cudnn.hpp"
+#include "./cudnn.hpp"
 
 namespace caffe {
 namespace cudnn {

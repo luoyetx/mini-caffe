@@ -42,6 +42,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "caffe/common.hpp"
 #include "./proto/caffe.pb.h"
@@ -52,8 +53,8 @@ class Layer;
 
 class LayerRegistry {
  public:
-  typedef shared_ptr<Layer> (*Creator)(const LayerParameter&);
-  typedef std::map<string, Creator> CreatorRegistry;
+  using Creator = std::function<shared_ptr<Layer>(const LayerParameter&)>;
+  using CreatorRegistry = std::map<string, Creator>;
 
   static CreatorRegistry& Registry() {
     static CreatorRegistry* g_registry_ = new CreatorRegistry();
@@ -90,7 +91,8 @@ class LayerRegistry {
  private:
   // Layer registry should never be instantiated - everything is done with its
   // static variables.
-  LayerRegistry() {}
+  LayerRegistry() = default;
+  DISABLE_COPY_AND_ASSIGN(LayerRegistry);
 
   static string LayerTypeListString() {
     vector<string> layer_types = LayerTypeList();
@@ -106,24 +108,23 @@ class LayerRegistry {
   }
 };
 
-class LayerRegisterer {
+class LayerRegister {
  public:
-  LayerRegisterer(const string& type,
-                  shared_ptr<Layer> (*creator)(const LayerParameter&)) {
+  LayerRegister(const string& type, LayerRegistry::Creator creator) {
     // LOG(INFO) << "Registering layer type: " << type;
     LayerRegistry::AddCreator(type, creator);
   }
 };
 
 #define REGISTER_LAYER_CREATOR(type, creator)                               \
-  static LayerRegisterer g_creator_f_##type(#type, creator)
+  static LayerRegister layer_register(#type, creator)
 
 #define REGISTER_LAYER_CLASS(type)                                          \
-  shared_ptr<Layer> Creator_##type##Layer(const LayerParameter& param)      \
+  static shared_ptr<Layer> CreateLayer(const LayerParameter& param)         \
   {                                                                         \
     return shared_ptr<Layer>(new type##Layer(param));                       \
   }                                                                         \
-  REGISTER_LAYER_CREATOR(type, Creator_##type##Layer)
+  REGISTER_LAYER_CREATOR(type, CreateLayer)
 
 }  // namespace caffe
 

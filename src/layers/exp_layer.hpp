@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "./neuron_layer.hpp"
-#include "../proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -28,7 +27,7 @@ class ExpLayer : public NeuronLayer {
   virtual void LayerSetUp(const vector<Blob*>& bottom,
                           const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "Exp"; }
+  virtual const char* type() const { return "Exp"; }
 
  protected:
   /**

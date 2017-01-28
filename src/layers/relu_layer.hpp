@@ -22,7 +22,7 @@ class ReLULayer : public NeuronLayer {
   explicit ReLULayer(const LayerParameter& param)
       : NeuronLayer(param) {}
 
-  virtual inline const char* type() const { return "ReLU"; }
+  virtual const char* type() const { return "ReLU"; }
 
  protected:
   /**

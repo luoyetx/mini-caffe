@@ -34,7 +34,7 @@ class PReLULayer : public NeuronLayer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "PReLU"; }
+  virtual const char* type() const { return "PReLU"; }
 
  protected:
   /**

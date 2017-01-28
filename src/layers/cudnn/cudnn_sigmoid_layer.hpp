@@ -1,9 +1,8 @@
 #ifndef CAFFE_CUDNN_SIGMOID_LAYER_HPP_
 #define CAFFE_CUDNN_SIGMOID_LAYER_HPP_
 
-#include "./sigmoid_layer.hpp"
-#include "../util/cudnn.hpp"
-#include "../proto/caffe.pb.h"
+#include "./cudnn.hpp"
+#include "../sigmoid_layer.hpp"
 
 namespace caffe {
 

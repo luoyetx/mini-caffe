@@ -26,7 +26,7 @@ class PowerLayer : public NeuronLayer {
   virtual void LayerSetUp(const vector<Blob*>& bottom,
                           const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "Power"; }
+  virtual const char* type() const { return "Power"; }
 
  protected:
   /**

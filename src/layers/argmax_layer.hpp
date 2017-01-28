@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "../layer.hpp"
-#include "../proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -40,9 +39,9 @@ class ArgMaxLayer : public Layer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "ArgMax"; }
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual const char* type() const { return "ArgMax"; }
+  virtual int ExactNumBottomBlobs() const { return 1; }
+  virtual int ExactNumTopBlobs() const { return 1; }
 
  protected:
   /**

@@ -1,8 +1,6 @@
-#include <climits>
 #include <vector>
 
 #include "caffe/blob.hpp"
-#include "caffe/common.hpp"
 #include "./syncedmem.hpp"
 #include "./util/math_functions.hpp"
 #include "./proto/caffe.pb.h"
@@ -100,7 +98,8 @@ real_t* Blob::mutable_gpu_data() {
 
 void Blob::ShareData(const Blob& other) {
   CHECK_EQ(count_, other.count());
-  data_ = other.data();
+  CHECK(other.data_);
+  data_ = other.data_;
 }
 
 bool Blob::ShapeEquals(const BlobProto& other) {
@@ -134,7 +133,7 @@ void Blob::CopyFrom(const Blob& source, bool reshape) {
     }
   }
   caffe_copy(count_, source.cpu_data(),
-      static_cast<real_t*>(data_->mutable_cpu_data()));
+             static_cast<real_t*>(data_->mutable_cpu_data()));
 }
 
 void Blob::FromProto(const BlobProto& proto, bool reshape) {

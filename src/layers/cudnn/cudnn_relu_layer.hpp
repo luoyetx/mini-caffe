@@ -1,25 +1,24 @@
-#ifndef CAFFE_CUDNN_TANH_LAYER_HPP_
-#define CAFFE_CUDNN_TANH_LAYER_HPP_
+#ifndef CAFFE_CUDNN_RELU_LAYER_HPP_
+#define CAFFE_CUDNN_RELU_LAYER_HPP_
 
-#include "./tanh_layer.hpp"
-#include "../util/cudnn.hpp"
-#include "../proto/caffe.pb.h"
+#include "./cudnn.hpp"
+#include "../relu_layer.hpp"
 
 namespace caffe {
 
 #ifdef USE_CUDNN
 /**
- * @brief CuDNN acceleration of TanHLayer.
+ * @brief CuDNN acceleration of ReLULayer.
  */
-class CuDNNTanHLayer : public TanHLayer {
+class CuDNNReLULayer : public ReLULayer {
  public:
-  explicit CuDNNTanHLayer(const LayerParameter& param)
-      : TanHLayer(param), handles_setup_(false) {}
+  explicit CuDNNReLULayer(const LayerParameter& param)
+      : ReLULayer(param), handles_setup_(false) {}
   virtual void LayerSetUp(const vector<Blob*>& bottom,
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
-  virtual ~CuDNNTanHLayer();
+  virtual ~CuDNNReLULayer();
 
  protected:
   virtual void Forward_gpu(const vector<Blob*>& bottom,
@@ -35,4 +34,4 @@ class CuDNNTanHLayer : public TanHLayer {
 
 }  // namespace caffe
 
-#endif  // CAFFE_CUDNN_TANH_LAYER_HPP_
+#endif  // CAFFE_CUDNN_RELU_LAYER_HPP_

@@ -20,7 +20,7 @@ class TanHLayer : public NeuronLayer {
   explicit TanHLayer(const LayerParameter& param)
       : NeuronLayer(param) {}
 
-  virtual inline const char* type() const { return "TanH"; }
+  virtual const char* type() const { return "TanH"; }
 
  protected:
   /**

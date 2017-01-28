@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "./base_conv_layer.hpp"
-#include "../proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -27,14 +26,14 @@ class DeconvolutionLayer : public BaseConvolutionLayer {
   explicit DeconvolutionLayer(const LayerParameter& param)
       : BaseConvolutionLayer(param) {}
 
-  virtual inline const char* type() const { return "Deconvolution"; }
+  virtual const char* type() const { return "Deconvolution"; }
 
  protected:
   virtual void Forward_cpu(const vector<Blob*>& bottom,
                            const vector<Blob*>& top);
   virtual void Forward_gpu(const vector<Blob*>& bottom,
                            const vector<Blob*>& top);
-  virtual inline bool reverse_dimensions() { return true; }
+  virtual bool reverse_dimensions() { return true; }
   virtual void compute_output_shape();
 };
 

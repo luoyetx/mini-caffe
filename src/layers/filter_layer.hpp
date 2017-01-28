@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "../layer.hpp"
-#include "../proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -23,9 +22,9 @@ class FilterLayer : public Layer {
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
 
-  virtual inline const char* type() const { return "Filter"; }
-  virtual inline int MinBottomBlobs() const { return 2; }
-  virtual inline int MinTopBlobs() const { return 1; }
+  virtual const char* type() const { return "Filter"; }
+  virtual int MinBottomBlobs() const { return 2; }
+  virtual int MinTopBlobs() const { return 1; }
 
  protected:
   /**
