@@ -52,8 +52,12 @@ void Net::Init(const NetParameter& in_param) {
     }
     // After this layer is connected, set it up.
     layers_[layer_id]->SetUp(bottom_vecs_[layer_id], top_vecs_[layer_id]);
-    for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
-      memory_used_ += top_vecs_[layer_id][top_id]->count();
+    // Calculate memory usage
+    for (auto top : top_vecs_[layer_id]) {
+      memory_used_ += top->count()*sizeof(real_t);
+    }
+    for (auto param : layers_[layer_id]->blobs()) {
+      memory_used_ += param->count()*sizeof(real_t);
     }
   }
   for (size_t blob_id = 0; blob_id < blob_names_.size(); ++blob_id) {
