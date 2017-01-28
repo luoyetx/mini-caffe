@@ -1,9 +1,16 @@
 # mini-caffe.cmake
 
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
+
 option(USE_CUDA "Use CUDA support" OFF)
 option(USE_CUDNN "Use CUDNN support" OFF)
+option(USE_NNPACK "Use NNPACK support" OFF)
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Cuda.cmake)
+
+if(USE_NNPACK)
+  find_package(NNPACK)
+endif()
 
 # turn on C++11
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -71,6 +78,12 @@ if(HAVE_CUDA)
   endif()
 endif()
 
+if(HAVE_NNPACK)
+  file(GLOB CAFFE_SRC_LAYERS_NNPACK ${CMAKE_CURRENT_LIST_DIR}/src/layers/nnpack/*.hpp
+                                    ${CMAKE_CURRENT_LIST_DIR}/src/layers/nnpack/*.cpp)
+  list(APPEND CAFFE_COMPILE_CODE ${CAFFE_SRC_LAYERS_NNPACK})
+endif()
+
 # file structure
 source_group(include FILES ${CAFFE_INCLUDE})
 source_group(src FILES ${CAFFE_SRC})
@@ -78,6 +91,7 @@ source_group(src\\layers FILES ${CAFFE_SRC_LAYERS})
 source_group(src\\util FILES ${CAFFE_SRC_UTIL})
 source_group(src\\proto FILES ${CAFFE_SRC_PROTO})
 source_group(src\\layers\\cudnn FILES ${CAFFE_SRC_LAYERS_CUDNN})
+source_group(src\\layers\\nnpack FILES ${CAFFE_SRC_LAYERS_NNPACK})
 
 add_definitions(-DCAFFE_EXPORTS)
 add_library(caffe SHARED ${CAFFE_COMPILE_CODE})
