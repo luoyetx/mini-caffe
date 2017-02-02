@@ -9,6 +9,10 @@
 #include "./cudnn/cudnn_pooling_layer.hpp"
 #endif  // USE_CUDNN
 
+#ifdef USE_NNPACK
+#include "./nnpack/nnpack_pooling_layer.hpp"
+#endif  // USE_NNPACK
+
 namespace caffe {
 
 using std::min;
@@ -197,28 +201,23 @@ STUB_GPU(PoolingLayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-    PoolingParameter_Engine engine = param.pooling_param().engine();
-  if (engine == PoolingParameter_Engine_DEFAULT) {
-    engine = PoolingParameter_Engine_CAFFE;
-#ifdef USE_CUDNN
-    engine = PoolingParameter_Engine_CUDNN;
-#endif
+  PoolingParameter_Engine engine = param.pooling_param().engine();
+  if (Caffe::mode() == Caffe::CPU) {
+#ifdef USE_NNPACK
+    return shared_ptr<Layer>(new NNPackPoolingLayer(param));
+#endif  // USE_NNPACK
   }
-  if (engine == PoolingParameter_Engine_CAFFE) {
-    return shared_ptr<Layer>(new PoolingLayer(param));
+  else {
+    CHECK_EQ(Caffe::mode(), Caffe::GPU);
 #ifdef USE_CUDNN
-  } else if (engine == PoolingParameter_Engine_CUDNN) {
-    if (param.top_size() > 1) {
-      LOG(INFO) << "cuDNN does not support multiple tops. "
-                << "Using Caffe's own pooling layer.";
-      return shared_ptr<Layer>(new PoolingLayer(param));
+    if (param.top_size() == 1) {
+      return shared_ptr<Layer>(new CuDNNPoolingLayer(param));
     }
-    return shared_ptr<Layer>(new CuDNNPoolingLayer(param));
-#endif
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+#endif  // USE_CUDNN
   }
+  return shared_ptr<Layer>(new PoolingLayer(param));
 }
+
 
 REGISTER_LAYER_CREATOR(Pooling, CreateLayer);
 

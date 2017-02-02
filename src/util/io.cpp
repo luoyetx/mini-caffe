@@ -8,6 +8,7 @@
 #include <fstream>  // NOLINT(readability/streams)
 #include <string>
 #include <vector>
+#include <limits>
 
 #include "caffe/common.hpp"
 #include "../proto/caffe.pb.h"
@@ -21,7 +22,7 @@
 #define O_BINARY 0x00
 #endif
 
-const int kProtoReadBytesLimit = INT_MAX;  // Max size of 2 GB minus 1 byte.
+const int kProtoReadBytesLimit = std::numeric_limits<int>::max();  // Max size of 2 GB minus 1 byte.
 
 namespace caffe {
 

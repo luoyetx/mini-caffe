@@ -82,6 +82,7 @@ if(HAVE_NNPACK)
   file(GLOB CAFFE_SRC_LAYERS_NNPACK ${CMAKE_CURRENT_LIST_DIR}/src/layers/nnpack/*.hpp
                                     ${CMAKE_CURRENT_LIST_DIR}/src/layers/nnpack/*.cpp)
   list(APPEND CAFFE_COMPILE_CODE ${CAFFE_SRC_LAYERS_NNPACK})
+  list(APPEND Caffe_LINKER_LIBS ${NNPACK_LIB})
 endif()
 
 # file structure

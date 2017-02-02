@@ -28,22 +28,11 @@ STUB_GPU(TanHLayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-  TanHParameter_Engine engine = param.tanh_param().engine();
-  if (engine == TanHParameter_Engine_DEFAULT) {
-    engine = TanHParameter_Engine_CAFFE;
 #ifdef USE_CUDNN
-    engine = TanHParameter_Engine_CUDNN;
-#endif
-  }
-  if (engine == TanHParameter_Engine_CAFFE) {
-    return shared_ptr<Layer>(new TanHLayer(param));
-#ifdef USE_CUDNN
-  } else if (engine == TanHParameter_Engine_CUDNN) {
-    return shared_ptr<Layer>(new CuDNNTanHLayer(param));
-#endif
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
-  }
+  return shared_ptr<Layer>(new CuDNNTanHLayer(param));
+#else
+  return shared_ptr<Layer>(new TanHLayer(param));
+#endif  // USE_CUDNN
 }
 
 REGISTER_LAYER_CREATOR(TanH, CreateLayer);
