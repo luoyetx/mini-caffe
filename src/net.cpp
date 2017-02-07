@@ -8,7 +8,6 @@
 #include "caffe/common.hpp"
 #include "caffe/net.hpp"
 #include "./layer.hpp"
-#include "./util/insert_splits.hpp"
 #include "./util/math_functions.hpp"
 #include "./util/upgrade_proto.hpp"
 #include "./proto/caffe.pb.h"
@@ -21,10 +20,7 @@ Net::Net(const string& param_file) {
   Init(param);
 }
 
-void Net::Init(const NetParameter& in_param) {
-  // Create a copy of in_param with splits added where necessary.
-  NetParameter param;
-  InsertSplits(in_param, &param);
+void Net::Init(const NetParameter& param) {
   // Basically, build all the layers and set up their connections.
   name_ = param.name();
   std::map<string, int> blob_name_to_idx;
@@ -90,7 +86,7 @@ void Net::AppendTop(const NetParameter& param, const int layer_id,
                << "' produced by multiple sources.";
   } else {
     // Normal output.
-    shared_ptr<Blob> blob_pointer(new Blob());
+    shared_ptr<Blob> blob_pointer(new Blob);
     const int blob_id = blobs_.size();
     blobs_.push_back(blob_pointer);
     blob_names_.push_back(blob_name);
@@ -114,7 +110,6 @@ int Net::AppendBottom(const NetParameter& param, const int layer_id,
   const int blob_id = (*blob_name_to_idx)[blob_name];
   bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
   bottom_id_vecs_[layer_id].push_back(blob_id);
-  available_blobs->erase(blob_name);
   return blob_id;
 }
 
