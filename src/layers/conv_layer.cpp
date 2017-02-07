@@ -6,6 +6,10 @@
 #include "./cudnn/cudnn_conv_layer.hpp"
 #endif  // USE_CUDNN
 
+#ifdef USE_NNPACK
+#include "./nnpack/nnpack_conv_layer.hpp"
+#endif  // USE_NNPACK
+
 namespace caffe {
 
 void ConvolutionLayer::compute_output_shape() {
@@ -47,37 +51,29 @@ STUB_GPU(ConvolutionLayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter &param) {
-    ConvolutionParameter conv_param = param.convolution_param();
-  ConvolutionParameter_Engine engine = conv_param.engine();
-#ifdef USE_CUDNN
-  bool use_dilation = false;
-  for (int i = 0; i < conv_param.dilation_size(); ++i) {
-    if (conv_param.dilation(i) > 1) {
-      use_dilation = true;
+  ConvolutionParameter conv_param = param.convolution_param();
+  if (Caffe::mode() == Caffe::CPU) {
+#ifdef USE_NNPACK
+    if (conv_param.bias_term() && conv_param.group() == 1) {
+      return shared_ptr<Layer>(new NNPackConvolutionLayer(param));
     }
+#endif  // USE_NNPACK
   }
-#endif
-  if (engine == ConvolutionParameter_Engine_DEFAULT) {
-    engine = ConvolutionParameter_Engine_CAFFE;
+  else {
+    CHECK_EQ(Caffe::mode(), Caffe::GPU);
 #ifdef USE_CUDNN
+    bool use_dilation = false;
+    for (int i = 0; i < conv_param.dilation_size(); ++i) {
+      if (conv_param.dilation(i) > 1) {
+        use_dilation = true;
+      }
+    }
     if (!use_dilation) {
-      engine = ConvolutionParameter_Engine_CUDNN;
+      return shared_ptr<Layer>(new CuDNNConvolutionLayer(param));
     }
-#endif
+#endif  // USE_CUDNN
   }
-  if (engine == ConvolutionParameter_Engine_CAFFE) {
-    return shared_ptr<Layer>(new ConvolutionLayer(param));
-#ifdef USE_CUDNN
-  } else if (engine == ConvolutionParameter_Engine_CUDNN) {
-    if (use_dilation) {
-      LOG(FATAL) << "CuDNN doesn't support the dilated convolution at Layer "
-                 << param.name();
-    }
-    return shared_ptr<Layer>(new CuDNNConvolutionLayer(param));
-#endif
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
-  }
+  return shared_ptr<Layer>(new ConvolutionLayer(param));
 }
 
 REGISTER_LAYER_CREATOR(Convolution, CreateLayer);

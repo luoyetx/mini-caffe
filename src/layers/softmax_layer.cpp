@@ -69,22 +69,11 @@ STUB_GPU(SoftmaxLayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-  SoftmaxParameter_Engine engine = param.softmax_param().engine();
-  if (engine == SoftmaxParameter_Engine_DEFAULT) {
-    engine = SoftmaxParameter_Engine_CAFFE;
 #ifdef USE_CUDNN
-    engine = SoftmaxParameter_Engine_CUDNN;
-#endif
-  }
-  if (engine == SoftmaxParameter_Engine_CAFFE) {
-    return shared_ptr<Layer>(new SoftmaxLayer(param));
-#ifdef USE_CUDNN
-  } else if (engine == SoftmaxParameter_Engine_CUDNN) {
-    return shared_ptr<Layer>(new CuDNNSoftmaxLayer(param));
-#endif
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
-  }
+  return shared_ptr<Layer>(new CuDNNSoftmaxLayer(param));
+#else
+  return shared_ptr<Layer>(new SoftmaxLayer(param));
+#endif  // USE_CUDNN
 }
 
 REGISTER_LAYER_CREATOR(Softmax, CreateLayer);

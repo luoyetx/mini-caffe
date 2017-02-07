@@ -28,22 +28,11 @@ STUB_GPU(ReLULayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-  ReLUParameter_Engine engine = param.relu_param().engine();
-  if (engine == ReLUParameter_Engine_DEFAULT) {
-    engine = ReLUParameter_Engine_CAFFE;
 #ifdef USE_CUDNN
-    engine = ReLUParameter_Engine_CUDNN;
-#endif
-  }
-  if (engine == ReLUParameter_Engine_CAFFE) {
-    return shared_ptr<Layer>(new ReLULayer(param));
-#ifdef USE_CUDNN
-  } else if (engine == ReLUParameter_Engine_CUDNN) {
-    return shared_ptr<Layer>(new CuDNNReLULayer(param));
-#endif
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
-  }
+  return shared_ptr<Layer>(new CuDNNReLULayer(param));
+#else
+  return shared_ptr<Layer>(new ReLULayer(param));
+#endif  // USE_CUDNN
 }
 
 REGISTER_LAYER_CREATOR(ReLU, CreateLayer);

@@ -30,22 +30,11 @@ STUB_GPU(SigmoidLayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-  SigmoidParameter_Engine engine = param.sigmoid_param().engine();
-  if (engine == SigmoidParameter_Engine_DEFAULT) {
-    engine = SigmoidParameter_Engine_CAFFE;
 #ifdef USE_CUDNN
-    engine = SigmoidParameter_Engine_CUDNN;
-#endif
-  }
-  if (engine == SigmoidParameter_Engine_CAFFE) {
-    return shared_ptr<Layer>(new SigmoidLayer(param));
-#ifdef USE_CUDNN
-  } else if (engine == SigmoidParameter_Engine_CUDNN) {
-    return shared_ptr<Layer>(new CuDNNSigmoidLayer(param));
-#endif
-  } else {
-    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
-  }
+  return shared_ptr<Layer>(new CuDNNSigmoidLayer(param));
+#else
+  return shared_ptr<Layer>(new SigmoidLayer(param));
+#endif  // USE_CUDNN
 }
 
 REGISTER_LAYER_CREATOR(Sigmoid, CreateLayer);
