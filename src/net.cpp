@@ -8,7 +8,6 @@
 #include "caffe/common.hpp"
 #include "caffe/net.hpp"
 #include "./layer.hpp"
-#include "./util/insert_splits.hpp"
 #include "./util/math_functions.hpp"
 #include "./util/upgrade_proto.hpp"
 #include "./proto/caffe.pb.h"
@@ -21,15 +20,11 @@ Net::Net(const string& param_file) {
   Init(param);
 }
 
-void Net::Init(const NetParameter& in_param) {
-  // Create a copy of in_param with splits added where necessary.
-  NetParameter param;
-  InsertSplits(in_param, &param);
+void Net::Init(const NetParameter& param) {
   // Basically, build all the layers and set up their connections.
   name_ = param.name();
   std::map<string, int> blob_name_to_idx;
   std::set<string> available_blobs;
-  memory_used_ = 0;
   // For each layer, set up its input and output
   bottom_vecs_.resize(param.layer_size());
   top_vecs_.resize(param.layer_size());
@@ -52,13 +47,6 @@ void Net::Init(const NetParameter& in_param) {
     }
     // After this layer is connected, set it up.
     layers_[layer_id]->SetUp(bottom_vecs_[layer_id], top_vecs_[layer_id]);
-    // Calculate memory usage
-    for (auto top : top_vecs_[layer_id]) {
-      memory_used_ += top->count()*sizeof(real_t);
-    }
-    for (auto param : layers_[layer_id]->blobs()) {
-      memory_used_ += param->count()*sizeof(real_t);
-    }
   }
   for (size_t blob_id = 0; blob_id < blob_names_.size(); ++blob_id) {
     blob_names_index_[blob_names_[blob_id]] = blob_id;
@@ -90,7 +78,7 @@ void Net::AppendTop(const NetParameter& param, const int layer_id,
                << "' produced by multiple sources.";
   } else {
     // Normal output.
-    shared_ptr<Blob> blob_pointer(new Blob());
+    shared_ptr<Blob> blob_pointer(new Blob);
     const int blob_id = blobs_.size();
     blobs_.push_back(blob_pointer);
     blob_names_.push_back(blob_name);
@@ -114,8 +102,20 @@ int Net::AppendBottom(const NetParameter& param, const int layer_id,
   const int blob_id = (*blob_name_to_idx)[blob_name];
   bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
   bottom_id_vecs_[layer_id].push_back(blob_id);
-  available_blobs->erase(blob_name);
   return blob_id;
+}
+
+real_t Net::MemSize() const {
+  size_t memory_used_ = 0;
+  for (auto blob : this->blobs_) {
+    memory_used_ += blob->count()*sizeof(real_t);
+  }
+  for (auto layer : this->layers_) {
+    for (auto param : layer->blobs()) {
+      memory_used_ += param->count()*sizeof(real_t);
+    }
+  }
+  return static_cast<real_t>(memory_used_) / (1024 * 1024);
 }
 
 void Net::ForwardFromTo(int start, int end) {
