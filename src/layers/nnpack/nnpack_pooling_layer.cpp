@@ -8,12 +8,11 @@ void NNPackPoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
                                      const vector<Blob*>& top) {
   CHECK_EQ(this->layer_param_.pooling_param().pool(),
            PoolingParameter_PoolMethod_MAX);
-  CHECK_EQ(this->kernel_w_, 2);
-  CHECK_EQ(this->kernel_h_, 2);
-  CHECK_EQ(this->stride_w_, 2);
-  CHECK_EQ(this->stride_h_, 2);
-  CHECK_EQ(this->pad_w_, 0);
-  CHECK_EQ(this->pad_h_, 0);
+  if (this->kernel_w_ != 2 || this->kernel_h_ != 2 ||
+      this->stride_w_ != 2 || this->stride_h_ != 2 ||
+      this->pad_w_ != 2 || this->pad_h_ != 2) {
+    return PoolingLayer::Forward_cpu(bottom, top);
+  }
   nnp_size input_size = {static_cast<size_t>(bottom[0]->width()),
                          static_cast<size_t>(bottom[0]->height())};
   nnp_padding input_padding = {static_cast<size_t>(this->pad_h_),

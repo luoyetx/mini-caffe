@@ -201,10 +201,12 @@ STUB_GPU(PoolingLayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-  PoolingParameter_Engine engine = param.pooling_param().engine();
+  PoolingParameter pooling_param = param.pooling_param();
   if (Caffe::mode() == Caffe::CPU) {
 #ifdef USE_NNPACK
-    return shared_ptr<Layer>(new NNPackPoolingLayer(param));
+    if (pooling_param.pool() == PoolingParameter_PoolMethod_MAX) {
+      return shared_ptr<Layer>(new NNPackPoolingLayer(param));
+    }
 #endif  // USE_NNPACK
   }
   else {
@@ -217,7 +219,6 @@ static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
   }
   return shared_ptr<Layer>(new PoolingLayer(param));
 }
-
 
 REGISTER_LAYER_CREATOR(Pooling, CreateLayer);
 
