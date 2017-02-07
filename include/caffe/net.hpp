@@ -115,9 +115,8 @@ class CAFFE_API Net {
   bool has_layer(const string& layer_name) const;
   const shared_ptr<Layer> layer_by_name(const string& layer_name) const;
 
-  real_t MemSize() const {
-    return static_cast<real_t>(memory_used_) / (1024 * 1024);
-  }
+  /// @brief calculate memory usage in MB
+  real_t MemSize() const;
 
  protected:
   // Helpers for Init.
@@ -151,8 +150,6 @@ class CAFFE_API Net {
   /// top_vecs stores the vectors containing the output for each layer
   vector<vector<Blob*> > top_vecs_;
   vector<vector<int> > top_id_vecs_;
-  /// The bytes of memory used by this net
-  size_t memory_used_;
   DISABLE_COPY_AND_ASSIGN(Net);
 };
 
