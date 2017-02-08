@@ -6,6 +6,9 @@ option(USE_CUDA "Use CUDA support" OFF)
 option(USE_CUDNN "Use CUDNN support" OFF)
 option(USE_NNPACK "Use NNPACK support" OFF)
 
+# select BLAS
+set(BLAS "openblas" CACHE STRING "Selected BLAS library")
+
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Cuda.cmake)
 
 if(USE_NNPACK)
@@ -26,10 +29,17 @@ if(MSVC)
   link_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/lib)
   list(APPEND Caffe_LINKER_LIBS debug libprotobufd optimized libprotobuf
                                 libopenblas)
-else()
+else(MSVC)
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
-  list(APPEND Caffe_LINKER_LIBS protobuf openblas)
-endif()
+  list(APPEND Caffe_LINKER_LIBS protobuf)
+  if(BLAS STREQUAL "openblas")
+    list(APPEND Caffe_LINKER_LIBS openblas)
+    message(STATUS "Use OpenBLAS for blas library")
+  else()
+    list(APPEND Caffe_LINKER_LIBS blas)
+    message(STATUS "Use BLAS for blas library")
+  endif()
+endif(MSVC)
 
 # source file structure
 file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)

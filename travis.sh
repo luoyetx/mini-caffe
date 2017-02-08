@@ -6,7 +6,7 @@ protoc -I="./src/proto" --cpp_out="./src/proto" "./src/proto/caffe.proto"
 
 # build
 mkdir build && cd build
-cmake ..
+cmake .. -DBLAS=blas
 make
 
 # before test
