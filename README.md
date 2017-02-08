@@ -24,11 +24,10 @@ protobuf is a git submodule in Mini-Caffe, we need to fetch the source code and 
 
 ```
 $ git submodule update --init
-$ cmake .. -DUSE_CUDA=ON -DUSE_CUDNN=ON
 $ cd 3rdparty/src/protobuf/cmake
 $ mkdir build
 $ cd build
-$ cmake .. -DBUILD_TESTING=OFF -G "Visual Studio 12 2013 Win64"
+$ cmake .. -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -G "Visual Studio 12 2013 Win64"
 ```
 
 Use `protobuf.sln` to compile `Debug` and `Release` version.

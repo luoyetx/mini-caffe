@@ -51,7 +51,3 @@ test_script:
 branches:
   only:
     - master
-
-cache:
-  - 3rdparty.zip -> appveyor.yml
-  - model.zip -> appveyor.yml
