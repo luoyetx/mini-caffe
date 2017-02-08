@@ -14,7 +14,6 @@ endif()
 
 # turn on C++11
 if(CMAKE_COMPILER_IS_GNUCXX)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
@@ -29,7 +28,7 @@ if(MSVC)
                                 libopenblas)
 else()
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
-  list(APPEND Caffe_LINKER_LIBS protobuf blas)
+  list(APPEND Caffe_LINKER_LIBS protobuf openblas)
 endif()
 
 # source file structure
@@ -54,11 +53,10 @@ if(HAVE_CUDA)
   # cuda code
   file(GLOB CAFFE_SRC_UTIL_CU ${CMAKE_CURRENT_LIST_DIR}/src/util/*.cu)
   file(GLOB CAFFE_SRC_LAYERS_CU ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cu)
-  caffe_cuda_compile(CAFFE_CUDA_OBJS ${CAFFE_SRC_UTIL_CU}
-                                     ${CAFFE_SRC_LAYERS_CU})
+  set(CAFFE_CUDA_CODE ${CAFFE_SRC_UTIL_CU}
+                      ${CAFFE_SRC_LAYERS_CU})
   list(APPEND CAFFE_SRC_UTIL ${CAFFE_SRC_UTIL_CU})
   list(APPEND CAFFE_SRC_LAYERS ${CAFFE_SRC_LAYERS_CU})
-  list(APPEND CAFFE_COMPILE_CODE ${CAFFE_CUDA_OBJS})
   # cudnn code
   if(HAVE_CUDNN)
     # source file structure
@@ -67,8 +65,7 @@ if(HAVE_CUDA)
                                      ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.cu)
     # cuda code
     file(GLOB CAFFE_CUDNN_CUDA_CODE ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.cu)
-    caffe_cuda_compile(CAFFE_CUDNN_OBJS ${CAFFE_CUDNN_CUDA_CODE})
-    list(APPEND CAFFE_COMPILE_CODE ${CAFFE_CUDNN_OBJS})
+    list(APPEND CAFFE_CUDA_CODE ${CAFFE_CUDNN_CUDA_CODE})
     # cpp code
     file(GLOB CAFFR_CUDNN_CPP_CODE ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.hpp
                                    ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.cpp)
@@ -76,6 +73,8 @@ if(HAVE_CUDA)
     set(CAFFE_SRC_LAYERS_CUDNN ${CAFFR_CUDNN_CPP_CODE}
                                ${CAFFE_CUDNN_CUDA_CODE})
   endif()
+  caffe_cuda_compile(CAFFE_CUDA_OBJS ${CAFFE_CUDA_CODE})
+  list(APPEND CAFFE_COMPILE_CODE ${CAFFE_CUDA_OBJS})
 endif()
 
 if(HAVE_NNPACK)
