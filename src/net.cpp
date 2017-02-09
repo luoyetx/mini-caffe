@@ -201,12 +201,8 @@ bool Net::has_blob(const string& blob_name) const {
 
 const shared_ptr<Blob> Net::blob_by_name(const string& blob_name) const {
   shared_ptr<Blob> blob_ptr;
-  if (has_blob(blob_name)) {
-    blob_ptr = blobs_[blob_names_index_.find(blob_name)->second];
-  } else {
-    blob_ptr.reset((Blob*)(NULL));
-    LOG(WARNING) << "Unknown blob name " << blob_name;
-  }
+  CHECK(has_blob(blob_name)) << "Unknown blob name " << blob_name;
+  blob_ptr = blobs_[blob_names_index_.find(blob_name)->second];
   return blob_ptr;
 }
 
@@ -216,12 +212,8 @@ bool Net::has_layer(const string& layer_name) const {
 
 const shared_ptr<Layer> Net::layer_by_name(const string& layer_name) const {
   shared_ptr<Layer> layer_ptr;
-  if (has_layer(layer_name)) {
-    layer_ptr = layers_[layer_names_index_.find(layer_name)->second];
-  } else {
-    layer_ptr.reset((Layer*)(NULL));
-    LOG(WARNING) << "Unknown layer name " << layer_name;
-  }
+  CHECK(has_layer(layer_name)) << "Unknown layer name " << layer_name;
+  layer_ptr = layers_[layer_names_index_.find(layer_name)->second];
   return layer_ptr;
 }
 

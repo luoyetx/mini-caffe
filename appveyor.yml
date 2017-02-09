@@ -47,6 +47,7 @@ test_script:
   - cmd: |
       cd build\Release
       run_net
+      run_net_c
 
 branches:
   only:
