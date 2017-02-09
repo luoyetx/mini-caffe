@@ -3,27 +3,30 @@
 #include <stdlib.h>
 #include <caffe/c_api.h>
 
-#define CHECK(condition)                    \
-  if (!(condition)) {                       \
-    printf("CHECK " #condition " failed");  \
-    exit(-1);                               \
+#define CHECK(condition)                          \
+  if (!(condition)) {                             \
+    printf("CHECK (" #condition ") failed\n");    \
+    exit(-1);                                     \
   }
 
 int main(int argc, char *argv[]) {
   // create network
-  NetHandle net = CaffeCreateNet("model/nin.prototxt", "model/nin.caffemodel");
+  NetHandle net;
+  CHECK(CaffeCreateNet("model/nin.prototxt", "model/nin.caffemodel", &net) == 0);
   // get data blob
-  BlobHandle blob = CaffeNetGetBlob(net, "data");
+  BlobHandle blob;
+  CHECK(CaffeNetGetBlob(net, "data", &blob) == 0);
   int num = CaffeBlobNum(blob);
   int channels = CaffeBlobChannels(blob);
   int height = CaffeBlobHeight(blob);
   int width = CaffeBlobWidth(blob);
-  real_t *data = CaffeBlobData(blob);
   CHECK(num == 1);
   CHECK(channels == 3);
   CHECK(height == 224);
   CHECK(width == 224);
+  CHECK(CaffeBlobReshape(blob, num, channels, height, width) == 0);
   // copy data
+  real_t *data = CaffeBlobData(blob);
   int count = num * channels * height * width;
   int i;
   for (i = 0; i < count; i++) {
@@ -32,12 +35,17 @@ int main(int argc, char *argv[]) {
   }
   // forward
   clock_t start = clock();
-  CaffeForwardNet(net);
+  CHECK(CaffeForwardNet(net) == 0);
   clock_t end = clock();
   float time = (float)(end - start) / CLOCKS_PER_SEC;  // s
   time *= 1000;  // ms
   printf("Forward NIN costs %.4f ms\n", time);
   // destroy
-  CaffeDestroyNet(net);
+  CHECK(CaffeDestroyNet(net) == 0);
+
+  // should failed
+  CHECK(CaffeCreateNet("no-such-prototxt", "no-such-caffemodel", &net) == -1);
+  printf("%s\n", CaffeGetLastError());
+
   return 0;
 }
