@@ -228,6 +228,10 @@ class CAFFE_API Blob {
   DISABLE_COPY_AND_ASSIGN(Blob);
 };  // class Blob
 
+/// @brief Read binary data
+CAFFE_API shared_ptr<Blob> ReadBlobFromFile(const string& file);
+CAFFE_API shared_ptr<Blob> ReadBlobFromBuffer(const string& buffer);
+
 class BlobInt : public Blob {
  public:
   BlobInt()

@@ -153,6 +153,13 @@ class CAFFE_API Net {
   DISABLE_COPY_AND_ASSIGN(Net);
 };
 
+/// @brief Read text net parameter, like xxx.prototxt
+CAFFE_API shared_ptr<NetParameter> ReadTextNetParameterFromFile(const string& file);
+CAFFE_API shared_ptr<NetParameter> ReadTextNetParameterFromBuffer(const string& buffer);
+/// @brief Read binary net parameter, like xxx.binaryproto
+CAFFE_API shared_ptr<NetParameter> ReadBinaryNetParameterFromFile(const string& file);
+CAFFE_API shared_ptr<NetParameter> ReadBinaryNetParameterFromBuffer(const string& buffer);
+
 }  // namespace caffe
 
 #endif  // CAFFE_NET_HPP_

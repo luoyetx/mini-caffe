@@ -90,7 +90,8 @@ struct TestFunctor {
 
   TestFunctor(const std::string &prototxt, const std::string &caffemodel)
     : net(new caffe::Net(prototxt)) {
-    net->CopyTrainedLayersFrom(caffemodel);
+    shared_ptr<caffe::NetParameter> np = caffe::ReadBinaryNetParameterFromFile(caffemodel);
+    net->CopyTrainedLayersFrom(*np);
   }
   /*!
    * \brief generate input data

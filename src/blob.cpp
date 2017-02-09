@@ -2,6 +2,7 @@
 
 #include "caffe/blob.hpp"
 #include "./syncedmem.hpp"
+#include "./util/io.hpp"
 #include "./util/math_functions.hpp"
 #include "./proto/caffe.pb.h"
 
@@ -209,6 +210,25 @@ const int* BlobInt::gpu_data() const {
 int* BlobInt::mutable_gpu_data() {
   CHECK(data_);
   return static_cast<int*>(data_->mutable_gpu_data());
+}
+
+shared_ptr<Blob> ReadBlobFromFile(const string& file) {
+  BlobProto bp;
+  ReadProtoFromBinaryFileOrDie(file.c_str(), &bp);
+  shared_ptr<Blob> blob(new Blob);
+  blob->FromProto(bp);
+  return blob;
+}
+
+shared_ptr<Blob> ReadBlobFromBuffer(const string& buffer) {
+  using google::protobuf::uint8;
+  google::protobuf::io::CodedInputStream ci(reinterpret_cast<const uint8*>(buffer.c_str()),
+                                            buffer.length());
+  BlobProto bp;
+  CHECK(bp.ParseFromCodedStream(&ci)) << "Parse Blob failed";
+  shared_ptr<Blob> blob;
+  blob->FromProto(bp);
+  return blob;
 }
 
 }  // namespace caffe

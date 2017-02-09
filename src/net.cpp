@@ -5,6 +5,9 @@
 #include <utility>
 #include <vector>
 
+#include <google/protobuf/text_format.h>
+#include <google/protobuf/io/coded_stream.h>
+
 #include "caffe/common.hpp"
 #include "caffe/net.hpp"
 #include "./layer.hpp"
@@ -220,6 +223,34 @@ const shared_ptr<Layer> Net::layer_by_name(const string& layer_name) const {
     LOG(WARNING) << "Unknown layer name " << layer_name;
   }
   return layer_ptr;
+}
+
+shared_ptr<NetParameter> ReadTextNetParameterFromFile(const string& file) {
+  shared_ptr<NetParameter> np(new NetParameter);
+  ReadNetParamsFromTextFileOrDie(file, np.get());
+  return np;
+}
+
+shared_ptr<NetParameter> ReadTextNetParameterFromBuffer(const string& buffer) {
+  shared_ptr<NetParameter> np(new NetParameter);
+  CHECK(google::protobuf::TextFormat::ParseFromString(buffer, np.get()))
+    << "Parse Text NetParameter from Buffer failed";
+  return np;
+}
+
+shared_ptr<NetParameter> ReadBinaryNetParameterFromFile(const string& file) {
+  shared_ptr<NetParameter> np(new NetParameter);
+  ReadNetParamsFromBinaryFileOrDie(file, np.get());
+  return np;
+}
+
+shared_ptr<NetParameter> ReadBinaryNetParameterFromBuffer(const string& buffer) {
+  using google::protobuf::uint8;
+  shared_ptr<NetParameter> np;
+  google::protobuf::io::CodedInputStream ci(reinterpret_cast<const uint8*>(buffer.c_str()),
+                                            buffer.length());
+  CHECK(np->ParseFromCodedStream(&ci)) << "Parse Binary NetParameter from Buffer failed";
+  return np;
 }
 
 }  // namespace caffe
