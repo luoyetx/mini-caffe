@@ -1,5 +1,7 @@
 #include <vector>
 
+#include <google/protobuf/io/coded_stream.h>
+
 #include "caffe/blob.hpp"
 #include "./syncedmem.hpp"
 #include "./util/io.hpp"
