@@ -127,7 +127,7 @@ void PoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
   // loop to save time, although this results in more code.
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
-    caffe_set(top_count, std::numeric_limits<real_t>::min(), top_data);
+    caffe_set(top_count, static_cast<real_t>(-FLT_MAX), top_data);
     // The main loop
     for (int n = 0; n < bottom[0]->num(); ++n) {
       for (int c = 0; c < channels_; ++c) {
