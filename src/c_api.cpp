@@ -4,77 +4,14 @@
 #include "caffe/blob.hpp"
 #include "caffe/net.hpp"
 
-#define API_BEGIN() try {
-#define API_END() } catch(caffe::Error &_except_) { return CaffeAPIHandleException(_except_); } return 0;
-
-void CaffeAPISetLastError(const char *msg);
-int CaffeAPIHandleException(caffe::Error &e);
-
-// API
-
-int CaffeBlobNum(BlobHandle blob) {
-  return static_cast<caffe::Blob*>(blob)->num();
-}
-
-int CaffeBlobChannels(BlobHandle blob) {
-  return static_cast<caffe::Blob*>(blob)->channels();
-}
-
-int CaffeBlobHeight(BlobHandle blob) {
-  return static_cast<caffe::Blob*>(blob)->height();
-}
-
-int CaffeBlobWidth(BlobHandle blob) {
-  return static_cast<caffe::Blob*>(blob)->width();
-}
-
-real_t *CaffeBlobData(BlobHandle blob) {
-  return static_cast<caffe::Blob*>(blob)->mutable_cpu_data();
-}
-
-int CaffeBlobReshape(BlobHandle blob, int num, int channels,
-                     int height, int width) {
-  API_BEGIN();
-  static_cast<caffe::Blob*>(blob)->Reshape(num, channels, height, width);
-  API_END();
-}
-
-int CaffeCreateNet(const char *net_path, const char *model_path,
-                   NetHandle *net) {
-  API_BEGIN();
-  caffe::Net *net_ = new caffe::Net(net_path);
-  net_->CopyTrainedLayersFrom(model_path);
-  *net = static_cast<NetHandle>(net_);
-  API_END();
-}
-
-int CaffeDestroyNet(NetHandle net) {
-  API_BEGIN();
-  delete static_cast<caffe::Net*>(net);
-  API_END();
-}
-
-int CaffeForwardNet(NetHandle net) {
-  API_BEGIN();
-  static_cast<caffe::Net*>(net)->Forward();
-  API_END();
-}
-
-int CaffeNetGetBlob(NetHandle net, const char *name, BlobHandle *blob) {
-  API_BEGIN();
-  std::shared_ptr<caffe::Blob> blob_ = static_cast<caffe::Net*>(net)->blob_by_name(name);
-  *blob = static_cast<BlobHandle>(blob_.get());
-  API_END();
-}
-
-// Helper
+// ThreadLocal Template
 
 #ifdef __GNUC__
-  #define THREAD_LOCAL __thread
+#define THREAD_LOCAL __thread
 #elif __STDC_VERSION__ >= 201112L
-  #define THREAD_LOCAL _Thread_local
+#define THREAD_LOCAL _Thread_local
 #elif defined(_MSC_VER)
-  #define THREAD_LOCAL __declspec(thread)
+#define THREAD_LOCAL __declspec(thread)
 #endif
 
 #ifndef THREAD_LOCAL
@@ -114,6 +51,98 @@ private:
   std::mutex mutex_;
   std::vector<T*> objs_;
 };
+
+#define API_BEGIN() try {
+#define API_END() } catch(caffe::Error &_except_) { return CaffeAPIHandleException(_except_); } return 0;
+
+void CaffeAPISetLastError(const char *msg);
+int CaffeAPIHandleException(caffe::Error &e);
+
+// API
+
+int CaffeBlobNum(BlobHandle blob) {
+  return static_cast<caffe::Blob*>(blob)->num();
+}
+
+int CaffeBlobChannels(BlobHandle blob) {
+  return static_cast<caffe::Blob*>(blob)->channels();
+}
+
+int CaffeBlobHeight(BlobHandle blob) {
+  return static_cast<caffe::Blob*>(blob)->height();
+}
+
+int CaffeBlobWidth(BlobHandle blob) {
+  return static_cast<caffe::Blob*>(blob)->width();
+}
+
+real_t *CaffeBlobData(BlobHandle blob) {
+  return static_cast<caffe::Blob*>(blob)->mutable_cpu_data();
+}
+
+int CaffeBlobReshape(BlobHandle blob, int num, int channels,
+                     int height, int width) {
+  API_BEGIN();
+  static_cast<caffe::Blob*>(blob)->Reshape(num, channels, height, width);
+  API_END();
+}
+
+int CaffeNetCreate(const char *net_path, const char *model_path,
+                   NetHandle *net) {
+  API_BEGIN();
+  caffe::Net *net_ = new caffe::Net(net_path);
+  net_->CopyTrainedLayersFrom(model_path);
+  *net = static_cast<NetHandle>(net_);
+  API_END();
+}
+
+int CaffeNetDestroy(NetHandle net) {
+  API_BEGIN();
+  delete static_cast<caffe::Net*>(net);
+  API_END();
+}
+
+int CaffeNetForward(NetHandle net) {
+  API_BEGIN();
+  static_cast<caffe::Net*>(net)->Forward();
+  API_END();
+}
+
+int CaffeNetGetBlob(NetHandle net, const char *name, BlobHandle *blob) {
+  API_BEGIN();
+  std::shared_ptr<caffe::Blob> blob_ = static_cast<caffe::Net*>(net)->blob_by_name(name);
+  *blob = static_cast<BlobHandle>(blob_.get());
+  API_END();
+}
+
+struct BlobsEntry {
+  std::vector<const char*> vec_charp;
+  std::vector<void*> vec_handle;
+};
+
+typedef ThreadLocalStore<BlobsEntry> BlobsStore;
+
+int CaffeNetListBlob(NetHandle net, int *n, const char ***names, BlobHandle **blobs) {
+  API_BEGIN();
+  caffe::Net *net_ = static_cast<caffe::Net*>(net);
+  const auto &names_ = net_->blob_names();
+  const auto &blobs_ = net_->blobs();
+  CHECK_EQ(names_.size(), blobs_.size());
+  const int num = names_.size();
+  auto *ret = BlobsStore::Get();
+  ret->vec_charp.resize(num);
+  ret->vec_handle.resize(num);
+  for (int i = 0; i < num; i++) {
+    ret->vec_charp[i] = names_[i].c_str();
+    ret->vec_handle[i] = static_cast<BlobHandle>(blobs_[i].get());
+  }
+  *n = num;
+  *names = ret->vec_charp.data();
+  *blobs = ret->vec_handle.data();
+  API_END();
+}
+
+// Helper
 
 struct ErrorEntry {
   std::string last_error;

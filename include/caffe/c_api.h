@@ -1,5 +1,5 @@
-#ifndef CAFFE_C_API_HPP_
-#define CAFFE_C_API_HPP_
+#ifndef CAFFE_C_API_H_
+#define CAFFE_C_API_H_
 
 #ifdef _MSC_VER
 #ifdef CAFFE_EXPORTS
@@ -48,16 +48,16 @@ CAFFE_API int CaffeBlobReshape(BlobHandle blob,
  * \param net output NetHandle
  * \return return code, 0 for success, -1 for failed
  */
-CAFFE_API int CaffeCreateNet(const char *net_path,
+CAFFE_API int CaffeNetCreate(const char *net_path,
                              const char *model_path,
                              NetHandle *net);
 /*! \brief destroy network */
-CAFFE_API int CaffeDestroyNet(NetHandle net);
+CAFFE_API int CaffeNetDestroy(NetHandle net);
 /*!
  * \brief forward network
  * \note  fill network input blobs before calling this function
  */
-CAFFE_API int CaffeForwardNet(NetHandle net);
+CAFFE_API int CaffeNetForward(NetHandle net);
 /*!
  * \brief get network internal blob by name
  * \param net NetHandle
@@ -68,6 +68,13 @@ CAFFE_API int CaffeForwardNet(NetHandle net);
 CAFFE_API int CaffeNetGetBlob(NetHandle net,
                               const char *name,
                               BlobHandle *blob);
+/*!
+ * \brief list all network internal data buffer
+ */
+CAFFE_API int CaffeNetListBlob(NetHandle net,
+                               int *n,
+                               const char ***names,
+                               BlobHandle **blobs);
 /*!
  * \brief return last API error info
  * \note  this function is thread safe

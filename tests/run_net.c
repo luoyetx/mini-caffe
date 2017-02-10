@@ -12,7 +12,7 @@
 int main(int argc, char *argv[]) {
   // create network
   NetHandle net;
-  CHECK(CaffeCreateNet("model/nin.prototxt", "model/nin.caffemodel", &net) == 0);
+  CHECK(CaffeNetCreate("model/nin.prototxt", "model/nin.caffemodel", &net) == 0);
   // get data blob
   BlobHandle blob;
   CHECK(CaffeNetGetBlob(net, "data", &blob) == 0);
@@ -35,16 +35,29 @@ int main(int argc, char *argv[]) {
   }
   // forward
   clock_t start = clock();
-  CHECK(CaffeForwardNet(net) == 0);
+  CHECK(CaffeNetForward(net) == 0);
   clock_t end = clock();
   float time = (float)(end - start) / CLOCKS_PER_SEC;  // s
   time *= 1000;  // ms
   printf("Forward NIN costs %.4f ms\n", time);
+  // list internal blobs
+  int n;
+  const char **names;
+  BlobHandle *blobs;
+  CHECK(CaffeNetListBlob(net, &n, &names, &blobs) == 0);
+  printf("NIN has %d internal data blobs\n", n);
+  for (i = 0; i < n; i++) {
+    printf("%s: [%d, %d, %d, %d]\n", names[i],
+                                     CaffeBlobNum(blobs[i]),
+                                     CaffeBlobChannels(blobs[i]),
+                                     CaffeBlobHeight(blobs[i]),
+                                     CaffeBlobWidth(blobs[i]));
+  }
   // destroy
-  CHECK(CaffeDestroyNet(net) == 0);
+  CHECK(CaffeNetDestroy(net) == 0);
 
   // should failed
-  CHECK(CaffeCreateNet("no-such-prototxt", "no-such-caffemodel", &net) == -1);
+  CHECK(CaffeNetCreate("no-such-prototxt", "no-such-caffemodel", &net) == -1);
   printf("%s\n", CaffeGetLastError());
 
   return 0;
