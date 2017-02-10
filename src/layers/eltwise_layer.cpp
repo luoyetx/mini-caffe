@@ -1,5 +1,5 @@
 #include <vector>
-#include <limits>
+#include <cfloat>
 
 #include "./eltwise_layer.hpp"
 #include "../util/math_functions.hpp"
@@ -57,7 +57,7 @@ void EltwiseLayer::Forward_cpu(const vector<Blob*>& bottom,
     break;
   case EltwiseParameter_EltwiseOp_MAX:
     // Initialize
-    caffe_set(count, std::numeric_limits<real_t>::min(), top_data);
+    caffe_set(count, static_cast<real_t>(-FLT_MAX), top_data);
     // bottom 0 & 1
     bottom_data_a = bottom[0]->cpu_data();
     bottom_data_b = bottom[1]->cpu_data();
