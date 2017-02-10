@@ -203,11 +203,15 @@ class LogMessageFatal {
     log_stream_ << "[" << pretty_date_.HumanDate() << "] " << file << ":"
                 << line << ": ";
   }
-  std::ostringstream &stream() { return log_stream_; }
+#if defined(_MSC_VER) && _MSC_VER < 1900
   ~LogMessageFatal() {
+#else
+  ~LogMessageFatal() noexcept(false) {
+#endif
     // LOG(ERROR) << log_stream_.str();
     throw Error(log_stream_.str());
   }
+  std::ostringstream &stream() { return log_stream_; }
 
  private:
   std::ostringstream log_stream_;
