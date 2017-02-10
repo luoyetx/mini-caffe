@@ -5,6 +5,11 @@
 #include "../filler.hpp"
 #include "../util/math_functions.hpp"
 
+#ifdef USE_CUDNN
+#include "./cudnn/cudnn_bn_layer.hpp"
+#endif  // USE_CUDNN
+
+
 namespace caffe {
 
 void BNLayer::LayerSetUp(const vector<Blob*>& bottom,
@@ -141,6 +146,16 @@ void BNLayer::Forward_cpu(const vector<Blob*>& bottom,
 STUB_GPU(BNLayer);
 #endif
 
-REGISTER_LAYER_CLASS(BN);
+// Creator
+
+static shared_ptr<Layer> CreateLayer(const LayerParameter &param) {
+#ifdef USE_CUDNN
+  return shared_ptr<Layer>(new CuDNNBNLayer(param));
+#else
+  return shared_ptr<Layer>(new BNLayer(param));
+#endif  // USE_CUDNN
+}
+
+REGISTER_LAYER_CREATOR(BN, CreateLayer);
 
 }  // namespace caffe
