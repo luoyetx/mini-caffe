@@ -19,3 +19,4 @@ unzip -o model.zip
 
 # test
 ./run_net
+./run_net_c

@@ -197,50 +197,27 @@ class LogMessage {
   void operator=(const LogMessage&);
 };
 
-// customized logger that can allow user to define where to log the message.
-class CustomLogMessage {
+class LogMessageFatal {
  public:
-  CustomLogMessage(const char* file, int line) {
-    log_stream_ << "[" << DateLogger().HumanDate() << "] " << file << ":"
+  LogMessageFatal(const char* file, int line) {
+    log_stream_ << "[" << pretty_date_.HumanDate() << "] " << file << ":"
                 << line << ": ";
   }
-  ~CustomLogMessage() {
-    Log(log_stream_.str());
+#if defined(_MSC_VER) && _MSC_VER < 1900
+  ~LogMessageFatal() {
+#else
+  ~LogMessageFatal() noexcept(false) {
+#endif
+    // LOG(ERROR) << log_stream_.str();
+    throw Error(log_stream_.str());
   }
-  std::ostream& stream() { return log_stream_; }
-  /*!
-   * \brief customized logging of the message.
-   * This function won't be implemented by libdmlc
-   * \param msg The message to be logged.
-   */
-  static void Log(const std::string& msg);
+  std::ostringstream &stream() { return log_stream_; }
 
  private:
   std::ostringstream log_stream_;
-};
-
-class LogMessageFatal : public LogMessage {
- public:
-  LogMessageFatal(const char* file, int line) : LogMessage(file, line) {}
-  ~LogMessageFatal() {
-    log_stream_ << "\n";
-    abort();
-  }
-
- private:
+  DateLogger pretty_date_;
   LogMessageFatal(const LogMessageFatal&);
   void operator=(const LogMessageFatal&);
-};
-
-// This class is used to explicitly ignore values in the conditional
-// logging macros.  This avoids compiler warnings like "value computed
-// is not used" and "statement has no effect".
-class LogMessageVoidify {
- public:
-  LogMessageVoidify() {}
-  // This has to be an operator with a precedence lower than << but
-  // higher than "?:". See its usage.
-  void operator&(std::ostream&) {}
 };
 
 }  // namespace caffe

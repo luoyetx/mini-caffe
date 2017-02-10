@@ -42,7 +42,8 @@ else(MSVC)
 endif(MSVC)
 
 # source file structure
-file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)
+file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.h
+                        ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)
 file(GLOB CAFFE_SRC ${CMAKE_CURRENT_LIST_DIR}/src/*.hpp
                     ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
 file(GLOB CAFFE_SRC_LAYERS ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.hpp
