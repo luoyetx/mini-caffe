@@ -41,6 +41,7 @@ CAFFE_API int CaffeBlobReshape(BlobHandle blob,
                                int height, int width);
 
 // Net API
+
 /*!
  * \brief create network
  * \param net_path path to network prototxt file
@@ -75,6 +76,20 @@ CAFFE_API int CaffeNetListBlob(NetHandle net,
                                int *n,
                                const char ***names,
                                BlobHandle **blobs);
+
+// Helper
+
+/*!
+ * \brief gpu avariable
+ * \return 1 for gpu available, 0 for not available
+ */
+CAFFE_API int CaffeGPUAvailable();
+/*!
+ * \brief set caffe mode
+ * \param mode 1 for GPU, 0 for CPU
+ * \param device GPU device id, -1 for CPU
+ */
+CAFFE_API int CaffeSetMode(int mode, int device);
 /*!
  * \brief return last API error info
  * \note  this function is thread safe

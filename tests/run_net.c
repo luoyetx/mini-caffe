@@ -9,13 +9,19 @@
     exit(-1);                                     \
   }
 
+#define CHECK_SUCCESS(condition) CHECK((condition) == 0)
+
 int main(int argc, char *argv[]) {
+  // check gpu available
+  if (CaffeGPUAvailable()) {
+    CHECK_SUCCESS(CaffeSetMode(1, 0));
+  }
   // create network
   NetHandle net;
-  CHECK(CaffeNetCreate("model/nin.prototxt", "model/nin.caffemodel", &net) == 0);
+  CHECK_SUCCESS(CaffeNetCreate("model/nin.prototxt", "model/nin.caffemodel", &net));
   // get data blob
   BlobHandle blob;
-  CHECK(CaffeNetGetBlob(net, "data", &blob) == 0);
+  CHECK_SUCCESS(CaffeNetGetBlob(net, "data", &blob));
   int num = CaffeBlobNum(blob);
   int channels = CaffeBlobChannels(blob);
   int height = CaffeBlobHeight(blob);
@@ -35,7 +41,7 @@ int main(int argc, char *argv[]) {
   }
   // forward
   clock_t start = clock();
-  CHECK(CaffeNetForward(net) == 0);
+  CHECK_SUCCESS(CaffeNetForward(net));
   clock_t end = clock();
   float time = (float)(end - start) / CLOCKS_PER_SEC;  // s
   time *= 1000;  // ms
@@ -44,7 +50,7 @@ int main(int argc, char *argv[]) {
   int n;
   const char **names;
   BlobHandle *blobs;
-  CHECK(CaffeNetListBlob(net, &n, &names, &blobs) == 0);
+  CHECK_SUCCESS(CaffeNetListBlob(net, &n, &names, &blobs));
   printf("NIN has %d internal data blobs\n", n);
   for (i = 0; i < n; i++) {
     printf("%s: [%d, %d, %d, %d]\n", names[i],
@@ -54,7 +60,7 @@ int main(int argc, char *argv[]) {
                                      CaffeBlobWidth(blobs[i]));
   }
   // destroy
-  CHECK(CaffeNetDestroy(net) == 0);
+  CHECK_SUCCESS(CaffeNetDestroy(net));
 
   // should failed
   CHECK(CaffeNetCreate("no-such-prototxt", "no-such-caffemodel", &net) == -1);

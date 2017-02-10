@@ -142,6 +142,27 @@ int CaffeNetListBlob(NetHandle net, int *n, const char ***names, BlobHandle **bl
   API_END();
 }
 
+int CaffeGPUAvailable() {
+#ifdef USE_CUDA
+  return 1;
+#else
+  return 0;
+#endif  // USE_CUDA
+}
+
+int CaffeSetMode(int mode, int device) {
+  API_BEGIN();
+  if (mode == 0) {
+    caffe::Caffe::set_mode(caffe::Caffe::CPU);
+  }
+  else {
+    CHECK_EQ(mode, 1);
+    caffe::Caffe::set_mode(caffe::Caffe::GPU);
+    caffe::Caffe::SetDevice(device);
+  }
+  API_END();
+}
+
 // Helper
 
 struct ErrorEntry {
