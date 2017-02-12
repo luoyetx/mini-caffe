@@ -53,7 +53,7 @@ $ sudo apt install libopenblas-dev libprotobuf-dev protobuf-compiler
 $ protoc -I="./src/proto" --cpp_out="./src/proto" "./src/proto/caffe.proto"
 $ mkdir build
 $ cd build
-$ cmake ..
+$ cmake .. -DCMAKE_BUILD_TYPE=Release
 $ make -j4
 ```
 
