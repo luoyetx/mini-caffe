@@ -9,7 +9,6 @@
 #include "./cudnn/cudnn_bn_layer.hpp"
 #endif  // USE_CUDNN
 
-
 namespace caffe {
 
 void BNLayer::LayerSetUp(const vector<Blob*>& bottom,

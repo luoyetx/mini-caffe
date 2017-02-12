@@ -110,7 +110,7 @@ void ROIPoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
   }
 }
 
-#ifdef CPU_ONLY
+#ifndef USE_CUDA
 STUB_GPU(ROIPoolingLayer);
 #endif
 
