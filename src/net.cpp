@@ -10,6 +10,7 @@
 
 #include "caffe/common.hpp"
 #include "caffe/net.hpp"
+#include "caffe/profiler.hpp"
 #include "./layer.hpp"
 #include "./util/math_functions.hpp"
 #include "./util/upgrade_proto.hpp"
@@ -124,9 +125,12 @@ real_t Net::MemSize() const {
 void Net::ForwardFromTo(int start, int end) {
   CHECK_GE(start, 0);
   CHECK_LT(end, layers_.size());
+  Profiler *profiler = Profiler::Get();
   for (int i = start; i <= end; ++i) {
     // LOG(ERROR) << "Forwarding " << layer_names_[i];
+    profiler->StartScope(layers_[i]->type());
     layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
+    profiler->EndScope();
   }
 }
 

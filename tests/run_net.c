@@ -6,6 +6,7 @@
 #define CHECK(condition)                          \
   if (!(condition)) {                             \
     printf("CHECK (" #condition ") failed\n");    \
+    printf("%s\n", CaffeGetLastError());          \
     exit(-1);                                     \
   }
 
