@@ -8,19 +8,36 @@
 
 namespace caffe {
 
+/*!
+ * \brief Profiler for Caffe
+ *  This class is used to profile a range of source code as a scope.
+ *  The basic usage is like below.
+ *
+ * ```
+ * Profiler *profiler = Profiler::Get();
+ * profiler->ScopeStart("scope1");
+ * ...
+ * ...
+ * profiler->ScopeEnd();
+ * ```
+ *
+ * Scope represents a range of source code. Nested scope is also supported.
+ * Dump profile into a json file, then we can view the data from google chrome
+ * in chrome://tracing/
+ */
 class CAFFE_API Profiler {
 public:
-  /*! \brief get instance */
+  /*! \brief get global instance */
   static Profiler *Get();
   /*!
    * \brief start a scope
    * \param name scope name
    */
-  void StartScope(const char *name);
+  void ScopeStart(const char *name);
   /*!
    * \brief end a scope
    */
-  void EndScope();
+  void ScopeEnd();
   /*!
    * \brief dump profile data
    * \param fn file name

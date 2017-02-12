@@ -128,9 +128,9 @@ void Net::ForwardFromTo(int start, int end) {
   Profiler *profiler = Profiler::Get();
   for (int i = start; i <= end; ++i) {
     // LOG(ERROR) << "Forwarding " << layer_names_[i];
-    profiler->StartScope(layers_[i]->type());
+    profiler->ScopeStart(layers_[i]->type());
     layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
-    profiler->EndScope();
+    profiler->ScopeEnd();
   }
 }
 

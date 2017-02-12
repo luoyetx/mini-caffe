@@ -16,7 +16,7 @@ Profiler *Profiler::Get() {
   return &inst;
 }
 
-void Profiler::StartScope(const char *name) {
+void Profiler::ScopeStart(const char *name) {
   if (state_ == kNotRunning) return;
   ScopePtr scope(new Scope);
   if (!scope_stack_.empty()) {
@@ -29,7 +29,7 @@ void Profiler::StartScope(const char *name) {
   scope_stack_.push_back(scope);
 }
 
-void Profiler::EndScope() {
+void Profiler::ScopeEnd() {
   if (state_ == kNotRunning) return;
   CHECK(!scope_stack_.empty());
   ScopePtr current_scope = scope_stack_.back();

@@ -181,9 +181,9 @@ int main(int argc, char *argv[]) {
     auto test = NIN("model/nin.prototxt", "model/nin.caffemodel");
     LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
-    profiler->StartScope("nin");
+    profiler->ScopeStart("nin");
     test.Forward();
-    profiler->EndScope();
+    profiler->ScopeEnd();
     timer.Toc();
     LOG(INFO) << "Forward NIN costs " << timer.Elasped() << " ms";
   }
@@ -193,9 +193,9 @@ int main(int argc, char *argv[]) {
     auto test = GoogLeNet("model/googlenet.prototxt", "model/googlenet.caffemodel");
     LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
-    profiler->StartScope("googlenet");
+    profiler->ScopeStart("googlenet");
     test.Forward();
-    profiler->EndScope();
+    profiler->ScopeEnd();
     timer.Toc();
     LOG(INFO) << "Forward GoogLeNet costs " << timer.Elasped() << " ms";
   }
@@ -205,9 +205,9 @@ int main(int argc, char *argv[]) {
     auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
     LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
-    profiler->StartScope("resnet");
+    profiler->ScopeStart("resnet");
     test.Forward();
-    profiler->EndScope();
+    profiler->ScopeEnd();
     timer.Toc();
     LOG(INFO) << "Forward ResNet costs " << timer.Elasped() << " ms";
   }
