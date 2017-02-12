@@ -2,7 +2,9 @@
 #include <cstring>
 #include <chrono>
 #include <algorithm>
+
 #include <caffe/net.hpp>
+#include <caffe/profiler.hpp>
 
 using namespace std;
 using namespace caffe;
@@ -168,14 +170,20 @@ int main(int argc, char *argv[]) {
 #else
   Caffe::set_mode(Caffe::CPU);
 #endif  // USE_CUDA
+
   Timer timer;
+  Profiler *profiler = Profiler::Get();
+  profiler->TurnON();
+
   // test nin, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#network-in-network-model
   {
     LOG(INFO) << "Test NIN";
     auto test = NIN("model/nin.prototxt", "model/nin.caffemodel");
     LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
+    profiler->ScopeStart("nin");
     test.Forward();
+    profiler->ScopeEnd();
     timer.Toc();
     LOG(INFO) << "Forward NIN costs " << timer.Elasped() << " ms";
   }
@@ -185,7 +193,9 @@ int main(int argc, char *argv[]) {
     auto test = GoogLeNet("model/googlenet.prototxt", "model/googlenet.caffemodel");
     LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
+    profiler->ScopeStart("googlenet");
     test.Forward();
+    profiler->ScopeEnd();
     timer.Toc();
     LOG(INFO) << "Forward GoogLeNet costs " << timer.Elasped() << " ms";
   }
@@ -195,9 +205,15 @@ int main(int argc, char *argv[]) {
     auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
     LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
+    profiler->ScopeStart("resnet");
     test.Forward();
+    profiler->ScopeEnd();
     timer.Toc();
     LOG(INFO) << "Forward ResNet costs " << timer.Elasped() << " ms";
   }
+
+  // dump profile data
+  profiler->TurnOFF();
+  profiler->DumpProfile("profile.json");
   return 0;
 }

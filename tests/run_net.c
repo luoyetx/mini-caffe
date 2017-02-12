@@ -9,7 +9,12 @@
     exit(-1);                                     \
   }
 
-#define CHECK_SUCCESS(condition) CHECK((condition) == 0)
+#define CHECK_SUCCESS(condition)                  \
+  if ((condition) != 0) {                         \
+    printf("CHECK (" #condition ") failed\n");    \
+    printf("%s\n", CaffeGetLastError());          \
+    exit(-1);                                     \
+  }
 
 int main(int argc, char *argv[]) {
   // check gpu available
