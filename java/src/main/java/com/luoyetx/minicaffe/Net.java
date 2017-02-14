@@ -1,7 +1,13 @@
 package com.luoyetx.minicaffe;
 
+
 /**
  * Net represent Caffe Net object
+ * Typical usage is creating a Net, get input blobs through `getBlob`,
+ * then fill data to these blobs, call `Blob.syncToC` make network internal
+ * buffer update to blobs data. Call `forward` to forward network, then get
+ * output blobs to get network output data. Note that `forward` also may
+ * affect network internal blobs which makes blobs in Java side out of date.
  */
 public class Net {
     /**
@@ -22,6 +28,8 @@ public class Net {
     }
     /**
      * forward the network
+     * this function may make blobs in Java side out of date,
+     * call `Blob.syncToJava` if need
      */
     public void forward() {
         if (jniForward() != 0) {

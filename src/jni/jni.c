@@ -112,7 +112,8 @@ CaffeJNIMethod(Net, Forward, jint)(JNIEnv *env, jobject thiz) {
   return 0;
 }
 
-CaffeJNIMethod(Net, GetBlob, jint)(JNIEnv *env, jobject thiz, jstring name, jobject blob) {
+CaffeJNIMethod(Net, GetBlob, jint)(JNIEnv *env, jobject thiz,
+                                   jstring name, jobject blob) {
   NetHandle net;
   BlobHandle blob_;
   JNIGetHandleFromObj(thiz, net);

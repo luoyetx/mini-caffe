@@ -26,13 +26,13 @@ public class Blob {
     }
     private native int jniSyncToJava();
     private native int jniSyncToC();
-    // internal Blob handle
-    private long handle;
     public int num;
     public int channels;
     public int height;
     public int width;
     public float[] data;
+    // internal Blob handle
+    private long handle;
 
     static {
         System.loadLibrary("caffe");
