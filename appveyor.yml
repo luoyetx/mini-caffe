@@ -48,6 +48,7 @@ test_script:
       cd build\Release
       run_net
       run_net_c
+      move model ..
       cd ../..
   - cmd: |
       cd java
