@@ -2,7 +2,7 @@
 #include <string.h>
 #include "caffe/c_api.h"
 
-#define CaffeJNIMethodName(klass, method) Java_com_luoyetx_minicaffe_##klass##_jniC##method
+#define CaffeJNIMethodName(klass, method) Java_com_luoyetx_minicaffe_##klass##_jni##method
 #define CaffeJNIMethod(klass, method, return_type) \
   JNIEXPORT return_type JNICALL CaffeJNIMethodName(klass, method)
 
@@ -17,13 +17,13 @@
 #define JNIGetHandleFromObj(obj, handle) do {                       \
     jclass kls = (*env)->GetObjectClass(env, obj);                  \
     jfieldID field = (*env)->GetFieldID(env, kls, "handle", "J");   \
-    handle = (*env)->GetLongField(env, thiz, field);                \
+    handle = (void*)((*env)->GetLongField(env, obj, field));        \
   } while(0)
 
 #define JNISetHandleToObj(obj, handle) do {                         \
     jclass kls = (*env)->GetObjectClass(env, obj);                  \
     jfieldID field = (*env)->GetFieldID(env, kls, "handle", "J");   \
-    (*env)->SetLongField(env, thiz, field, handle);                 \
+    (*env)->SetLongField(env, obj, field, (jlong)handle);           \
   } while(0)
 
 // class Blob

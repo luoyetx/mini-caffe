@@ -8,16 +8,11 @@ package com.luoyetx.minicaffe;
  * we need to sync data from C side, call `syncToJava`.
  */
 public class Blob {
-    public Blob() {
-        handle = 0;
-        num = channels = height = width = 0;
-        data = new float[];
-    }
     /**
      * sync C data to Java side, this will update Blob members
      */
     public void syncToJava() {
-        if (CSyncToJava() != 0) {
+        if (jniSyncToJava() != 0) {
             throw new RuntimeException(Utils.GetLastError());
         }
     }
@@ -25,12 +20,12 @@ public class Blob {
      * sync Java data to C side
      */
     public void syncToC() {
-        if (CSyncToC() != 0) {
+        if (jniSyncToC() != 0) {
             throw new RuntimeException(Utils.GetLastError());
         }
     }
-    private native int CSyncToJava();
-    private native int CSyncToC();
+    private native int jniSyncToJava();
+    private native int jniSyncToC();
     // internal Blob handle
     private long handle;
     public int num;
@@ -38,4 +33,8 @@ public class Blob {
     public int height;
     public int width;
     public float[] data;
+
+    static {
+        System.loadLibrary("caffe");
+    }
 }
