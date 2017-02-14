@@ -1,4 +1,5 @@
-build/
+build
+.vscode
 
 src/proto/caffe.pb.h
 src/proto/caffe.pb.cc

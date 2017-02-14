@@ -29,7 +29,7 @@ build_script:
   - cmd: |
       mkdir build
       cd build
-      cmake .. -G "Visual Studio 12 2013 Win64"
+      cmake .. -DUSE_JAVA=ON -G "Visual Studio 12 2013 Win64"
       msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
       cd ..
 
@@ -41,13 +41,18 @@ before_test:
       }
   - cmd: |
       7z x model.zip -y -o"%APPVEYOR_BUILD_FOLDER%/build/Release" >NUL
-      copy 3rdparty\bin\*.dll build\Release
+      set PATH=%PATH%;%cd%\3rdparty\bin;%cd%\build\Release
 
 test_script:
   - cmd: |
       cd build\Release
       run_net
       run_net_c
+      move model ..
+      cd ../..
+  - cmd: |
+      cd java
+      gradlew.bat clean build --info
 
 branches:
   only:

@@ -65,6 +65,14 @@ Install CUDA and CUDNN in your system, then we can compile Mini-Caffe with GPU s
 $ cmake .. -DUSE_CUDA=ON -DUSE_CUDNN=ON
 ```
 
+### With Java support
+
+Install Java and set environment variable `JAVA_HOME`. Run came command below.
+
+```
+$ cmake .. -DUSE_JAVA=ON
+```
+
 ### Embed Mini-Caffe
 
 To use Mini-Caffe as a library, you may refer to [mini-caffe-example](https://github.com/luoyetx/mini-caffe-example).

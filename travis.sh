@@ -6,7 +6,7 @@ protoc -I="./src/proto" --cpp_out="./src/proto" "./src/proto/caffe.proto"
 
 # build
 mkdir build && cd build
-cmake .. -DBLAS=blas -DCMAKE_BUILD_TYPE=Release
+cmake .. -DUSE_JAVA=ON -DBLAS=blas -DCMAKE_BUILD_TYPE=Release
 make
 
 # before test
@@ -20,3 +20,7 @@ unzip -o model.zip
 # test
 ./run_net
 ./run_net_c
+
+# java test
+cd ../java
+./gradlew clean build --info

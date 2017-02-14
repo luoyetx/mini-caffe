@@ -8,6 +8,7 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
+      - oracle-java8-set-default
       - protobuf-compiler
       - libprotobuf-dev
       - libatlas-dev
