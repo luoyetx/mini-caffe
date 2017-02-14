@@ -5,6 +5,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 option(USE_CUDA "Use CUDA support" OFF)
 option(USE_CUDNN "Use CUDNN support" OFF)
 option(USE_NNPACK "Use NNPACK support" OFF)
+option(USE_JNI "Use JNI support" OFF)
 
 # select BLAS
 set(BLAS "openblas" CACHE STRING "Selected BLAS library")
@@ -13,6 +14,10 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/Cuda.cmake)
 
 if(USE_NNPACK)
   find_package(NNPACK)
+endif()
+
+if(USE_JNI)
+  find_package(JNI)
 endif()
 
 # turn on C++11
@@ -60,7 +65,9 @@ set(CAFFE_COMPILE_CODE ${CAFFE_INCLUDE}
                        ${CAFFE_SRC_UTIL}
                        ${CAFFE_SRC_PROTO})
 
+# cuda support
 if(HAVE_CUDA)
+  message(STATUS "We have CUDA support")
   # cuda code
   file(GLOB CAFFE_SRC_UTIL_CU ${CMAKE_CURRENT_LIST_DIR}/src/util/*.cu)
   file(GLOB CAFFE_SRC_LAYERS_CU ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cu)
@@ -68,8 +75,9 @@ if(HAVE_CUDA)
                       ${CAFFE_SRC_LAYERS_CU})
   list(APPEND CAFFE_SRC_UTIL ${CAFFE_SRC_UTIL_CU})
   list(APPEND CAFFE_SRC_LAYERS ${CAFFE_SRC_LAYERS_CU})
-  # cudnn code
+  # cudnn support
   if(HAVE_CUDNN)
+    message(STATUS "We have CUDNN support")
     # source file structure
     file(GLOB CAFFE_SRC_LAYERS_CUDNN ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.hpp
                                      ${CMAKE_CURRENT_LIST_DIR}/src/layers/cudnn/*.cpp
@@ -88,11 +96,23 @@ if(HAVE_CUDA)
   list(APPEND CAFFE_COMPILE_CODE ${CAFFE_CUDA_OBJS})
 endif()
 
+# nnpack support
 if(HAVE_NNPACK)
+  message(STATUS "We have NNPACK support")
   file(GLOB CAFFE_SRC_LAYERS_NNPACK ${CMAKE_CURRENT_LIST_DIR}/src/layers/nnpack/*.hpp
                                     ${CMAKE_CURRENT_LIST_DIR}/src/layers/nnpack/*.cpp)
   list(APPEND CAFFE_COMPILE_CODE ${CAFFE_SRC_LAYERS_NNPACK})
   list(APPEND Caffe_LINKER_LIBS ${NNPACK_LIB})
+endif()
+
+# java support
+if (JNI_FOUND)
+  message(STATUS "We have JNI support")
+  file(GLOB CAFFE_SRC_JNI ${CMAKE_CURRENT_LIST_DIR}/src/jni/*.h
+                          ${CMAKE_CURRENT_LIST_DIR}/src/jni/*.c)
+  list(APPEND CAFFE_COMPILE_CODE ${CAFFE_SRC_JNI})
+  include_directories(${JNI_INCLUDE_DIRS})
+  list(APPEND Caffe_LINKER_LIBS ${JNI_LIBRARIES})
 endif()
 
 # file structure
@@ -101,6 +121,7 @@ source_group(src FILES ${CAFFE_SRC})
 source_group(src\\layers FILES ${CAFFE_SRC_LAYERS})
 source_group(src\\util FILES ${CAFFE_SRC_UTIL})
 source_group(src\\proto FILES ${CAFFE_SRC_PROTO})
+source_group(src\\jni FILES ${CAFFE_SRC_JNI})
 source_group(src\\layers\\cudnn FILES ${CAFFE_SRC_LAYERS_CUDNN})
 source_group(src\\layers\\nnpack FILES ${CAFFE_SRC_LAYERS_NNPACK})
 
