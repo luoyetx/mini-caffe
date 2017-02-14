@@ -48,7 +48,7 @@ test_script:
       cd build\Release
       run_net
       run_net_c
-      cd ..
+      cd ../..
   - cmd: |
       cd java
       gradlew.bat clean build
