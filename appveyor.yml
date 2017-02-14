@@ -41,14 +41,13 @@ before_test:
       }
   - cmd: |
       7z x model.zip -y -o"%APPVEYOR_BUILD_FOLDER%/build/Release" >NUL
-      copy 3rdparty\bin\*.dll build\Release
+      set PATH=%PATH%;%cd%\3rdparty\bin;%cd%\build\Release
 
 test_script:
   - cmd: |
       cd build\Release
       run_net
       run_net_c
-      copy *.dll ..
       cd ../..
   - cmd: |
       cd java
