@@ -48,10 +48,11 @@ test_script:
       cd build\Release
       run_net
       run_net_c
+      copy caffe.dll ../caffe.dll
       cd ../..
   - cmd: |
       cd java
-      gradlew.bat clean build
+      gradlew.bat clean build --info
 
 branches:
   only:

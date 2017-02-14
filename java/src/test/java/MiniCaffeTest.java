@@ -8,6 +8,12 @@ import com.luoyetx.minicaffe.*;
 
 public class MiniCaffeTest {
     @Test public void testMiniCaffe() {
+        if (Utils.GPUAvailable()) {
+            Utils.SetCaffeMode(1, 0);
+            System.out.println("Use GPU(0) to run model");
+        } else {
+            System.out.println("Use CPU to run model");
+        }
         System.out.println("Create NIN");
         Net net = new Net("../build/model/nin.prototxt",
                           "../build/model/nin.caffemodel");

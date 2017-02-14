@@ -23,4 +23,4 @@ unzip -o model.zip
 
 # java test
 cd ../java
-./gradlew clean build
+./gradlew clean build --info
