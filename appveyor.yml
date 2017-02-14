@@ -48,7 +48,7 @@ test_script:
       cd build\Release
       run_net
       run_net_c
-      copy caffe.dll ..\caffe.dll
+      copy *.dll ..
       cd ../..
   - cmd: |
       cd java
