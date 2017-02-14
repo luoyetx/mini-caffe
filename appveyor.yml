@@ -29,7 +29,7 @@ build_script:
   - cmd: |
       mkdir build
       cd build
-      cmake .. -G "Visual Studio 12 2013 Win64"
+      cmake .. -DUSE_JAVA=ON -G "Visual Studio 12 2013 Win64"
       msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
       cd ..
 
@@ -48,6 +48,10 @@ test_script:
       cd build\Release
       run_net
       run_net_c
+      cd ..
+  - cmd: |
+      cd java
+      gradlew.bat clean build
 
 branches:
   only:

@@ -5,7 +5,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 option(USE_CUDA "Use CUDA support" OFF)
 option(USE_CUDNN "Use CUDNN support" OFF)
 option(USE_NNPACK "Use NNPACK support" OFF)
-option(USE_JNI "Use JNI support" OFF)
+option(USE_JAVA "Use JAVA support" OFF)
 
 # select BLAS
 set(BLAS "openblas" CACHE STRING "Selected BLAS library")
@@ -16,7 +16,7 @@ if(USE_NNPACK)
   find_package(NNPACK)
 endif()
 
-if(USE_JNI)
+if(USE_JAVA)
   find_package(JNI)
 endif()
 
@@ -107,7 +107,7 @@ endif()
 
 # java support
 if (JNI_FOUND)
-  message(STATUS "We have JNI support")
+  message(STATUS "We have JAVA support")
   file(GLOB CAFFE_SRC_JNI ${CMAKE_CURRENT_LIST_DIR}/src/jni/*.h
                           ${CMAKE_CURRENT_LIST_DIR}/src/jni/*.c)
   list(APPEND CAFFE_COMPILE_CODE ${CAFFE_SRC_JNI})
