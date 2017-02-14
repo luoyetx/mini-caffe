@@ -25,13 +25,16 @@ dependencies {
 }
 
 // system dependencies
-def os = System.getProperty("os.name").toLowerCase()
-def caffe_library_root = "../build"
-if (os.contains("windows")) {
+def os = org.gradle.internal.os.OperatingSystem.current()
+def caffe_library_root = ""
+if (os.isWindows()) {
     caffe_library_root = "../build/Release"
 }
-else if (os.contains("linux")) {
+else if (os.isLinux()) {
     caffe_library_root = "../build"
+}
+else {
+    throw new GradleException("Unsupported os: " + os.name)
 }
 
 tasks.withType(Test) {
