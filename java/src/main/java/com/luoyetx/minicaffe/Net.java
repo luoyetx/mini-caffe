@@ -9,7 +9,7 @@ package com.luoyetx.minicaffe;
  * output blobs to get network output data. Note that `forward` also may
  * affect network internal blobs which makes blobs in Java side out of date.
  */
-public class Net {
+public final class Net {
     /**
      * construct Net by given parameters
      * @param net_path network prototxt path

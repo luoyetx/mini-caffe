@@ -7,7 +7,8 @@ package com.luoyetx.minicaffe;
  * in Java side and call `syncToC` to copy data back to C side. Same happens when
  * we need to sync data from C side, call `syncToJava`.
  */
-public class Blob {
+public final class Blob {
+    protected Blob() {}
     /**
      * sync C data to Java side, this will update Blob members
      */
