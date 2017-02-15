@@ -34,6 +34,11 @@ if(MSVC)
   link_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/lib)
   list(APPEND Caffe_LINKER_LIBS debug libprotobufd optimized libprotobuf
                                 libopenblas)
+elseif(ANDROID)
+  include_directories(${CMAKE_CURRENT_LIST_DIR}/android/install/include
+                      ${CMAKE_CURRENT_LIST_DIR}/include)
+  link_directories(${CMAKE_CURRENT_LIST_DIR}/android/install/lib)
+  list(APPEND Caffe_LINKER_LIBS openblas protobuf)
 else(MSVC)
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
   list(APPEND Caffe_LINKER_LIBS protobuf)
