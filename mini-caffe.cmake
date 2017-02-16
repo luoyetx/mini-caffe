@@ -35,10 +35,14 @@ if(MSVC)
   list(APPEND Caffe_LINKER_LIBS debug libprotobufd optimized libprotobuf
                                 libopenblas)
 elseif(ANDROID)
-  include_directories(${CMAKE_CURRENT_LIST_DIR}/android/install/include
-                      ${CMAKE_CURRENT_LIST_DIR}/include)
-  link_directories(${CMAKE_CURRENT_LIST_DIR}/android/install/lib)
-  list(APPEND Caffe_LINKER_LIBS openblas protobuf)
+  if(ANDROID_EXTRA_LIBRARY_PATH)
+    include_directories(${CMAKE_CURRENT_LIST_DIR}/include
+                        ${ANDROID_EXTRA_LIBRARY_PATH}/include)
+    link_directories(${ANDROID_EXTRA_LIBRARY_PATH}/lib)
+    list(APPEND Caffe_LINKER_LIBS openblas protobuf)
+  else(ANDROID_EXTRA_LIBRARY_PATH)
+    message(FATAL_ERROR "ANDROID_EXTRA_LIBRARY_PATH must be set.")
+  endif(ANDROID_EXTRA_LIBRARY_PATH)
 else(MSVC)
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
   list(APPEND Caffe_LINKER_LIBS protobuf)

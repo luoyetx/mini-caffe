@@ -85,7 +85,6 @@ CaffeJNIMethod(Blob, SyncToC, jint)(JNIEnv *env, jobject thiz) {
 CaffeJNIMethod(Net, Create, jint)(JNIEnv *env, jobject thiz,
                                   jstring net_path, jstring model_path) {
   NetHandle net;
-  JNIGetHandleFromObj(thiz, net);
   const char *net_path_cstr = (*env)->GetStringUTFChars(env, net_path, NULL);
   const char *model_path_cstr = (*env)->GetStringUTFChars(env, model_path, NULL);
   CHECK_SUCCESS(CaffeNetCreate(net_path_cstr, model_path_cstr, &net), {
@@ -100,8 +99,7 @@ CaffeJNIMethod(Net, Destroy, jint)(JNIEnv *env, jobject thiz) {
   NetHandle net;
   JNIGetHandleFromObj(thiz, net);
   CHECK_SUCCESS(CaffeNetDestroy(net));
-  net = NULL;
-  JNISetHandleToObj(thiz, net);
+  JNISetHandleToObj(thiz, NULL);
   return 0;
 }
 
