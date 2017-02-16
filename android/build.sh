@@ -86,6 +86,7 @@ cd $ANDROID_ROOT
 mkdir -p MiniCaffe-build
 cd MiniCaffe-build
 MINI_CAFFE_ROOT=$ANDROID_ROOT/../
+echo "protoc $MINI_CAFFE_ROOT/src/proto/caffe.proto"
 $PROTOBUF_HOST_INSTALL_ROOT/bin/protoc \
     -I="$MINI_CAFFE_ROOT/src/proto" \
     --cpp_out="$MINI_CAFFE_ROOT/src/proto" \
@@ -95,5 +96,5 @@ cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_TOOLCHAIN_FILE \
       -DANDROID_ABI=$ANDROID_ABI \
       -DANDROID_NATIVE_API_LEVEL=$ANDROID_NATIVE_API_LEVEL \
       -DCMAKE_BUILD_TYPE=Release \
-      $ANDROID_ROOT/../
+      $MINI_CAFFE_ROOT
 make -j$ANDROID_BUILD_JOBS

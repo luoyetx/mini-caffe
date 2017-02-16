@@ -111,13 +111,21 @@ if(HAVE_NNPACK)
 endif()
 
 # java support
-if (JNI_FOUND)
+if(JNI_FOUND)
   message(STATUS "We have JAVA support")
   file(GLOB CAFFE_SRC_JNI ${CMAKE_CURRENT_LIST_DIR}/src/jni/*.h
                           ${CMAKE_CURRENT_LIST_DIR}/src/jni/*.c)
   list(APPEND CAFFE_COMPILE_CODE ${CAFFE_SRC_JNI})
   include_directories(${JNI_INCLUDE_DIRS})
   list(APPEND Caffe_LINKER_LIBS ${JNI_LIBRARIES})
+endif()
+
+# android jni
+if(ANDROID)
+  message(STATUS "We have JAVA support")
+  file(GLOB CAFFE_SRC_JNI ${CMAKE_CURRENT_LIST_DIR}/src/jni/*.h
+                          ${CMAKE_CURRENT_LIST_DIR}/src/jni/*.c)
+  list(APPEND CAFFE_COMPILE_CODE ${CAFFE_SRC_JNI})
 endif()
 
 # file structure
