@@ -6,8 +6,8 @@ Mini-Caffe now can be corss compiled for Android platform.
 ### Prerequisites
 
 1. We need to download Android NDK [here](https://developer.android.com/ndk/downloads/index.html) first. Or if you use [Android Studio](https://developer.android.com/studio/index.html), you can download Android NDK through SDK Manager.
-2. Set up environment variable `NDK_ROOT` for Android NDK. `NDK_ROOT=/path/to/ndk`
-3. If you use Windows, you also need the GNU toolchain. Usually [tdm-gcc](http://tdm-gcc.tdragon.net/download) should be fine. Download 64bit version of tdm-gcc like `tdmgcc64-gcc-x.x.x.exe` in the download page. You also need a shell environment to run the build. Usually [Git](https://git-scm.com/downloads) for Windows ship with `Git Bash` should be fine.
+2. Set up environment variable `NDK_ROOT` for Android NDK. `NDK_ROOT=/path/to/ndk`, if you use Windows, make sure to replace path separator `\` to `/`.
+3. If you use Windows, you also need the GNU toolchain. Usually [tdm-gcc](http://tdm-gcc.tdragon.net/download) should be fine. Download 64bit version of tdm-gcc like `tdmgcc64-gcc-x.x.x.exe` in the download page. You also need a shell environment to run the build. Usually [Git](https://git-scm.com/downloads) for Windows ship with `Git Bash` should be fine. **IMPORTANT**, you need to copy and rename `/path/to/TDM-GCC-64/bin/mingw32-make.exe` to `/path/to/TDM-GCC-64/bin/make.exe`.
 
 ### Build
 
@@ -18,6 +18,8 @@ ANDROID_NATIVE_API_LEVEL=21  # android native api level
 ANDROID_BUILD_JOBS=2  # threads to build
 ANDROID_ABIS=(arm64-v8a armeabi x86 x86_64)  # android abi to build
 ```
+
+`build.sh` is tested on Ubuntu 16.04 with Android NDK r13b, Windows 10 with tdmgcc64-gcc-5.1.0-2.exe and Android NDK r12b.
 
 ### Result
 
