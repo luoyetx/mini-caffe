@@ -13,6 +13,7 @@ THIRD_PARTY_ROOT=$ANDROID_ROOT/../3rdparty/src
 ANDROID_TOOLCHAIN_FILE=$ANDROID_ROOT/android-cmake/android.toolchain.cmake
 ANDROID_NATIVE_API_LEVEL=21
 ANDROID_BUILD_JOBS=2
+ANDROID_ABIS=(arm64-v8a armeabi x86 x86_64)
 MINICAFFE_JNILIBS=$ANDROID_ROOT/jniLibs
 
 echo "Android Build Root: $ANDROID_ROOT"
@@ -24,8 +25,7 @@ if [ "$(uname)" = "Darwin" ]; then
     HOST_OS=darwin
 elif [ "$(expr substr $(uname -s) 1 5)" = "Linux" ]; then
     HOST_OS=linux
-elif [ "$(expr substr $(uname -s) 1 10)" = "MINGW32_NT" ||
-       "$(expr substr $(uname -s) 1 9)" = "CYGWIN_NT" ]; then
+elif [ "$(expr substr $(uname -s) 1 10)" = "MINGW64_NT" ]; then
     HOST_OS=windows
 else
     echo "Unknown OS"
@@ -54,6 +54,7 @@ function build_protobuf_host {
           -DCMAKE_BUILD_TYPE=Release \
           -Dprotobuf_BUILD_TESTS=OFF \
           -Dprotobuf_BUILD_SHARED_LIBS=OFF \
+          -G "Unix Makefiles" \
           $THIRD_PARTY_ROOT/protobuf/cmake
     make -j$ANDROID_BUILD_JOBS
     make install
@@ -75,6 +76,7 @@ function build_protobuf {
           -DCMAKE_BUILD_TYPE=Release \
           -Dprotobuf_BUILD_TESTS=OFF \
           -Dprotobuf_BUILD_SHARED_LIBS=OFF \
+          -G "Unix Makefiles" \
           $THIRD_PARTY_ROOT/protobuf/cmake
     make -j$ANDROID_BUILD_JOBS
     make install
@@ -148,6 +150,7 @@ function build_minicaffe {
           -DANDROID_NATIVE_API_LEVEL=$ANDROID_NATIVE_API_LEVEL \
           -DCMAKE_BUILD_TYPE=Release \
           -DANDROID_EXTRA_LIBRARY_PATH=$ANDROID_ROOT/$ANDROID_ABI-install \
+          -G "Unix Makefiles" \
           $MINICAFFE_ROOT
     make -j$ANDROID_BUILD_JOBS
 }
@@ -155,8 +158,7 @@ function build_minicaffe {
 # build protobuf for host
 build_protobuf_host
 
-for ABI in arm64-v8a armeabi x86 x86_64; do
-    ANDROID_ABI=$ABI
+for ANDROID_ABI in ${ANDROID_ABIS[@]}; do
     echo "Build for $ANDROID_ABI"
     # build protobuf
     build_protobuf

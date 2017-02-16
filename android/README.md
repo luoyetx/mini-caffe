@@ -1,0 +1,24 @@
+Android Support
+===============
+
+Mini-Caffe now can be corss compiled for Android platform.
+
+### Prerequisites
+
+1. We need to download Android NDK [here](https://developer.android.com/ndk/downloads/index.html) first. Or if you use [Android Studio](https://developer.android.com/studio/index.html), you can download Android NDK through SDK Manager.
+2. Set up environment variable `NDK_ROOT` for Android NDK. `NDK_ROOT=/path/to/ndk`
+3. If you use Windows, you also need the GNU toolchain. Usually [tdm-gcc](http://tdm-gcc.tdragon.net/download) should be fine. Download 64bit version of tdm-gcc like `tdmgcc64-gcc-x.x.x.exe` in the download page. You also need a shell environment to run the build. Usually [Git](https://git-scm.com/downloads) for Windows ship with `Git Bash` should be fine.
+
+### Build
+
+Run `build.sh` will automatically cross compile Mini-Caffe and libraries(protobuf and OpenBLAS) it relies on. The default build option is listed below, currently you can directly change them in `build.sh` file.
+
+```
+ANDROID_NATIVE_API_LEVEL=21  # android native api level
+ANDROID_BUILD_JOBS=2  # threads to build
+ANDROID_ABIS=(arm64-v8a armeabi x86 x86_64)  # android abi to build
+```
+
+### Result
+
+Every library will create a build folder for every ANDROID_ABI. Mini-Caffe output will be in `jniLibs`.
