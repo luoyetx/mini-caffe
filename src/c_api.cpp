@@ -96,6 +96,20 @@ int CaffeNetCreate(const char *net_path, const char *model_path,
   API_END();
 }
 
+int CaffeNetCreateFromBuffer(const char *net_buffer, int nb_len,
+                             const char *model_buffer, int mb_len,
+                             NetHandle *net) {
+  API_BEGIN();
+  std::shared_ptr<caffe::NetParameter> np;
+  np = caffe::ReadBinaryNetParameterFromBuffer(model_buffer, mb_len);
+  np = caffe::ReadTextNetParameterFromBuffer(net_buffer, nb_len);
+  caffe::Net *net_ = new caffe::Net(*np.get());
+  np = caffe::ReadBinaryNetParameterFromBuffer(model_buffer, mb_len);
+  net_->CopyTrainedLayersFrom(*np.get());
+  *net = static_cast<NetHandle>(net_);
+  API_END();
+}
+
 int CaffeNetDestroy(NetHandle net) {
   API_BEGIN();
   delete static_cast<caffe::Net*>(net);

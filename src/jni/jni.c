@@ -95,6 +95,23 @@ CaffeJNIMethod(Net, Create, jint)(JNIEnv *env, jobject thiz,
   return 0;
 }
 
+CaffeJNIMethod(Net, CreateFromBuffer, jint)(JNIEnv *env, jobject thiz,
+                                            jbyteArray net_buffer,
+                                            jbyteArray model_buffer) {
+  NetHandle net;
+  jbyte *nbuffer = (*env)->GetByteArrayElements(env, net_buffer, NULL);
+  jbyte *mbuffer = (*env)->GetByteArrayElements(env, model_buffer, NULL);
+  jsize nb_len = (*env)->GetArrayLength(env, net_buffer);
+  jsize mb_len = (*env)->GetArrayLength(env, model_buffer);
+  CHECK_SUCCESS(CaffeNetCreateFromBuffer((const char*)nbuffer, nb_len,
+                                         (const char*)mbuffer, mb_len, &net), {
+    (*env)->ReleaseByteArrayElements(env, net_buffer, nbuffer, 0);
+    (*env)->ReleaseByteArrayElements(env, model_buffer, mbuffer, 0);
+  });
+  JNISetHandleToObj(thiz, net);
+  return 0;
+}
+
 CaffeJNIMethod(Net, Destroy, jint)(JNIEnv *env, jobject thiz) {
   NetHandle net;
   JNIGetHandleFromObj(thiz, net);

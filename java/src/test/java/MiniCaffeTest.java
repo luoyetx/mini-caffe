@@ -3,6 +3,8 @@
  */
 import org.junit.Test;
 import static org.junit.Assert.*;
+import java.nio.file.*;
+import java.io.IOException;
 import com.luoyetx.minicaffe.*;
 
 
@@ -17,6 +19,23 @@ public class MiniCaffeTest {
         System.out.println("Create NIN");
         Net net = new Net("../build/model/nin.prototxt",
                           "../build/model/nin.caffemodel");
+        testForward(net);
+        // test create from buffer
+        System.out.println("Create ResNet from buffer");
+        try {
+            byte[] net_buffer, model_buffer;
+            Path path = Paths.get("../build/model/resnet.prototxt");
+            net_buffer = Files.readAllBytes(path);
+            path = Paths.get("../build/model/resnet.caffemodel");
+            model_buffer = Files.readAllBytes(path);
+            net = new Net(net_buffer, model_buffer);
+            testForward(net);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void testForward(Net net) {
         Blob blob = net.getBlob("data");
         // fill data
         int length = blob.data.length;
@@ -28,6 +47,6 @@ public class MiniCaffeTest {
         long start = System.currentTimeMillis();
         net.forward();
         long end = System.currentTimeMillis();
-        System.out.println("Forward NIN costs " + (end - start) + " ms");
+        System.out.println("Forward Network costs " + (end - start) + " ms");
     }
 }

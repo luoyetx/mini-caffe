@@ -227,9 +227,9 @@ shared_ptr<NetParameter> ReadTextNetParameterFromFile(const string& file) {
   return np;
 }
 
-shared_ptr<NetParameter> ReadTextNetParameterFromBuffer(const string& buffer) {
+shared_ptr<NetParameter> ReadTextNetParameterFromBuffer(const char* buffer, int buffer_len) {
   shared_ptr<NetParameter> np(new NetParameter);
-  CHECK(google::protobuf::TextFormat::ParseFromString(buffer, np.get()))
+  CHECK(google::protobuf::TextFormat::ParseFromString(std::string(buffer, buffer_len), np.get()))
     << "Parse Text NetParameter from Buffer failed";
   return np;
 }
@@ -240,11 +240,10 @@ shared_ptr<NetParameter> ReadBinaryNetParameterFromFile(const string& file) {
   return np;
 }
 
-shared_ptr<NetParameter> ReadBinaryNetParameterFromBuffer(const string& buffer) {
+shared_ptr<NetParameter> ReadBinaryNetParameterFromBuffer(const char* buffer, int buffer_len) {
   using google::protobuf::uint8;
-  shared_ptr<NetParameter> np;
-  google::protobuf::io::CodedInputStream ci(reinterpret_cast<const uint8*>(buffer.c_str()),
-                                            buffer.length());
+  shared_ptr<NetParameter> np(new NetParameter);
+  google::protobuf::io::CodedInputStream ci(reinterpret_cast<const uint8*>(buffer), buffer_len);
   CHECK(np->ParseFromCodedStream(&ci)) << "Parse Binary NetParameter from Buffer failed";
   return np;
 }

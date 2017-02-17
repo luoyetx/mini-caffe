@@ -52,6 +52,18 @@ CAFFE_API int CaffeBlobReshape(BlobHandle blob,
 CAFFE_API int CaffeNetCreate(const char *net_path,
                              const char *model_path,
                              NetHandle *net);
+/*!
+ * \brief create network from internal buffer
+ * \param net_buffer binary buffer for prototxt
+ * \param nb_len net buffer length
+ * \param model_buffer binary model buffer for caffemodel
+ * \param mb_len model buffer length
+ * \param net output handle
+ * \param return code, 0 for success, -1 for failed
+ */
+CAFFE_API int CaffeNetCreateFromBuffer(const char *net_buffer, int nb_len,
+                                       const char *model_buffer, int mb_len,
+                                       NetHandle *net);
 /*! \brief destroy network */
 CAFFE_API int CaffeNetDestroy(NetHandle net);
 /*!
