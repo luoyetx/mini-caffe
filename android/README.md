@@ -5,7 +5,7 @@ Mini-Caffe now can be corss compiled for Android platform.
 
 ### Prerequisites
 
-1. We need to download Android NDK [here](https://developer.android.com/ndk/downloads/index.html) first. Or if you use [Android Studio](https://developer.android.com/studio/index.html), you can download Android NDK through SDK Manager.
+1. You need to download Android NDK [here](https://developer.android.com/ndk/downloads/index.html) first. Or if you use [Android Studio](https://developer.android.com/studio/index.html), you can download Android NDK through SDK Manager.
 2. Set up environment variable `NDK_ROOT` for Android NDK. `NDK_ROOT=/path/to/ndk`, if you use Windows, make sure to replace path separator `\` to `/`.
 3. If you use Windows, you also need the GNU toolchain. Usually [tdm-gcc](http://tdm-gcc.tdragon.net/download) should be fine. Download 64bit version of tdm-gcc like `tdmgcc64-gcc-x.x.x.exe` in the download page. You also need a shell environment to run the build. Usually [Git](https://git-scm.com/downloads) for Windows ship with `Git Bash` should be fine. **IMPORTANT**, you need to copy and rename `/path/to/TDM-GCC-64/bin/mingw32-make.exe` to `/path/to/TDM-GCC-64/bin/make.exe`.
 
@@ -23,4 +23,8 @@ ANDROID_ABIS=(arm64-v8a armeabi x86 x86_64)  # android abi to build
 
 ### Result
 
-Every library will create a build folder for every ANDROID_ABI. Mini-Caffe output will be in `jniLibs`.
+Every library will create a build folder for every ANDROID_ABI. Mini-Caffe output `libcaffe.so` will be in `jniLibs`.
+
+### How to use libcaffe.so
+
+I have modify [Leliana/WhatsThis](https://github.com/Leliana/WhatsThis) which uses [MXNet](https://github.com/dmlc/mxnet) as backend. Make Mini-Caffe as its backend, checkout project [luoyetx/WhatsThis](https://github.com/luoyetx/WhatsThis). What's more, you also need to checkout the Java API [here](../java).
