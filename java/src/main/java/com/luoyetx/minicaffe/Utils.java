@@ -1,7 +1,8 @@
 package com.luoyetx.minicaffe;
 
 
-public class Utils {
+public final class Utils {
+    private Utils() {}
     /**
      * get error message from last C API call
      * @return error message

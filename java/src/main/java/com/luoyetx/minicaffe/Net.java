@@ -9,14 +9,24 @@ package com.luoyetx.minicaffe;
  * output blobs to get network output data. Note that `forward` also may
  * affect network internal blobs which makes blobs in Java side out of date.
  */
-public class Net {
+public final class Net {
     /**
-     * construct Net by given parameters
+     * construct Net by given network path
      * @param net_path network prototxt path
      * @param model_path network caffemodel path
      */
     public Net(String net_path, String model_path) {
         if (jniCreate(net_path, model_path) != 0) {
+            throw new RuntimeException(Utils.GetLastError());
+        }
+    }
+    /**
+     * construct Net by given network buffer
+     * @param net_buffer network prototxt buffer
+     * @param model_buffer network caffemodel buffer
+     */
+    public Net(byte[] net_buffer, byte[] model_buffer) {
+        if (jniCreateFromBuffer(net_buffer, model_buffer) != 0) {
             throw new RuntimeException(Utils.GetLastError());
         }
     }
@@ -49,6 +59,7 @@ public class Net {
         return blob;
     }
     private native int jniCreate(String net_path, String model_path);
+    private native int jniCreateFromBuffer(byte[] net_buffer, byte[] model_buffer);
     private native int jniDestroy();
     private native int jniForward();
     private native int jniGetBlob(String name, Blob blob);

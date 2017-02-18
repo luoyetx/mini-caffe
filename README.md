@@ -46,7 +46,7 @@ Use `mini-caffe.sln` to compile it.
 
 ### Build on Linux
 
-Install OpenBLAS and protobuf library through system package manager. Then build Mini-Caffe.
+Install OpenBLAS and protobuf library through system package manager. Or you can compile OpenBLAS and protobuf by yourself. Then build Mini-Caffe.
 
 ```
 $ sudo apt install libopenblas-dev libprotobuf-dev protobuf-compiler
@@ -57,9 +57,15 @@ $ cmake .. -DCMAKE_BUILD_TYPE=Release
 $ make -j4
 ```
 
+If you don't use Ubuntu, then you may need to install OpenBLAS and protobuf through your system package manager if any.
+
+### Build for Android
+
+Mini-Caffe now can be cross compiled for Android platform, checkout the document [here](android).
+
 ### With CUDA and CUDNN
 
-Install CUDA and CUDNN in your system, then we can compile Mini-Caffe with GPU support. Run cmake command below.
+Install CUDA and CUDNN in your system, then we can compile Mini-Caffe with GPU support. Run CMake command below.
 
 ```
 $ cmake .. -DUSE_CUDA=ON -DUSE_CUDNN=ON
@@ -67,7 +73,7 @@ $ cmake .. -DUSE_CUDA=ON -DUSE_CUDNN=ON
 
 ### With Java support
 
-Install Java and set environment variable `JAVA_HOME`. Run came command below.
+Install Java and set environment variable `JAVA_HOME`. Run CMake command below.
 
 ```
 $ cmake .. -DUSE_JAVA=ON

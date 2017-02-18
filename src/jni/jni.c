@@ -85,7 +85,6 @@ CaffeJNIMethod(Blob, SyncToC, jint)(JNIEnv *env, jobject thiz) {
 CaffeJNIMethod(Net, Create, jint)(JNIEnv *env, jobject thiz,
                                   jstring net_path, jstring model_path) {
   NetHandle net;
-  JNIGetHandleFromObj(thiz, net);
   const char *net_path_cstr = (*env)->GetStringUTFChars(env, net_path, NULL);
   const char *model_path_cstr = (*env)->GetStringUTFChars(env, model_path, NULL);
   CHECK_SUCCESS(CaffeNetCreate(net_path_cstr, model_path_cstr, &net), {
@@ -96,12 +95,28 @@ CaffeJNIMethod(Net, Create, jint)(JNIEnv *env, jobject thiz,
   return 0;
 }
 
+CaffeJNIMethod(Net, CreateFromBuffer, jint)(JNIEnv *env, jobject thiz,
+                                            jbyteArray net_buffer,
+                                            jbyteArray model_buffer) {
+  NetHandle net;
+  jbyte *nbuffer = (*env)->GetByteArrayElements(env, net_buffer, NULL);
+  jbyte *mbuffer = (*env)->GetByteArrayElements(env, model_buffer, NULL);
+  jsize nb_len = (*env)->GetArrayLength(env, net_buffer);
+  jsize mb_len = (*env)->GetArrayLength(env, model_buffer);
+  CHECK_SUCCESS(CaffeNetCreateFromBuffer((const char*)nbuffer, nb_len,
+                                         (const char*)mbuffer, mb_len, &net), {
+    (*env)->ReleaseByteArrayElements(env, net_buffer, nbuffer, 0);
+    (*env)->ReleaseByteArrayElements(env, model_buffer, mbuffer, 0);
+  });
+  JNISetHandleToObj(thiz, net);
+  return 0;
+}
+
 CaffeJNIMethod(Net, Destroy, jint)(JNIEnv *env, jobject thiz) {
   NetHandle net;
   JNIGetHandleFromObj(thiz, net);
   CHECK_SUCCESS(CaffeNetDestroy(net));
-  net = NULL;
-  JNISetHandleToObj(thiz, net);
+  JNISetHandleToObj(thiz, NULL);
   return 0;
 }
 
