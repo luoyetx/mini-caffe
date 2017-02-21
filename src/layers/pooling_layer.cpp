@@ -9,10 +9,6 @@
 #include "./cudnn/cudnn_pooling_layer.hpp"
 #endif  // USE_CUDNN
 
-#ifdef USE_NNPACK
-#include "./nnpack/nnpack_pooling_layer.hpp"
-#endif  // USE_NNPACK
-
 namespace caffe {
 
 using std::min;
