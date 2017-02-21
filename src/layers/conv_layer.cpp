@@ -52,27 +52,17 @@ STUB_GPU(ConvolutionLayer);
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter &param) {
   ConvolutionParameter conv_param = param.convolution_param();
-  if (Caffe::mode() == Caffe::CPU) {
-#ifdef USE_NNPACK
-    if (conv_param.bias_term() && conv_param.group() == 1) {
-      return shared_ptr<Layer>(new NNPackConvolutionLayer(param));
-    }
-#endif  // USE_NNPACK
-  }
-  else {
-    CHECK_EQ(Caffe::mode(), Caffe::GPU);
 #ifdef USE_CUDNN
-    bool use_dilation = false;
-    for (int i = 0; i < conv_param.dilation_size(); ++i) {
-      if (conv_param.dilation(i) > 1) {
-        use_dilation = true;
-      }
+  bool use_dilation = false;
+  for (int i = 0; i < conv_param.dilation_size(); ++i) {
+    if (conv_param.dilation(i) > 1) {
+      use_dilation = true;
     }
-    if (!use_dilation) {
-      return shared_ptr<Layer>(new CuDNNConvolutionLayer(param));
-    }
-#endif  // USE_CUDNN
   }
+  if (!use_dilation) {
+    return shared_ptr<Layer>(new CuDNNConvolutionLayer(param));
+  }
+#endif  // USE_CUDNN
   return shared_ptr<Layer>(new ConvolutionLayer(param));
 }
 
