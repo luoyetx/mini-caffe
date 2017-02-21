@@ -48,12 +48,12 @@ void showLandmarks(Mat &image, Rect &bbox, vector<Point2f> &landmarks) {
 int main(int argc, char *argv[]) {
   FaceDetector fd;
   Landmarker lder;
-  fd.LoadXML("../haarcascade_frontalface_alt.xml");
-  lder.LoadModel("../models");
+  fd.LoadXML("../deeplandmark/haarcascade_frontalface_alt.xml");
+  lder.LoadModel("../models/deeplandmark");
 
   Mat image;
   Mat gray;
-  image = imread("../test.jpg");
+  image = imread("../deeplandmark/test.jpg");
   if (image.data == NULL) return -1;
   cvtColor(image, gray, CV_BGR2GRAY);
 
