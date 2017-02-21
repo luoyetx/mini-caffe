@@ -50,7 +50,7 @@ Install OpenBLAS and protobuf library through system package manager. Or you can
 
 ```
 $ sudo apt install libopenblas-dev libprotobuf-dev protobuf-compiler
-$ protoc -I="./src/proto" --cpp_out="./src/proto" "./src/proto/caffe.proto"
+$ ./generatepb.sh
 $ mkdir build
 $ cd build
 $ cmake .. -DCMAKE_BUILD_TYPE=Release
