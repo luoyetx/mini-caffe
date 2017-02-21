@@ -1,20 +1,13 @@
 # mini-caffe.cmake
 
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
-
 option(USE_CUDA "Use CUDA support" OFF)
 option(USE_CUDNN "Use CUDNN support" OFF)
-option(USE_NNPACK "Use NNPACK support" OFF)
 option(USE_JAVA "Use JAVA support" OFF)
 
 # select BLAS
 set(BLAS "openblas" CACHE STRING "Selected BLAS library")
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/Cuda.cmake)
-
-if(USE_NNPACK)
-  find_package(NNPACK)
-endif()
 
 if(USE_JAVA)
   find_package(JNI)
@@ -105,15 +98,6 @@ if(HAVE_CUDA)
   list(APPEND CAFFE_COMPILE_CODE ${CAFFE_CUDA_OBJS})
 endif()
 
-# nnpack support
-if(HAVE_NNPACK)
-  message(STATUS "We have NNPACK support")
-  file(GLOB CAFFE_SRC_LAYERS_NNPACK ${CMAKE_CURRENT_LIST_DIR}/src/layers/nnpack/*.hpp
-                                    ${CMAKE_CURRENT_LIST_DIR}/src/layers/nnpack/*.cpp)
-  list(APPEND CAFFE_COMPILE_CODE ${CAFFE_SRC_LAYERS_NNPACK})
-  list(APPEND Caffe_LINKER_LIBS ${NNPACK_LIB})
-endif()
-
 # java support
 if(JNI_FOUND)
   message(STATUS "We have JAVA support")
@@ -140,7 +124,6 @@ source_group(src\\util FILES ${CAFFE_SRC_UTIL})
 source_group(src\\proto FILES ${CAFFE_SRC_PROTO})
 source_group(src\\jni FILES ${CAFFE_SRC_JNI})
 source_group(src\\layers\\cudnn FILES ${CAFFE_SRC_LAYERS_CUDNN})
-source_group(src\\layers\\nnpack FILES ${CAFFE_SRC_LAYERS_NNPACK})
 
 add_definitions(-DCAFFE_EXPORTS)
 add_library(caffe SHARED ${CAFFE_COMPILE_CODE})

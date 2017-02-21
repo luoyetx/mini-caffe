@@ -4,10 +4,6 @@
 #include "../filler.hpp"
 #include "../util/math_functions.hpp"
 
-#ifdef USE_NNPACK
-#include "./nnpack/nnpack_inner_product_layer.hpp"
-#endif  // USE_NNPACK
-
 namespace caffe {
 
 void InnerProductLayer::LayerSetUp(const vector<Blob*>& bottom,
@@ -100,16 +96,6 @@ void InnerProductLayer::Forward_cpu(const vector<Blob*>& bottom,
 STUB_GPU(InnerProductLayer);
 #endif
 
-// Creator
-
-static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-#ifdef USE_NNPACK
-  return shared_ptr<Layer>(new NNPackInnerProductLayer(param));
-#else
-  return shared_ptr<Layer>(new InnerProductLayer(param));
-#endif  // USE_NNPACK
-}
-
-REGISTER_LAYER_CREATOR(InnerProduct, CreateLayer);
+REGISTER_LAYER_CLASS(InnerProduct);
 
 }  // namespace caffe
