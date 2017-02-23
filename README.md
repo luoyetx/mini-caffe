@@ -79,6 +79,6 @@ Install Java and set environment variable `JAVA_HOME`. Run CMake command below.
 $ cmake .. -DUSE_JAVA=ON
 ```
 
-### Embed Mini-Caffe
+### How to use Mini-Caffe
 
-To use Mini-Caffe as a library, you may refer to [mini-caffe-example](https://github.com/luoyetx/mini-caffe-example).
+To use Mini-Caffe as a library, you may refer to [example](example).

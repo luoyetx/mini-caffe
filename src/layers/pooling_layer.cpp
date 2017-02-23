@@ -9,10 +9,6 @@
 #include "./cudnn/cudnn_pooling_layer.hpp"
 #endif  // USE_CUDNN
 
-#ifdef USE_NNPACK
-#include "./nnpack/nnpack_pooling_layer.hpp"
-#endif  // USE_NNPACK
-
 namespace caffe {
 
 using std::min;
@@ -123,6 +119,8 @@ void PoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
   const real_t* bottom_data = bottom[0]->cpu_data();
   real_t* top_data = top[0]->mutable_cpu_data();
   const int top_count = top[0]->count();
+  const int bottom_offset = bottom[0]->offset(0, 1);
+  const int top_offset = top[0]->offset(0, 1);
   // Different pooling methods. We explicitly do the switch outside the for
   // loop to save time, although this results in more code.
   switch (this->layer_param_.pooling_param().pool()) {
@@ -143,23 +141,19 @@ void PoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
             for (int h = hstart; h < hend; ++h) {
               for (int w = wstart; w < wend; ++w) {
                 const int index = h * width_ + w;
-                if (bottom_data[index] > top_data[pool_index]) {
-                  top_data[pool_index] = bottom_data[index];
-                }
+                top_data[pool_index] = max(top_data[pool_index], bottom_data[index]);
               }
             }
           }
         }
         // compute offset
-        bottom_data += bottom[0]->offset(0, 1);
-        top_data += top[0]->offset(0, 1);
+        bottom_data += bottom_offset;
+        top_data += top_offset;
       }
     }
     break;
   case PoolingParameter_PoolMethod_AVE:
-    for (int i = 0; i < top_count; ++i) {
-      top_data[i] = 0;
-    }
+    caffe_set(top_count, 0, top_data);
     // The main loop
     for (int n = 0; n < bottom[0]->num(); ++n) {
       for (int c = 0; c < channels_; ++c) {
@@ -176,16 +170,15 @@ void PoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
             wend = min(wend, width_);
             for (int h = hstart; h < hend; ++h) {
               for (int w = wstart; w < wend; ++w) {
-                top_data[ph * pooled_width_ + pw] +=
-                    bottom_data[h * width_ + w];
+                top_data[ph * pooled_width_ + pw] += bottom_data[h * width_ + w];
               }
             }
             top_data[ph * pooled_width_ + pw] /= pool_size;
           }
         }
         // compute offset
-        bottom_data += bottom[0]->offset(0, 1);
-        top_data += top[0]->offset(0, 1);
+        bottom_data += bottom_offset;
+        top_data += top_offset;
       }
     }
     break;

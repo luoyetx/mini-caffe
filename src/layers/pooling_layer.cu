@@ -25,14 +25,12 @@ __global__ void MaxPoolForward(const int nthreads,
     hstart = max(hstart, 0);
     wstart = max(wstart, 0);
     real_t maxval = -FLT_MAX;
-    int maxidx = -1;
     const real_t* const bottom_slice =
         bottom_data + (n * channels + c) * height * width;
     for (int h = hstart; h < hend; ++h) {
       for (int w = wstart; w < wend; ++w) {
         if (bottom_slice[h * width + w] > maxval) {
-          maxidx = h * width + w;
-          maxval = bottom_slice[maxidx];
+          maxval = bottom_slice[h * width + w];
         }
       }
     }

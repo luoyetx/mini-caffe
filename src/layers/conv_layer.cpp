@@ -6,10 +6,6 @@
 #include "./cudnn/cudnn_conv_layer.hpp"
 #endif  // USE_CUDNN
 
-#ifdef USE_NNPACK
-#include "./nnpack/nnpack_conv_layer.hpp"
-#endif  // USE_NNPACK
-
 namespace caffe {
 
 void ConvolutionLayer::compute_output_shape() {
