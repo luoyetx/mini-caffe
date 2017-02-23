@@ -30,7 +30,7 @@ private:
   Clock::time_point start_, end_;
 };
 
-int main(int argc, char *argv) {
+int main(int argc, char **argv) {
   caffe::Net net("../models/wgan/g.prototxt");
   net.CopyTrainedLayersFrom("../models/wgan/g.caffemodel");
   // random noise
