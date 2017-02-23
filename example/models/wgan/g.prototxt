@@ -28,6 +28,9 @@ layer {
     type: "BatchNorm"
     bottom: "gconv1"
     top: "gbn1"
+    batch_norm_param {
+        use_global_stats: false
+    }
 }
 layer {
     name: "gbn1_scale"
@@ -63,6 +66,9 @@ layer {
     type: "BatchNorm"
     bottom: "gconv2"
     top: "gbn2"
+    batch_norm_param {
+        use_global_stats: false
+    }
 }
 layer {
     name: "gbn2_scale"
@@ -98,6 +104,9 @@ layer {
     type: "BatchNorm"
     bottom: "gconv3"
     top: "gbn3"
+    batch_norm_param {
+        use_global_stats: false
+    }
 }
 layer {
     name: "gbn3_scale"
@@ -133,6 +142,9 @@ layer {
     type: "BatchNorm"
     bottom: "gconv4"
     top: "gbn4"
+    batch_norm_param {
+        use_global_stats: false
+    }
 }
 layer {
     name: "gbn4_scale"

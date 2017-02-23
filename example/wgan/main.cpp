@@ -1,12 +1,34 @@
 #include <cmath>
 #include <ctime>
+#include <chrono>
 #include <random>
 #include <memory>
 #include <algorithm>
 #include <caffe/caffe.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <fstream>
+
+/*! \brief Timer */
+class Timer {
+  using Clock = std::chrono::high_resolution_clock;
+public:
+  /*! \brief start or restart timer */
+  inline void Tic() {
+    start_ = Clock::now();
+  }
+  /*! \brief stop timer */
+  inline void Toc() {
+    end_ = Clock::now();
+  }
+  /*! \brief return time in ms */
+  inline double Elasped() {
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_ - start_);
+    return duration.count();
+  }
+
+private:
+  Clock::time_point start_, end_;
+};
 
 int main(int argc, char *argv) {
   caffe::Net net("../models/wgan/g.prototxt");
@@ -23,7 +45,11 @@ int main(int argc, char *argv) {
     data[i] = nd(gen);
   }
   // forward
+  Timer timer;
+  timer.Tic();
   net.Forward();
+  timer.Toc();
+  std::cout << "generate costs " << timer.Elasped() << " ms" << std::endl;
   // visualization
   auto images = net.blob_by_name("gact5");
   const int num = images->num();
@@ -48,7 +74,6 @@ int main(int argc, char *argv) {
       }
     }
   }
-  std::vector<float> dd(images->cpu_data(), images->cpu_data()+images->count());
   cv::imshow("gan-face", canvas);
   cv::waitKey();
   return 0;
