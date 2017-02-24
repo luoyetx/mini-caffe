@@ -55,9 +55,9 @@ using std::shared_ptr;
 
 typedef float real_t;
 
-typedef enum {
+enum DeviceMode {
   CPU, GPU
-} DeviceMode;
+};
 
 /*!
  * \brief gpu avariable

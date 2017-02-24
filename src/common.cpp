@@ -133,10 +133,10 @@ bool GPUAvailable() {
 
 void SetMode(DeviceMode mode, int device) {
   switch (mode) {
-  CPU:
+  case CPU:
     Caffe::Get().set_mode(Caffe::CPU);
     break;
-  GPU:
+  case GPU:
     Caffe::Get().set_mode(Caffe::GPU);
     Caffe::Get().SetDevice(device);
     break;
