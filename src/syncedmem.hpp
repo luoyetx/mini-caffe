@@ -3,7 +3,7 @@
 
 #include <cstdlib>
 
-#include "caffe/common.hpp"
+#include "caffe/base.hpp"
 
 namespace caffe {
 

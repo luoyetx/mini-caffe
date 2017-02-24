@@ -167,12 +167,11 @@ int CaffeGPUAvailable() {
 int CaffeSetMode(int mode, int device) {
   API_BEGIN();
   if (mode == 0) {
-    caffe::Caffe::set_mode(caffe::Caffe::CPU);
+    caffe::SetMode(caffe::CPU, -1);
   }
   else {
     CHECK_EQ(mode, 1);
-    caffe::Caffe::set_mode(caffe::Caffe::GPU);
-    caffe::Caffe::SetDevice(device);
+    caffe::SetMode(caffe::GPU, device);
   }
   API_END();
 }

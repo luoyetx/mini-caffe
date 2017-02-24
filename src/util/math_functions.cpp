@@ -1,7 +1,6 @@
 #include <limits>
 #include <random>
 
-#include "caffe/common.hpp"
 #include "./math_functions.hpp"
 
 namespace caffe {

@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "caffe/blob.hpp"
-#include "caffe/common.hpp"
+#include "./common.hpp"
 #include "./layer_factory.hpp"
 #include "./proto/caffe.pb.h"
 

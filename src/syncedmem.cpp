@@ -1,4 +1,4 @@
-#include "caffe/common.hpp"
+#include "./common.hpp"
 #include "./syncedmem.hpp"
 #include "./util/math_functions.hpp"
 

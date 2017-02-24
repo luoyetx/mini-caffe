@@ -8,7 +8,6 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/io/coded_stream.h>
 
-#include "caffe/common.hpp"
 #include "caffe/net.hpp"
 #include "caffe/profiler.hpp"
 #include "./layer.hpp"

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "caffe/blob.hpp"
-#include "caffe/common.hpp"
 
 namespace caffe {
 
