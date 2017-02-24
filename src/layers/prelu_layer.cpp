@@ -60,11 +60,19 @@ void PReLULayer::Forward_cpu(const vector<Blob*>& bottom,
 
   // if channel_shared, channel index in the following computation becomes
   // always zero.
-  const int div_factor = channel_shared_ ? channels : 1;
-  for (int i = 0; i < count; ++i) {
-    int c = (i / dim) % channels / div_factor;
-    top_data[i] = std::max(bottom_data[i], static_cast<real_t>(0))
-        + slope_data[c] * std::min(bottom_data[i], static_cast<real_t>(0));
+  if (channel_shared_) {
+    const float slop = slope_data[0];
+    for (int i = 0; i < count; ++i) {
+      top_data[i] = std::max(bottom_data[i], static_cast<real_t>(0))
+          + slop * std::min(bottom_data[i], static_cast<real_t>(0));
+    }
+  }
+  else {
+    for (int i = 0; i < count; ++i) {
+      int c = (i / dim) % channels;
+      top_data[i] = std::max(bottom_data[i], static_cast<real_t>(0))
+          + slope_data[c] * std::min(bottom_data[i], static_cast<real_t>(0));
+    }
   }
 }
 
