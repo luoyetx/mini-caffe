@@ -53,9 +53,6 @@ class PReLULayer : public NeuronLayer {
                            const vector<Blob*>& top);
 
   bool channel_shared_;
-  Blob multiplier_;  // dot multiplier for backward computation of params
-  Blob backward_buff_;  // temporary buffer for backward computation
-  Blob bottom_memory_;  // memory for in-place computation
 };
 
 }  // namespace caffe

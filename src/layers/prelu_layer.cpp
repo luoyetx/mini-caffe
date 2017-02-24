@@ -40,10 +40,6 @@ void PReLULayer::LayerSetUp(const vector<Blob*>& bottom,
     CHECK_EQ(this->blobs_[0]->count(), channels)
         << "Negative slope size is inconsistent with prototxt config";
   }
-
-  multiplier_.Reshape(vector<int>(1, bottom[0]->count(1)));
-  backward_buff_.Reshape(vector<int>(1, bottom[0]->count(1)));
-  caffe_set(multiplier_.count(), static_cast<real_t>(1), multiplier_.mutable_cpu_data());
 }
 
 void PReLULayer::Reshape(const vector<Blob*>& bottom,
@@ -51,10 +47,6 @@ void PReLULayer::Reshape(const vector<Blob*>& bottom,
   CHECK_GE(bottom[0]->num_axes(), 2)
       << "Number of axes of bottom blob must be >=2.";
   top[0]->ReshapeLike(*bottom[0]);
-  if (bottom[0] == top[0]) {
-    // For in-place computation
-    bottom_memory_.ReshapeLike(*bottom[0]);
-  }
 }
 
 void PReLULayer::Forward_cpu(const vector<Blob*>& bottom,
@@ -65,11 +57,6 @@ void PReLULayer::Forward_cpu(const vector<Blob*>& bottom,
   const int dim = bottom[0]->count(2);
   const int channels = bottom[0]->channels();
   const real_t* slope_data = this->blobs_[0]->cpu_data();
-
-  // For in-place computation
-  if (bottom[0] == top[0]) {
-    caffe_copy(count, bottom_data, bottom_memory_.mutable_cpu_data());
-  }
 
   // if channel_shared, channel index in the following computation becomes
   // always zero.
