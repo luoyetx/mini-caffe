@@ -112,4 +112,4 @@ CAFFE_API const char *CaffeGetLastError();
 }
 #endif  // __cplusplus
 
-#endif  // CAFFE_C_API_HPP_
+#endif  // CAFFE_C_API_H_

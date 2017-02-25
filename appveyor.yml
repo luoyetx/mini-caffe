@@ -53,6 +53,12 @@ test_script:
   - cmd: |
       cd java
       gradlew.bat clean build --info
+      cd ..
+  - cmd: |
+      cd python
+      python tests/test.py
+      python setup.py install
+      cd ..
 
 branches:
   only:
