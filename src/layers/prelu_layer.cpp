@@ -68,10 +68,17 @@ void PReLULayer::Forward_cpu(const vector<Blob*>& bottom,
     }
   }
   else {
-    for (int i = 0; i < count; ++i) {
-      int c = (i / dim) % channels;
-      top_data[i] = std::max(bottom_data[i], static_cast<real_t>(0))
-          + slope_data[c] * std::min(bottom_data[i], static_cast<real_t>(0));
+    const int num = bottom[0]->num();
+    for (int i = 0; i < num; ++i) {
+      for (int j = 0; j < channels; j++) {
+        const float slop = slope_data[j];
+        for (int k = 0; k < dim; k++) {
+          *top_data = std::max(*bottom_data, static_cast<real_t>(0))
+              + slop * std::min(*bottom_data, static_cast<real_t>(0));
+          top_data++;
+          bottom_data++;
+        }
+      }
     }
   }
 }
