@@ -12,6 +12,11 @@ environment:
   URL_3rdparty: https://github.com/luoyetx/misc/blob/master/mini-caffe/3rdparty.zip?raw=true
   URL_model: https://github.com/luoyetx/misc/blob/master/mini-caffe/model.zip?raw=true
 
+  matrix:
+    - PYTHON: "C:\\Python27-x64"
+      PYTHON_VERSION: "2.7.13"
+      PYTHON_ARCH: "64"
+
 install:
   - ps: |
       if (!(Test-Path "3rdparty.zip")) {
