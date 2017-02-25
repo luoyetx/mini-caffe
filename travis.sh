@@ -30,5 +30,6 @@ cd ..
 # python test
 cd python
 python --version
+pip install numpy
 python tests/test.py
 python setup.py build

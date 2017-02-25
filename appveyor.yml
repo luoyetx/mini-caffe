@@ -56,6 +56,8 @@ test_script:
       cd ..
   - cmd: |
       cd python
+      python --version
+      pip install numpy
       python tests/test.py
       python setup.py install
       cd ..
