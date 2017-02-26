@@ -62,19 +62,13 @@ void EltwiseLayer::Forward_cpu(const vector<Blob*>& bottom,
     bottom_data_a = bottom[0]->cpu_data();
     bottom_data_b = bottom[1]->cpu_data();
     for (int idx = 0; idx < count; ++idx) {
-      if (bottom_data_a[idx] > bottom_data_b[idx]) {
-        top_data[idx] = bottom_data_a[idx];  // maxval
-      } else {
-        top_data[idx] = bottom_data_b[idx];  // maxval
-      }
+      top_data[idx] = std::max(bottom_data_a[idx], bottom_data_b[idx]);
     }
     // bottom 2++
     for (int blob_idx = 2; blob_idx < bottom.size(); ++blob_idx) {
       bottom_data_b = bottom[blob_idx]->cpu_data();
       for (int idx = 0; idx < count; ++idx) {
-        if (bottom_data_b[idx] > top_data[idx]) {
-          top_data[idx] = bottom_data_b[idx];  // maxval
-        }
+        top_data[idx] = std::max(top_data[idx], bottom_data_b[idx]);
       }
     }
     break;

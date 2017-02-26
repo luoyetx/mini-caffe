@@ -91,44 +91,33 @@ void BatchNormLayer::Forward_cpu(const vector<Blob*>& bottom,
   } else {
     // compute mean
     caffe_cpu_gemv(CblasNoTrans, channels_ * num, spatial_dim,
-      1. / (num * spatial_dim), bottom_data,
-      spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(0),
-      num_by_chans_.mutable_cpu_data());
+        1. / (num * spatial_dim), bottom_data,
+        spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(0),
+        num_by_chans_.mutable_cpu_data());
     caffe_cpu_gemv(CblasTrans, num, channels_, static_cast<real_t>(1),
-      num_by_chans_.cpu_data(), batch_sum_multiplier_.cpu_data(), static_cast<real_t>(0),
-      mean_.mutable_cpu_data());
+        num_by_chans_.cpu_data(), batch_sum_multiplier_.cpu_data(), static_cast<real_t>(0),
+        mean_.mutable_cpu_data());
   }
 
   // subtract mean
   caffe_cpu_gemm(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,
-    batch_sum_multiplier_.cpu_data(), mean_.cpu_data(), static_cast<real_t>(0),
-    num_by_chans_.mutable_cpu_data());
+      batch_sum_multiplier_.cpu_data(), mean_.cpu_data(), static_cast<real_t>(0),
+      num_by_chans_.mutable_cpu_data());
   caffe_cpu_gemm(CblasNoTrans, CblasNoTrans, channels_ * num,
-    spatial_dim, 1, -1, num_by_chans_.cpu_data(),
-    spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(1), top_data);
+      spatial_dim, 1, -1, num_by_chans_.cpu_data(),
+      spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(1), top_data);
 
   if (!use_global_stats_) {
     // compute variance using var(X) = E((X-EX)^2)
     caffe_powx(top[0]->count(), top_data, static_cast<real_t>(2),
-      temp_.mutable_cpu_data());  // (X-EX)^2
+        temp_.mutable_cpu_data());  // (X-EX)^2
     caffe_cpu_gemv(CblasNoTrans, channels_ * num, spatial_dim,
-      1. / (num * spatial_dim), temp_.cpu_data(),
-      spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(0),
-      num_by_chans_.mutable_cpu_data());
+        1. / (num * spatial_dim), temp_.cpu_data(),
+        spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(0),
+        num_by_chans_.mutable_cpu_data());
     caffe_cpu_gemv(CblasTrans, num, channels_, static_cast<real_t>(1),
-      num_by_chans_.cpu_data(), batch_sum_multiplier_.cpu_data(), static_cast<real_t>(0),
-      variance_.mutable_cpu_data());  // E((X_EX)^2)
-
-    // compute and save moving average
-    this->blobs_[2]->mutable_cpu_data()[0] *= moving_average_fraction_;
-    this->blobs_[2]->mutable_cpu_data()[0] += 1;
-    caffe_cpu_axpby(mean_.count(), static_cast<real_t>(1), mean_.cpu_data(),
-      moving_average_fraction_, this->blobs_[0]->mutable_cpu_data());
-    int m = bottom[0]->count()/channels_;
-    real_t bias_correction_factor = m > 1 ? static_cast<real_t>(m)/(m-1) : 1;
-    caffe_cpu_axpby(variance_.count(), bias_correction_factor,
-      variance_.cpu_data(), moving_average_fraction_,
-      this->blobs_[1]->mutable_cpu_data());
+        num_by_chans_.cpu_data(), batch_sum_multiplier_.cpu_data(), static_cast<real_t>(0),
+        variance_.mutable_cpu_data());  // E((X_EX)^2)
   }
 
   // normalize variance
@@ -138,11 +127,11 @@ void BatchNormLayer::Forward_cpu(const vector<Blob*>& bottom,
 
   // replicate variance to input size
   caffe_cpu_gemm(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,
-    batch_sum_multiplier_.cpu_data(), variance_.cpu_data(), static_cast<real_t>(0),
-    num_by_chans_.mutable_cpu_data());
+      batch_sum_multiplier_.cpu_data(), variance_.cpu_data(), static_cast<real_t>(0),
+      num_by_chans_.mutable_cpu_data());
   caffe_cpu_gemm(CblasNoTrans, CblasNoTrans, channels_ * num,
-    spatial_dim, 1, static_cast<real_t>(1), num_by_chans_.cpu_data(),
-    spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(0), temp_.mutable_cpu_data());
+      spatial_dim, 1, static_cast<real_t>(1), num_by_chans_.cpu_data(),
+      spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(0), temp_.mutable_cpu_data());
   caffe_div(temp_.count(), top_data, temp_.cpu_data(), top_data);
   // TODO(cdoersch): The caching is only needed because later in-place layers
   //                 might clobber the data.  Can we skip this if they won't?

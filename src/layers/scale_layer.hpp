@@ -61,9 +61,6 @@ class ScaleLayer: public Layer {
   vector<bool> bias_propagate_down_;
   int bias_param_id_;
 
-  Blob sum_multiplier_;
-  Blob sum_result_;
-  Blob temp_;
   int axis_;
   int outer_dim_, scale_dim_, inner_dim_;
 };

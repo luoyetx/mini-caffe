@@ -28,18 +28,18 @@ void BatchNormLayer::Forward_gpu(const vector<Blob*>& bottom,
   } else {
     // compute mean
     caffe_gpu_gemv(CblasNoTrans, channels_ * num, spatial_dim,
-      1. / (num * spatial_dim), bottom_data,
-      spatial_sum_multiplier_.gpu_data(), 0,
-      num_by_chans_.mutable_gpu_data());
+        1. / (num * spatial_dim), bottom_data,
+        spatial_sum_multiplier_.gpu_data(), 0,
+        num_by_chans_.mutable_gpu_data());
     caffe_gpu_gemv(CblasTrans, num, channels_, 1,
-      num_by_chans_.gpu_data(), batch_sum_multiplier_.gpu_data(), 0,
-      mean_.mutable_gpu_data());
+        num_by_chans_.gpu_data(), batch_sum_multiplier_.gpu_data(), 0,
+        mean_.mutable_gpu_data());
   }
 
   // subtract mean
   caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,
-    batch_sum_multiplier_.gpu_data(), mean_.gpu_data(), 0,
-    num_by_chans_.mutable_gpu_data());
+      batch_sum_multiplier_.gpu_data(), mean_.gpu_data(), 0,
+      num_by_chans_.mutable_gpu_data());
   caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, channels_ * num,
       spatial_dim, 1, -1, num_by_chans_.gpu_data(),
       spatial_sum_multiplier_.gpu_data(), 1, top_data);
@@ -47,39 +47,28 @@ void BatchNormLayer::Forward_gpu(const vector<Blob*>& bottom,
   if (!use_global_stats_) {
     // compute variance using var(X) = E((X-EX)^2)
     caffe_gpu_powx(top[0]->count(), top_data, 2,
-      temp_.mutable_gpu_data());  // (X-EX)^2
+        temp_.mutable_gpu_data());  // (X-EX)^2
     caffe_gpu_gemv(CblasNoTrans, channels_ * num, spatial_dim,
-      1. / (num * spatial_dim), temp_.gpu_data(),
-      spatial_sum_multiplier_.gpu_data(), 0,
-      num_by_chans_.mutable_gpu_data());
+        1. / (num * spatial_dim), temp_.gpu_data(),
+        spatial_sum_multiplier_.gpu_data(), 0,
+        num_by_chans_.mutable_gpu_data());
     caffe_gpu_gemv(CblasTrans, num, channels_, 1,
-      num_by_chans_.gpu_data(), batch_sum_multiplier_.gpu_data(), 0,
-      variance_.mutable_gpu_data());  // E((X_EX)^2)
-
-    // compute and save moving average
-    this->blobs_[2]->mutable_cpu_data()[0] *= moving_average_fraction_;
-    this->blobs_[2]->mutable_cpu_data()[0] += 1;
-    caffe_gpu_axpby(mean_.count(), 1, mean_.gpu_data(),
-      moving_average_fraction_, this->blobs_[0]->mutable_gpu_data());
-    int m = bottom[0]->count()/channels_;
-    real_t bias_correction_factor = m > 1 ? static_cast<real_t>(m)/(m-1) : 1;
-    caffe_gpu_axpby(variance_.count(), bias_correction_factor,
-      variance_.gpu_data(), moving_average_fraction_,
-      this->blobs_[1]->mutable_gpu_data());
+        num_by_chans_.gpu_data(), batch_sum_multiplier_.gpu_data(), 0,
+        variance_.mutable_gpu_data());  // E((X_EX)^2)
   }
 
   // normalize variance
   caffe_gpu_add_scalar(variance_.count(), eps_, variance_.mutable_gpu_data());
   caffe_gpu_powx(variance_.count(), variance_.gpu_data(), static_cast<real_t>(0.5),
-    variance_.mutable_gpu_data());
+                 variance_.mutable_gpu_data());
 
   // replicate variance to input size
   caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,
-    batch_sum_multiplier_.gpu_data(), variance_.gpu_data(), 0.,
-    num_by_chans_.mutable_gpu_data());
+      batch_sum_multiplier_.gpu_data(), variance_.gpu_data(), 0.,
+      num_by_chans_.mutable_gpu_data());
   caffe_gpu_gemm(CblasNoTrans, CblasNoTrans, channels_ * num,
-    spatial_dim, 1, 1., num_by_chans_.gpu_data(),
-    spatial_sum_multiplier_.gpu_data(), 0., temp_.mutable_gpu_data());
+      spatial_dim, 1, 1., num_by_chans_.gpu_data(),
+      spatial_sum_multiplier_.gpu_data(), 0., temp_.mutable_gpu_data());
   caffe_gpu_div(temp_.count(), top_data, temp_.gpu_data(), top_data);
   // TODO(cdoersch): The caching is only needed because later in-place layers
   //                 might clobber the data.  Can we skip this if they won't?

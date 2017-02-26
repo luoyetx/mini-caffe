@@ -11,17 +11,7 @@ __global__ void MaxForward(const int nthreads, const real_t* bottom_data_a,
                            const real_t* bottom_data_b, const int blob_idx,
                            real_t* top_data) {
   CUDA_KERNEL_LOOP(index, nthreads) {
-    real_t maxval = static_cast<real_t>(-FLT_MAX);
-    if (bottom_data_a[index] > bottom_data_b[index]) {
-      // only update for very first bottom_data blob (blob_idx == 0)
-      if (blob_idx == 0) {
-        maxval = bottom_data_a[index];
-        top_data[index] = maxval;
-      }
-    } else {
-      maxval = bottom_data_b[index];
-      top_data[index] = maxval;
-    }
+    top_data[index] = max(bottom_data_a[index], bottom_data_b[index]);
   }
 }
 

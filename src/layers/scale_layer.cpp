@@ -84,16 +84,8 @@ void ScaleLayer::Reshape(const vector<Blob*>& bottom,
   outer_dim_ = bottom[0]->count(0, axis_);
   scale_dim_ = scale->count();
   inner_dim_ = bottom[0]->count(axis_ + scale->num_axes());
-  if (bottom[0] == top[0]) {  // in-place computation
-    temp_.ReshapeLike(*bottom[0]);
-  } else {
+  if (bottom[0] != top[0]) {
     top[0]->ReshapeLike(*bottom[0]);
-  }
-  sum_result_.Reshape(vector<int>(1, outer_dim_ * scale_dim_));
-  const int sum_mult_size = std::max(outer_dim_, inner_dim_);
-  sum_multiplier_.Reshape(vector<int>(1, sum_mult_size));
-  if (sum_multiplier_.cpu_data()[sum_mult_size - 1] != static_cast<real_t>(1)) {
-    caffe_set(sum_mult_size, static_cast<real_t>(1), sum_multiplier_.mutable_cpu_data());
   }
   if (bias_layer_) {
     bias_bottom_vec_[0] = top[0];
@@ -104,14 +96,6 @@ void ScaleLayer::Reshape(const vector<Blob*>& bottom,
 void ScaleLayer::Forward_cpu(const vector<Blob*>& bottom,
                              const vector<Blob*>& top) {
   const real_t* bottom_data = bottom[0]->cpu_data();
-  if (bottom[0] == top[0]) {
-    // In-place computation; need to store bottom data before overwriting it.
-    // Note that this is only necessary for Backward; we could skip this if not
-    // doing Backward, but Caffe currently provides no way of knowing whether
-    // we'll need to do Backward at the time of the Forward call.
-    caffe_copy(bottom[0]->count(), bottom[0]->cpu_data(),
-               temp_.mutable_cpu_data());
-  }
   const real_t* scale_data =
       ((bottom.size() > 1) ? bottom[1] : this->blobs_[0].get())->cpu_data();
   real_t* top_data = top[0]->mutable_cpu_data();
