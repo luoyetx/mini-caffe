@@ -20,7 +20,20 @@ unzip -o model.zip
 # test
 ./run_net
 ./run_net_c
+cd ..
 
 # java test
-cd ../java
+cd java
 ./gradlew clean build --info
+cd ..
+
+# python test
+cd python
+python2 --version
+python2 tests/test.py
+python2 setup.py build
+python2 setup.py clean
+python3 --version
+python3 tests/test.py
+python3 setup.py build
+python3 setup.py clean

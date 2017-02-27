@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 
-#include "caffe/common.hpp"
 #include "./io.hpp"
 #include "./upgrade_proto.hpp"
 #include "../proto/caffe.pb.h"

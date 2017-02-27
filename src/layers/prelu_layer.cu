@@ -26,11 +26,6 @@ void PReLULayer::Forward_gpu(const vector<Blob*>& bottom,
   const real_t* slope_data = this->blobs_[0]->gpu_data();
   const int div_factor = channel_shared_ ? channels : 1;
 
-  // For in-place computation
-  if (top[0] == bottom[0]) {
-    caffe_copy(count, bottom_data, bottom_memory_.mutable_gpu_data());
-  }
-
   // NOLINT_NEXT_LINE(whitespace/operators)
   PReLUForward<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
       count, channels, dim, bottom_data, top_data, slope_data, div_factor);

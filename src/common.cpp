@@ -1,4 +1,5 @@
-#include "caffe/common.hpp"
+#include "caffe/base.hpp"
+#include "./common.hpp"
 
 namespace caffe {
 
@@ -121,5 +122,28 @@ const char* cublasGetErrorString(cublasStatus_t error) {
 }
 
 #endif  // USE_CUDA
+
+bool GPUAvailable() {
+#ifdef USE_CUDA
+  return true;
+#else
+  return false;
+#endif  // USE_CUDA
+}
+
+void SetMode(DeviceMode mode, int device) {
+  switch (mode) {
+  case CPU:
+    Caffe::Get().set_mode(Caffe::CPU);
+    break;
+  case GPU:
+    Caffe::Get().set_mode(Caffe::GPU);
+    Caffe::Get().SetDevice(device);
+    break;
+  default:
+    LOG(FATAL) << "Unsupported Device Mode: " << mode;
+    break;
+  }
+}
 
 }  // namespace caffe

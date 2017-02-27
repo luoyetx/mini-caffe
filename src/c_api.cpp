@@ -156,6 +156,26 @@ int CaffeNetListBlob(NetHandle net, int *n, const char ***names, BlobHandle **bl
   API_END();
 }
 
+int CaffeNetListParam(NetHandle net, int *n, const char ***names, BlobHandle **params) {
+  API_BEGIN();
+  caffe::Net *net_ = static_cast<caffe::Net*>(net);
+  const auto &names_ = net_->param_names();
+  const auto &params_ = net_->params();
+  CHECK_EQ(names_.size(), params_.size());
+  const int num = params_.size();
+  auto *ret = BlobsStore::Get();
+  ret->vec_charp.resize(num);
+  ret->vec_handle.resize(num);
+  for (int i = 0; i < num; i++) {
+    ret->vec_charp[i] = names_[i].c_str();
+    ret->vec_handle[i] = static_cast<BlobHandle>(params_[i].get());
+  }
+  *n = num;
+  *names = ret->vec_charp.data();
+  *params = ret->vec_handle.data();
+  API_END();
+}
+
 int CaffeGPUAvailable() {
 #ifdef USE_CUDA
   return 1;
@@ -167,12 +187,11 @@ int CaffeGPUAvailable() {
 int CaffeSetMode(int mode, int device) {
   API_BEGIN();
   if (mode == 0) {
-    caffe::Caffe::set_mode(caffe::Caffe::CPU);
+    caffe::SetMode(caffe::CPU, -1);
   }
   else {
     CHECK_EQ(mode, 1);
-    caffe::Caffe::set_mode(caffe::Caffe::GPU);
-    caffe::Caffe::SetDevice(device);
+    caffe::SetMode(caffe::GPU, device);
   }
   API_END();
 }

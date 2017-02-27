@@ -31,6 +31,9 @@ private:
 };
 
 int main(int argc, char **argv) {
+  if (caffe::GPUAvailable()) {
+    caffe::SetMode(caffe::GPU, 0);
+  }
   caffe::Net net("../models/wgan/g.prototxt");
   net.CopyTrainedLayersFrom("../models/wgan/g.caffemodel");
   // random noise
@@ -45,13 +48,17 @@ int main(int argc, char **argv) {
     data[i] = nd(gen);
   }
   // forward
+  caffe::Profiler *profiler = caffe::Profiler::Get();
+  profiler->TurnON();
   Timer timer;
   timer.Tic();
   net.Forward();
   timer.Toc();
+  profiler->TurnOFF();
+  profiler->DumpProfile("profile.json");
   std::cout << "generate costs " << timer.Elasped() << " ms" << std::endl;
   // visualization
-  auto images = net.blob_by_name("gact5");
+  auto images = net.blob_by_name("gconv5");
   const int num = images->num();
   const int channels = images->channels();
   const int height = images->height();

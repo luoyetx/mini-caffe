@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "caffe/common.hpp"
+#include "caffe/base.hpp"
 
 namespace caffe {
 

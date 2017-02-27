@@ -27,7 +27,7 @@ layer {
     name: "gbn1"
     type: "BatchNorm"
     bottom: "gconv1"
-    top: "gbn1"
+    top: "gconv1"
     batch_norm_param {
         use_global_stats: false
     }
@@ -35,8 +35,8 @@ layer {
 layer {
     name: "gbn1_scale"
     type: "Scale"
-    bottom: "gbn1"
-    top: "gbn1_scale"
+    bottom: "gconv1"
+    top: "gconv1"
     scale_param {
         bias_term: true
     }
@@ -44,14 +44,14 @@ layer {
 layer {
     name: "gact1"
     type: "ReLU"
-    bottom: "gbn1_scale"
-    top: "gact1"
+    bottom: "gconv1"
+    top: "gconv1"
 }
 # 4x4
 layer {
     name: "gconv2"
     type: "Deconvolution"
-    bottom: "gact1"
+    bottom: "gconv1"
     top: "gconv2"
     convolution_param {
         num_output: 256
@@ -65,7 +65,7 @@ layer {
     name: "gbn2"
     type: "BatchNorm"
     bottom: "gconv2"
-    top: "gbn2"
+    top: "gconv2"
     batch_norm_param {
         use_global_stats: false
     }
@@ -73,8 +73,8 @@ layer {
 layer {
     name: "gbn2_scale"
     type: "Scale"
-    bottom: "gbn2"
-    top: "gbn2_scale"
+    bottom: "gconv2"
+    top: "gconv2"
     scale_param {
         bias_term: true
     }
@@ -82,14 +82,14 @@ layer {
 layer {
     name: "gact2"
     type: "ReLU"
-    bottom: "gbn2_scale"
-    top: "gact2"
+    bottom: "gconv2"
+    top: "gconv2"
 }
 # 8x8
 layer {
     name: "gconv3"
     type: "Deconvolution"
-    bottom: "gact2"
+    bottom: "gconv2"
     top: "gconv3"
     convolution_param {
         num_output: 128
@@ -103,7 +103,7 @@ layer {
     name: "gbn3"
     type: "BatchNorm"
     bottom: "gconv3"
-    top: "gbn3"
+    top: "gconv3"
     batch_norm_param {
         use_global_stats: false
     }
@@ -111,8 +111,8 @@ layer {
 layer {
     name: "gbn3_scale"
     type: "Scale"
-    bottom: "gbn3"
-    top: "gbn3_scale"
+    bottom: "gconv3"
+    top: "gconv3"
     scale_param {
         bias_term: true
     }
@@ -120,14 +120,14 @@ layer {
 layer {
     name: "gact3"
     type: "ReLU"
-    bottom: "gbn3_scale"
-    top: "gact3"
+    bottom: "gconv3"
+    top: "gconv3"
 }
 # 16x16
 layer {
     name: "gconv4"
     type: "Deconvolution"
-    bottom: "gact3"
+    bottom: "gconv3"
     top: "gconv4"
     convolution_param {
         num_output: 64
@@ -141,7 +141,7 @@ layer {
     name: "gbn4"
     type: "BatchNorm"
     bottom: "gconv4"
-    top: "gbn4"
+    top: "gconv4"
     batch_norm_param {
         use_global_stats: false
     }
@@ -149,8 +149,8 @@ layer {
 layer {
     name: "gbn4_scale"
     type: "Scale"
-    bottom: "gbn4"
-    top: "gbn4_scale"
+    bottom: "gconv4"
+    top: "gconv4"
     scale_param {
         bias_term: true
     }
@@ -158,14 +158,14 @@ layer {
 layer {
     name: "gact4"
     type: "ReLU"
-    bottom: "gbn4_scale"
-    top: "gact4"
+    bottom: "gconv4"
+    top: "gconv4"
 }
 # 32x32
 layer {
     name: "gconv5"
     type: "Deconvolution"
-    bottom: "gact4"
+    bottom: "gconv4"
     top: "gconv5"
     convolution_param {
         num_output: 3
@@ -179,5 +179,5 @@ layer {
     name: "gact5"
     type: "TanH"
     bottom: "gconv5"
-    top: "gact5"
+    top: "gconv5"
 }

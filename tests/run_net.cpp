@@ -164,12 +164,9 @@ struct ResNet : public TestFunctor {
 };
 
 int main(int argc, char *argv[]) {
-#ifdef USE_CUDA
-  Caffe::set_mode(Caffe::GPU);
-  Caffe::SetDevice(0);
-#else
-  Caffe::set_mode(Caffe::CPU);
-#endif  // USE_CUDA
+  if (caffe::GPUAvailable()) {
+    caffe::SetMode(caffe::GPU, 0);
+  }
 
   Timer timer;
   Profiler *profiler = Profiler::Get();

@@ -2,9 +2,6 @@ if(NOT USE_CUDA)
   return()
 endif()
 
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++11"   SUPPORT_CXX11)
-
 ################################################################################################
 # Removes duplicates from list(s)
 # Usage:
@@ -172,9 +169,6 @@ macro(caffe_cuda_compile objlist_variable)
 
   if(UNIX OR APPLE)
     list(APPEND CUDA_NVCC_FLAGS -Xcompiler -fPIC)
-    if(SUPPORT_CXX11)
-      list(APPEND CUDA_NVCC_FLAGS -Xcompiler -fPIC --std=c++11)
-    endif()
   endif()
 
   if(APPLE)
