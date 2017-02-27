@@ -73,7 +73,7 @@ class LayerCrafter(object):
             return s
         elif isinstance(value, dict):
             s = "%s%s {\n"%(indent, key)
-            for key, val in value.iteritems():
+            for key, val in list(value.items()):
                 s += self.parse_key_value(key, val, indent+'\t')
             s += "%s}\n"%(indent)
             return s

@@ -44,7 +44,9 @@ def test_network():
                      os.path.join(model_dir, 'resnet.caffemodel'))
     blob = net.get_blob('data')
     shape = blob.shape
-    size = reduce(lambda acc, x: acc*x, shape, 1)
+    size = 1
+    for s in shape:
+        size *= s
     blob.data[...] = np.random.rand(size).reshape(shape).astype(np.float32)
     # forward network
     t0 = time.clock()
@@ -54,7 +56,7 @@ def test_network():
     print('Forward ResNet costs %f ms'%t)
     # network parameters
     params = net.params
-    for layer_name, layer_params in params.iteritems():
+    for layer_name, layer_params in list(params.items()):
         print('layer: {\n\tname: %s'%layer_name)
         for name, param in layer_params:
             shape = param.shape

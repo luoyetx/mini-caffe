@@ -69,7 +69,7 @@ class Net(object):
         params = defaultdict(list)
         for i in range(ctypes_n.value):
             name = py_str(ctypes_names[i])
-            param = Blob(ctypes_params[i])
+            param = Blob(BlobHandle(ctypes_params[i]))
             layer_name = '_'.join(name.split('_')[:-1])
             params[layer_name].append((name, param))
         return params
