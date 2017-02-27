@@ -83,11 +83,27 @@ CAFFE_API int CaffeNetGetBlob(NetHandle net,
                               BlobHandle *blob);
 /*!
  * \brief list all network internal data buffer
+ * \param net net handle
+ * \param n number of blobs
+ * \param names list of string to blob names
+ * \param blobs list of BlobHandle
  */
 CAFFE_API int CaffeNetListBlob(NetHandle net,
                                int *n,
                                const char ***names,
                                BlobHandle **blobs);
+/*!
+ * \brief list all network parameters
+ * \param net net handle
+ * \param n number of params
+ * \param names list of string to param names,
+                same layer has same name prefix
+ * \param params list of BlobHandle
+ */
+CAFFE_API int CaffeNetListParam(NetHandle net,
+                                int *n,
+                                const char ***names,
+                                BlobHandle **params);
 
 // Helper
 

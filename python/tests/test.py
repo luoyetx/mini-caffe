@@ -52,6 +52,14 @@ def test_network():
     t1 = time.clock()
     t = (t1 - t0) * 1000
     print('Forward ResNet costs %f ms'%t)
+    # network parameters
+    params = net.params
+    for layer_name, layer_params in params.iteritems():
+        print('layer: {\n\tname: %s'%layer_name)
+        for name, param in layer_params:
+            shape = param.shape
+            print('\t%s: [%d, %d, %d, %d]'%(name, shape[0], shape[1], shape[2], shape[3]))
+        print('}')
 
 
 if __name__ == '__main__':

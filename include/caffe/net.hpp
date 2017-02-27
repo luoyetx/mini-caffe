@@ -75,6 +75,8 @@ class CAFFE_API Net {
   const vector<string>& layer_names() const { return layer_names_; }
   /// @brief returns the blob names
   const vector<string>& blob_names() const { return blob_names_; }
+  /// @biref return the param names
+  const vector<string>& param_names() const { return param_display_names_; }
   /// @brief returns the blobs
   const vector<shared_ptr<Blob> >& blobs() const {
     return blobs_;
@@ -82,6 +84,10 @@ class CAFFE_API Net {
   /// @brief returns the layers
   const vector<shared_ptr<Layer> >& layers() const {
     return layers_;
+  }
+  /// @brief all parameters
+  const vector<shared_ptr<Blob> >& params() const {
+    return params_;
   }
   /**
    * @brief returns the bottom vecs for each layer -- usually you won't
@@ -96,6 +102,12 @@ class CAFFE_API Net {
    */
   const vector<vector<Blob*> >& top_vecs() const {
     return top_vecs_;
+  }
+  /**
+   * @brief returns the params in every layer with id in params
+   */
+  const vector<vector<int> >& param_id_vecs() const {
+    return param_id_vecs_;
   }
   /// @brief returns the ids of the top blobs of layer i
   const vector<int> & top_ids(int i) const {
@@ -141,6 +153,11 @@ class CAFFE_API Net {
   vector<shared_ptr<Blob> > blobs_;
   vector<string> blob_names_;
   std::map<string, int> blob_names_index_;
+  /// @brief parameters in the network.
+  vector<shared_ptr<Blob> > params_;
+  vector<string> param_display_names_;
+  vector<vector<int> > param_id_vecs_;
+  std::map<string, int> param_names_index_;
   /// bottom_vecs stores the vectors containing the input for each layer.
   /// They don't actually host the blobs (blobs_ does), so we simply store
   /// pointers.
