@@ -11,7 +11,8 @@ image: Visual Studio 2013
 environment:
   URL_3rdparty: https://github.com/luoyetx/misc/blob/master/mini-caffe/3rdparty.zip?raw=true
   URL_model: https://github.com/luoyetx/misc/blob/master/mini-caffe/model.zip?raw=true
-  PYTHON: "C:\\Python27-x64"
+  PYTHON2: "C:\\Python27-x64"
+  PYTHON3: "C:\\Python35-x64"
 
 install:
   - ps: |
@@ -42,7 +43,7 @@ before_test:
       }
   - cmd: |
       7z x model.zip -y -o"%APPVEYOR_BUILD_FOLDER%/build/Release" >NUL
-      set PATH=%PYTHON%;%PYTHON%\Scripts;%cd%\3rdparty\bin;%cd%\build\Release;%PATH%
+      set PATH=%cd%\3rdparty\bin;%cd%\build\Release;%PATH%
 
 test_script:
   - cmd: |
@@ -57,10 +58,18 @@ test_script:
       cd ..
   - cmd: |
       cd python
+      set PATH=%PYTHON2%;%PYTHON2%\Scripts;%PATH%
       python --version
       pip install numpy
       python tests/test.py
       python setup.py install
+      python setup.py clean
+      set PATH=%PYTHON3%;%PYTHON3%\Scripts;%PATH%
+      python --version
+      pip install numpy
+      python tests/test.py
+      python setup.py install
+      python setup.py clean
       cd ..
 
 branches:
