@@ -16,6 +16,7 @@ addons:
       - g++-4.8
       - python-numpy
       - python3-numpy
+      - python3-setuptools
 
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
