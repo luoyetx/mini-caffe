@@ -15,7 +15,27 @@ sys.path.insert(0, lib_dir)
 import minicaffe as mcaffe
 
 
-if __name__ == '__main__':
+def test_crafter():
+    """test crafter"""
+    Crafter = mcaffe.LayerCrafter
+    conv = Crafter(name='conv1',
+                   bottom=['in1', 'in2'],
+                   top=['out1', 'out2'],
+                   type='Convolution',
+                   convolution_param={
+                       'num_output': 20,
+                       'kernel_size': 4,
+                       'weight_filler': {
+                           'type': 'xavier',
+                       }
+                   },
+                   dummy_test1=[1., 2., 3.],
+                   dummy_test2=True).gen()
+    print(conv)
+
+
+def test_network():
+    """test network"""
     # check gpu available
     if mcaffe.check_gpu_available():
         mcaffe.set_runtime_mode(1, 0)
@@ -32,3 +52,9 @@ if __name__ == '__main__':
     t1 = time.clock()
     t = (t1 - t0) * 1000
     print('Forward ResNet costs %f ms'%t)
+
+
+if __name__ == '__main__':
+    # test crafter
+    test_crafter()
+    test_network()
