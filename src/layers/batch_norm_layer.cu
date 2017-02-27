@@ -70,9 +70,6 @@ void BatchNormLayer::Forward_gpu(const vector<Blob*>& bottom,
       spatial_dim, 1, 1., num_by_chans_.gpu_data(),
       spatial_sum_multiplier_.gpu_data(), 0., temp_.mutable_gpu_data());
   caffe_gpu_div(temp_.count(), top_data, temp_.gpu_data(), top_data);
-  // TODO(cdoersch): The caching is only needed because later in-place layers
-  //                 might clobber the data.  Can we skip this if they won't?
-  caffe_copy(x_norm_.count(), top_data, x_norm_.mutable_gpu_data());
 }
 
 }  // namespace caffe

@@ -9,7 +9,6 @@ namespace caffe {
 void BatchNormLayer::LayerSetUp(const vector<Blob*>& bottom,
                                 const vector<Blob*>& top) {
   BatchNormParameter param = this->layer_param_.batch_norm_param();
-  moving_average_fraction_ = param.moving_average_fraction();
   use_global_stats_ = true;
   if (param.has_use_global_stats())
     use_global_stats_ = param.use_global_stats();
@@ -46,7 +45,6 @@ void BatchNormLayer::Reshape(const vector<Blob*>& bottom,
   mean_.Reshape(sz);
   variance_.Reshape(sz);
   temp_.ReshapeLike(*bottom[0]);
-  x_norm_.ReshapeLike(*bottom[0]);
   sz[0]=bottom[0]->shape(0);
   batch_sum_multiplier_.Reshape(sz);
 
@@ -133,9 +131,6 @@ void BatchNormLayer::Forward_cpu(const vector<Blob*>& bottom,
       spatial_dim, 1, static_cast<real_t>(1), num_by_chans_.cpu_data(),
       spatial_sum_multiplier_.cpu_data(), static_cast<real_t>(0), temp_.mutable_cpu_data());
   caffe_div(temp_.count(), top_data, temp_.cpu_data(), top_data);
-  // TODO(cdoersch): The caching is only needed because later in-place layers
-  //                 might clobber the data.  Can we skip this if they won't?
-  caffe_copy(x_norm_.count(), top_data, x_norm_.mutable_cpu_data());
 }
 
 #ifndef USE_CUDA
