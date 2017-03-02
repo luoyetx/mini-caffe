@@ -52,7 +52,9 @@ int main(int argc, char **argv) {
   profiler->TurnON();
   Timer timer;
   timer.Tic();
+  profiler->ScopeStart("wgan");
   net.Forward();
+  profiler->ScopeEnd();
   timer.Toc();
   profiler->TurnOFF();
   profiler->DumpProfile("profile.json");
