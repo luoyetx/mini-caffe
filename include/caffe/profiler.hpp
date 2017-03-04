@@ -55,7 +55,7 @@ public:
         << scope_stack_.size();
     state_ = kNotRunning;
   }
-  /*! \brief timestamp */
+  /*! \brief timestamp, return in microseconds */
   uint64_t Now() const;
 
 private:

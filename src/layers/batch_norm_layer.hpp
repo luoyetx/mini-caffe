@@ -56,9 +56,8 @@ class BatchNormLayer : public Layer {
   virtual void Forward_gpu(const vector<Blob*>& bottom,
                            const vector<Blob*>& top);
 
-  Blob mean_, variance_, temp_, x_norm_;
+  Blob mean_, variance_, temp_;
   bool use_global_stats_;
-  real_t moving_average_fraction_;
   int channels_;
   real_t eps_;
 

@@ -1,6 +1,11 @@
 #include "caffe/profiler.hpp"
 
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+#include <Windows.h>
+#else
 #include <chrono>
+#endif  // _MSC_VER
+
 #include <fstream>
 
 namespace caffe {
@@ -40,8 +45,15 @@ void Profiler::ScopeEnd() {
 }
 
 uint64_t Profiler::Now() const {
+#if defined(_MSC_VER) && _MSC_VER <= 1800
+  LARGE_INTEGER frequency, counter;
+  QueryPerformanceFrequency(&frequency);
+  QueryPerformanceCounter(&counter);
+  return counter.QuadPart * 1000000 / frequency.QuadPart;
+#else
   return std::chrono::duration_cast<std::chrono::microseconds>(
       std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+#endif  // _MSC_VER
 }
 
 static void ProfilerWriteEvent(std::ofstream &file,

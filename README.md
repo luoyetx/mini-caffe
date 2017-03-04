@@ -4,7 +4,7 @@ Mini-Caffe
 [![Build Status](https://travis-ci.org/luoyetx/mini-caffe.svg?branch=master)](https://travis-ci.org/luoyetx/mini-caffe)
 [![Build status](https://ci.appveyor.com/api/projects/status/x9s2iajv7rtxeo3t/branch/master?svg=true)](https://ci.appveyor.com/project/luoyetx/mini-caffe/branch/master)
 
-Minimal runtime core of Caffe. This repo is aimed to provide a minimal C++ runtime core for those want to **Forward** a Caffe model.
+Minimal runtime core of [Caffe](https://github.com/BVLC/caffe). This repo is aimed to provide a minimal C++ runtime core for those want to **Forward** a Caffe model.
 
 ### What can Mini-Caffe do?
 
@@ -86,3 +86,7 @@ checkout Python API [here](python), install package via `python setup.py install
 ### How to use Mini-Caffe
 
 To use Mini-Caffe as a library, you may refer to [example](example).
+
+### How to profile your network
+
+The Profiler in Mini-Caffe can help you profile your network performance, see docs [here](profile.md)
