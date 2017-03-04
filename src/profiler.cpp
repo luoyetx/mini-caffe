@@ -46,11 +46,10 @@ void Profiler::ScopeEnd() {
 
 uint64_t Profiler::Now() const {
 #if defined(_MSC_VER) && _MSC_VER <= 1800
-  LARGE_INTEGER f;
-  LARGE_INTEGER c;
-  QueryPerformanceFrequency(&f);
-  QueryPerformanceCounter(&c);
-  return c.QuadPart * 1000000 / f.QuadPart;
+  LARGE_INTEGER frequency, counter;
+  QueryPerformanceFrequency(&frequency);
+  QueryPerformanceCounter(&counter);
+  return counter.QuadPart * 1000000 / frequency.QuadPart;
 #else
   return std::chrono::duration_cast<std::chrono::microseconds>(
       std::chrono::high_resolution_clock::now().time_since_epoch()).count();
