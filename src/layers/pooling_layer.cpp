@@ -125,7 +125,6 @@ void PoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
   // loop to save time, although this results in more code.
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
-    caffe_set(top_count, static_cast<real_t>(-FLT_MAX), top_data);
     // The main loop
     for (int n = 0; n < bottom[0]->num(); ++n) {
       for (int c = 0; c < channels_; ++c) {
@@ -137,13 +136,15 @@ void PoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
             int wend = min(wstart + kernel_w_, width_);
             hstart = max(hstart, 0);
             wstart = max(wstart, 0);
-            const int pool_index = ph * pooled_width_ + pw;
+            real_t top_val = -FLT_MAX;
             for (int h = hstart; h < hend; ++h) {
               for (int w = wstart; w < wend; ++w) {
                 const int index = h * width_ + w;
-                top_data[pool_index] = max(top_data[pool_index], bottom_data[index]);
+                top_val = max(top_val, bottom_data[index]);
               }
             }
+            const int pool_index = ph * pooled_width_ + pw;
+            top_data[pool_index] = top_val;
           }
         }
         // compute offset
