@@ -16,10 +16,15 @@ public class MiniCaffeTest {
         } else {
             System.out.println("Use CPU to run model");
         }
+        Utils.EnableProfiler();
         System.out.println("Create NIN");
         Net net = new Net("../build/model/nin.prototxt",
                           "../build/model/nin.caffemodel");
+        Utils.OpenScope("nin");
         testForward(net);
+        Utils.CloseScope();
+        Utils.DisableProfiler();
+        Utils.DumpProfile("nin-profile.json");
         // test create from buffer
         System.out.println("Create ResNet from buffer");
         try {

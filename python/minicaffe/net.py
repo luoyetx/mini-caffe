@@ -2,8 +2,8 @@
 # pylint: disable=invalid-name
 """Net represents caffe::Net in C++"""
 from __future__ import absolute_import
-import ctypes
 from collections import defaultdict
+import ctypes
 from .base import LIB
 from .base import c_str, py_str, check_call
 from .base import NetHandle, BlobHandle
