@@ -67,6 +67,13 @@ def test_network():
             shape = param.shape
             print('\t%s: [%d, %d, %d, %d]'%(name, shape[0], shape[1], shape[2], shape[3]))
         print('}')
+    # network internal blobs
+    blobs = net.blobs
+    print('{')
+    for name, blob in list(blobs.items()):
+        shape = blob.shape
+        print('\t%s: [%d, %d, %d, %d]'%(name, shape[0], shape[1], shape[2], shape[3]))
+    print('}')
 
 
 if __name__ == '__main__':

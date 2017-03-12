@@ -52,6 +52,28 @@ class Net(object):
         return Blob(handle)
 
     @property
+    def blobs(self):
+        """return network internal blobs
+
+        Returns
+        -------
+        blobs: dict(name: Blob)
+            network internal blobs with their name
+        """
+        ctypes_n = ctypes.c_int32()
+        ctypes_names = ctypes.POINTER(ctypes.c_char_p)()
+        ctypes_blobs = ctypes.POINTER(BlobHandle)()
+        check_call(LIB.CaffeNetListBlob(self.handle, ctypes.byref(ctypes_n),
+                                        ctypes.byref(ctypes_names),
+                                        ctypes.byref(ctypes_blobs)))
+        blobs = dict()
+        for i in range(ctypes_n.value):
+            name = py_str(ctypes_names[i])
+            blob = Blob(BlobHandle(ctypes_blobs[i]))
+            blobs[name] = blob
+        return blobs
+
+    @property
     def params(self):
         """return network params
 
