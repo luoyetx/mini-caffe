@@ -36,6 +36,9 @@ int main(int argc, char **argv) {
   }
   caffe::Net net("../models/wgan/g.prototxt");
   net.CopyTrainedLayersFrom("../models/wgan/g.caffemodel");
+  caffe::Profiler *profiler = caffe::Profiler::Get();
+  profiler->TurnON();
+  profiler->ScopeStart("wgan");
   // random noise
   srand(time(NULL));
   std::random_device rd;
@@ -48,15 +51,10 @@ int main(int argc, char **argv) {
     data[i] = nd(gen);
   }
   // forward
-  caffe::Profiler *profiler = caffe::Profiler::Get();
-  profiler->TurnON();
   Timer timer;
   timer.Tic();
   net.Forward();
   timer.Toc();
-  profiler->TurnOFF();
-  profiler->DumpProfile("profile.json");
-  std::cout << "generate costs " << timer.Elasped() << " ms" << std::endl;
   // visualization
   auto images = net.blob_by_name("gconv5");
   const int num = images->num();
@@ -81,6 +79,10 @@ int main(int argc, char **argv) {
       }
     }
   }
+  profiler->ScopeEnd();
+  profiler->TurnOFF();
+  profiler->DumpProfile("profile.json");
+  std::cout << "generate costs " << timer.Elasped() << " ms" << std::endl;
   cv::imshow("gan-face", canvas);
   cv::waitKey();
   return 0;

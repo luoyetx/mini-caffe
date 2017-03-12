@@ -157,3 +157,33 @@ CaffeJNIMethod(Utils, SetMode, jint)(JNIEnv *env, jobject thiz,
                                      jint mode, jint device) {
   return CaffeSetMode(mode, device);
 }
+
+CaffeJNIMethod(Utils, ProfilerEnable, jint)(JNIEnv *env, jobject thiz) {
+  return CaffeProfilerEnable();
+}
+
+CaffeJNIMethod(Utils, ProfilerDisable, jint)(JNIEnv *env, jobject thiz) {
+  return CaffeProfilerDisable();
+}
+
+CaffeJNIMethod(Utils, ProfilerScopeStart, jint)(JNIEnv *env, jobject thiz,
+                                                jstring name) {
+  const char *name_cstr = (*env)->GetStringUTFChars(env, name, NULL);
+  CHECK_SUCCESS(CaffeProfilerScopeStart(name_cstr), {
+    (*env)->ReleaseStringUTFChars(env, name, name_cstr);
+  });
+  return 0;
+}
+
+CaffeJNIMethod(Utils, ProfilerScopeEnd, jint)(JNIEnv *env, jobject thiz) {
+  return CaffeProfilerScopeEnd();
+}
+
+CaffeJNIMethod(Utils, ProfilerDump, jint)(JNIEnv *env, jobject thiz,
+                                          jstring fn) {
+  const char *fn_cstr = (*env)->GetStringUTFChars(env, fn, NULL);
+  CHECK_SUCCESS(CaffeProfilerDump(fn_cstr), {
+    (*env)->ReleaseStringUTFChars(env, fn, fn_cstr);
+  });
+  return 0;
+}

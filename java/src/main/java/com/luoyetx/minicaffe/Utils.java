@@ -28,9 +28,56 @@ public final class Utils {
             throw new RuntimeException(GetLastError());
         }
     }
+    /**
+     * enable profiler
+     */
+    public static void EnableProfiler() {
+        if (jniProfilerEnable() != 0) {
+            throw new RuntimeException(GetLastError());
+        }
+    }
+    /**
+     * disable profiler
+     */
+    public static void DisableProfiler() {
+        if (jniProfilerDisable() != 0) {
+            throw new RuntimeException(GetLastError());
+        }
+    }
+    /**
+     * open a scope on profiler
+     * @param naem scope name
+     */
+    public static void OpenScope(String name) {
+        if (jniProfilerScopeStart(name) != 0) {
+            throw new RuntimeException(GetLastError());
+        }
+    }
+    /**
+     * close a scope
+     */
+    public static void CloseScope() {
+        if (jniProfilerScopeEnd() != 0) {
+            throw new RuntimeException(GetLastError());
+        }
+    }
+    /**
+     * dump profiler data to file
+     * @param fn file path
+     */
+    public static void DumpProfile(String fn) {
+        if (jniProfilerDump(fn) != 0) {
+            throw new RuntimeException(GetLastError());
+        }
+    }
     private static native String jniGetLastError();
     private static native int jniGPUAvailable();
     private static native int jniSetMode(int mode, int device);
+    private static native int jniProfilerEnable();
+    private static native int jniProfilerDisable();
+    private static native int jniProfilerScopeStart(String name);
+    private static native int jniProfilerScopeEnd();
+    private static native int jniProfilerDump(String fn);
 
     static {
         System.loadLibrary("caffe");

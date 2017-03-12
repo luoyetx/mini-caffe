@@ -153,14 +153,6 @@ class CAFFE_API Blob {
 
   int offset(const int n, const int c = 0,
              const int h = 0, const int w = 0) const {
-    CHECK_GE(n, 0);
-    CHECK_LE(n, num());
-    CHECK_GE(channels(), 0);
-    CHECK_LE(c, channels());
-    CHECK_GE(height(), 0);
-    CHECK_LE(h, height());
-    CHECK_GE(width(), 0);
-    CHECK_LE(w, width());
     return ((n * channels() + c) * height() + h) * width() + w;
   }
 
@@ -188,7 +180,7 @@ class CAFFE_API Blob {
   void CopyFrom(const Blob& source, bool reshape = false);
 
   real_t data_at(const int n, const int c,
-                        const int h, const int w) const {
+                 const int h, const int w) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 

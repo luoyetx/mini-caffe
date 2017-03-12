@@ -9,7 +9,7 @@
 namespace caffe {
 
 /*!
- * \brief Profiler for Caffe
+ * \brief Profiler for Caffe, don't enable Profiler in Multi-thread Env
  *  This class is used to profile a range of source code as a scope.
  *  The basic usage is like below.
  *
@@ -55,7 +55,7 @@ public:
         << scope_stack_.size();
     state_ = kNotRunning;
   }
-  /*! \brief timestamp */
+  /*! \brief timestamp, return in microseconds */
   uint64_t Now() const;
 
 private:
