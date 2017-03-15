@@ -83,13 +83,8 @@ inline void setTensor4dDesc(cudnnTensorDescriptor_t* desc,
 inline void createFilterDesc(cudnnFilterDescriptor_t* desc,
     int n, int c, int h, int w) {
   CUDNN_CHECK(cudnnCreateFilterDescriptor(desc));
-#if CUDNN_VERSION_MIN(5, 0, 0)
   CUDNN_CHECK(cudnnSetFilter4dDescriptor(*desc, dataType<real_t>::type,
       CUDNN_TENSOR_NCHW, n, c, h, w));
-#else
-  CUDNN_CHECK(cudnnSetFilter4dDescriptor_v4(*desc, dataType<real_t>::type,
-      CUDNN_TENSOR_NCHW, n, c, h, w));
-#endif
 }
 
 inline void createConvolutionDesc(cudnnConvolutionDescriptor_t* conv) {
@@ -117,13 +112,8 @@ inline void createPoolingDesc(cudnnPoolingDescriptor_t* pool_desc,
     LOG(FATAL) << "Unknown pooling method.";
   }
   CUDNN_CHECK(cudnnCreatePoolingDescriptor(pool_desc));
-#if CUDNN_VERSION_MIN(5, 0, 0)
   CUDNN_CHECK(cudnnSetPooling2dDescriptor(*pool_desc, *mode,
         CUDNN_PROPAGATE_NAN, h, w, pad_h, pad_w, stride_h, stride_w));
-#else
-  CUDNN_CHECK(cudnnSetPooling2dDescriptor_v4(*pool_desc, *mode,
-        CUDNN_PROPAGATE_NAN, h, w, pad_h, pad_w, stride_h, stride_w));
-#endif
 }
 
 inline void createActivationDescriptor(cudnnActivationDescriptor_t* activ_desc,
