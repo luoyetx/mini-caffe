@@ -2,6 +2,8 @@
 #include <cstring>
 #include <chrono>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 
 #include <caffe/net.hpp>
 #include <caffe/profiler.hpp>
@@ -212,5 +214,22 @@ int main(int argc, char *argv[]) {
   // dump profile data
   profiler->TurnOFF();
   profiler->DumpProfile("profile.json");
+
+  // test IO
+  ifstream fin("model/resnet.prototxt");
+  stringstream buffer;
+  buffer << fin.rdbuf();
+  fin.close();
+  string prototxt = buffer.str();
+  shared_ptr<NetParameter> network_param = ReadTextNetParameterFromBuffer(prototxt.c_str(), prototxt.length());
+  fin.open("model/resnet.caffemodel", ios::binary);
+  buffer.str("");
+  buffer.clear();
+  buffer << fin.rdbuf();
+  fin.close();
+  string caffemodel = buffer.str();
+  shared_ptr<NetParameter> model_param = ReadBinaryNetParameterFromBuffer(caffemodel.c_str(), caffemodel.length());
+  Net net(*network_param);
+  net.CopyTrainedLayersFrom(*model_param);
   return 0;
 }
