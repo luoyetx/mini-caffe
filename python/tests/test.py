@@ -39,9 +39,11 @@ def test_network():
     # check gpu available
     if mcaffe.check_gpu_available():
         mcaffe.set_runtime_mode(1, 0)
+    mcaffe.Profiler.enable()
     # set up network
     net = mcaffe.Net(os.path.join(model_dir, 'resnet.prototxt'),
                      os.path.join(model_dir, 'resnet.caffemodel'))
+    mcaffe.Profiler.open_scope("resnet")
     blob = net.get_blob('data')
     shape = blob.shape
     size = 1
@@ -53,6 +55,9 @@ def test_network():
     net.forward()
     t1 = time.clock()
     t = (t1 - t0) * 1000
+    mcaffe.Profiler.close_scope()
+    mcaffe.Profiler.disable()
+    mcaffe.Profiler.dump("resnet-profile.json")
     print('Forward ResNet costs %f ms'%t)
     # network parameters
     params = net.params
@@ -62,6 +67,13 @@ def test_network():
             shape = param.shape
             print('\t%s: [%d, %d, %d, %d]'%(name, shape[0], shape[1], shape[2], shape[3]))
         print('}')
+    # network internal blobs
+    blobs = net.blobs
+    print('{')
+    for name, blob in list(blobs.items()):
+        shape = blob.shape
+        print('\t%s: [%d, %d, %d, %d]'%(name, shape[0], shape[1], shape[2], shape[3]))
+    print('}')
 
 
 if __name__ == '__main__':

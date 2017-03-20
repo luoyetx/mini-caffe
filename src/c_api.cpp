@@ -3,6 +3,7 @@
 #include "caffe/c_api.h"
 #include "caffe/blob.hpp"
 #include "caffe/net.hpp"
+#include "caffe/profiler.hpp"
 
 // ThreadLocal Template
 
@@ -126,6 +127,36 @@ int CaffeNetGetBlob(NetHandle net, const char *name, BlobHandle *blob) {
   API_BEGIN();
   std::shared_ptr<caffe::Blob> blob_ = static_cast<caffe::Net*>(net)->blob_by_name(name);
   *blob = static_cast<BlobHandle>(blob_.get());
+  API_END();
+}
+
+int CaffeProfilerEnable() {
+  API_BEGIN();
+  caffe::Profiler::Get()->TurnON();
+  API_END();
+}
+
+int CaffeProfilerDisable() {
+  API_BEGIN();
+  caffe::Profiler::Get()->TurnOFF();
+  API_END();
+}
+
+int CaffeProfilerScopeStart(const char *name) {
+  API_BEGIN();
+  caffe::Profiler::Get()->ScopeStart(name);
+  API_END();
+}
+
+int CaffeProfilerScopeEnd() {
+  API_BEGIN();
+  caffe::Profiler::Get()->ScopeEnd();
+  API_END();
+}
+
+int CaffeProfilerDump(const char *fn) {
+  API_BEGIN();
+  caffe::Profiler::Get()->DumpProfile(fn);
   API_END();
 }
 

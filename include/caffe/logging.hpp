@@ -208,7 +208,7 @@ class LogMessageFatal {
 #else
   ~LogMessageFatal() noexcept(false) {
 #endif
-    // LOG(ERROR) << log_stream_.str();
+    LOG(ERROR) << log_stream_.str();
     throw Error(log_stream_.str());
   }
   std::ostringstream &stream() { return log_stream_; }

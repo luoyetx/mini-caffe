@@ -71,5 +71,24 @@ int main(int argc, char *argv[]) {
   CHECK(CaffeNetCreate("no-such-prototxt", "no-such-caffemodel", &net) == -1);
   printf("%s\n", CaffeGetLastError());
 
+  // create network from buffer
+  FILE *fin = fopen("model/resnet.prototxt", "r");
+  fseek(fin, 0, SEEK_END);
+  long prototxt_size = ftell(fin);
+  fseek(fin, 0, SEEK_SET);
+  char *prototxt = malloc(prototxt_size);
+  fread(prototxt, 1, prototxt_size, fin);
+  fclose(fin);
+  fin = fopen("model/resnet.caffemodel", "rb");
+  fseek(fin, 0, SEEK_END);
+  long caffemodel_size = ftell(fin);
+  fseek(fin, 0, SEEK_SET);
+  char *caffemodel = malloc(caffemodel_size);
+  fread(caffemodel, 1, caffemodel_size, fin);
+  fclose(fin);
+  CHECK_SUCCESS(CaffeNetCreateFromBuffer(prototxt, prototxt_size,
+                                         caffemodel, caffemodel_size,
+                                         &net));
+  CHECK_SUCCESS(CaffeNetDestroy(net));
   return 0;
 }

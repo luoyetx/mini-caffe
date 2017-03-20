@@ -63,7 +63,7 @@ If you don't use Ubuntu, then you may need to install OpenBLAS and protobuf thro
 
 Mini-Caffe now can be cross compiled for Android platform, checkout the document [here](android).
 
-### With CUDA and CUDNN
+### With CUDA and CUDNN support
 
 Install [CUDA8](https://developer.nvidia.com/cuda-downloads) and [cuDNN5.1](https://developer.nvidia.com/cudnn) in your system, then we can compile Mini-Caffe with GPU support. Run CMake command below.
 
@@ -89,4 +89,4 @@ To use Mini-Caffe as a library, you may refer to [example](example).
 
 ### How to profile your network
 
-The Profiler in Mini-Caffe can help you profile your network performance, see docs [here](profile.md)
+The Profiler in Mini-Caffe can help you profile your network performance, see docs [here](profile.md).

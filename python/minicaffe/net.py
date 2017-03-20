@@ -2,8 +2,8 @@
 # pylint: disable=invalid-name
 """Net represents caffe::Net in C++"""
 from __future__ import absolute_import
-import ctypes
 from collections import defaultdict
+import ctypes
 from .base import LIB
 from .base import c_str, py_str, check_call
 from .base import NetHandle, BlobHandle
@@ -50,6 +50,28 @@ class Net(object):
         handle = BlobHandle()
         check_call(LIB.CaffeNetGetBlob(self.handle, c_str(name), ctypes.byref(handle)))
         return Blob(handle)
+
+    @property
+    def blobs(self):
+        """return network internal blobs
+
+        Returns
+        -------
+        blobs: dict(name: Blob)
+            network internal blobs with their name
+        """
+        ctypes_n = ctypes.c_int32()
+        ctypes_names = ctypes.POINTER(ctypes.c_char_p)()
+        ctypes_blobs = ctypes.POINTER(BlobHandle)()
+        check_call(LIB.CaffeNetListBlob(self.handle, ctypes.byref(ctypes_n),
+                                        ctypes.byref(ctypes_names),
+                                        ctypes.byref(ctypes_blobs)))
+        blobs = dict()
+        for i in range(ctypes_n.value):
+            name = py_str(ctypes_names[i])
+            blob = Blob(BlobHandle(ctypes_blobs[i]))
+            blobs[name] = blob
+        return blobs
 
     @property
     def params(self):

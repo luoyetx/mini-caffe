@@ -105,6 +105,31 @@ CAFFE_API int CaffeNetListParam(NetHandle net,
                                 const char ***names,
                                 BlobHandle **params);
 
+// Profiler, don't enable Profiler in multi-thread Env
+
+/*!
+ * \brief enable profiler
+ */
+CAFFE_API int CaffeProfilerEnable();
+/*!
+ * \brief disable profiler
+ */
+CAFFE_API int CaffeProfilerDisable();
+/*!
+ * \brief open a scope on profiler
+ * \param name scope name
+ */
+CAFFE_API int CaffeProfilerScopeStart(const char *name);
+/*!
+ * \brief close a scope
+ */
+CAFFE_API int CaffeProfilerScopeEnd();
+/*!
+ * \brief dump profile data to file
+ * \param fn file name or path
+ */
+CAFFE_API int CaffeProfilerDump(const char *fn);
+
 // Helper
 
 /*!
