@@ -4,12 +4,9 @@
 
 namespace caffe {
 
-typedef ThreadLocalStore<Caffe*> ThreadCaffe;
-
 Caffe& Caffe::Get() {
-  auto ret = ThreadCaffe::Get();
-  if (*ret == nullptr) *ret = new Caffe();
-  return **ret;
+  auto ret = ThreadLocalStore<Caffe>::Get();
+  return *ret;
 }
 
 #ifndef USE_CUDA

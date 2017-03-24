@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "caffe/base.hpp"
+#include "./thread_local.hpp"
 
 #ifdef USE_CUDA
 
@@ -64,7 +65,7 @@ namespace caffe {
 // A singleton class to hold common caffe stuff, such as the handler that
 // caffe is going to use for cublas, curand, etc.
 class Caffe {
-public:
+ public:
   ~Caffe();
 
   static Caffe& Get();
@@ -92,13 +93,14 @@ public:
   // return the ordinal of the first available device.
   static int FindDevice(const int start_id = 0);
 
-protected:
+ protected:
 #ifdef USE_CUDA
   cublasHandle_t cublas_handle_;
 #endif
   Brew mode_;
 
-private:
+ private:
+  friend ThreadLocalStore<Caffe>;
   // The private constructor to avoid duplicate instantiation.
   Caffe();
 
