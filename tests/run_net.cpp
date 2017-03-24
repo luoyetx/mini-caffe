@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <thread>
 
 #include <caffe/net.hpp>
 #include <caffe/profiler.hpp>
@@ -165,6 +166,8 @@ struct ResNet : public TestFunctor {
   }
 };
 
+void thread_test();
+
 int main(int argc, char *argv[]) {
   if (caffe::GPUAvailable()) {
     caffe::SetMode(caffe::GPU, 0);
@@ -231,5 +234,26 @@ int main(int argc, char *argv[]) {
   shared_ptr<NetParameter> model_param = ReadBinaryNetParameterFromBuffer(caffemodel.c_str(), caffemodel.length());
   Net net(*network_param);
   net.CopyTrainedLayersFrom(*model_param);
+
+  // test multi-thread
+  const int kThreads = 3;
+  LOG(INFO) << "test " << kThreads << " threads";
+  std::vector<std::thread> pool;
+  for (int i = 0; i < kThreads; i++) {
+    pool.emplace_back(std::thread{thread_test});
+  }
+  for (int i = 0; i < kThreads; i++) {
+    pool[i].join();
+  }
   return 0;
+}
+
+void thread_test() {
+  if (caffe::GPUAvailable()) {
+    caffe::SetMode(caffe::GPU, 0);
+  }
+  LOG(INFO) << "Test ResNet";
+  auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
+  LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
+  test.Forward();
 }
