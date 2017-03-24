@@ -1,11 +1,15 @@
 #include "caffe/base.hpp"
 #include "./common.hpp"
+#include "./thread_local.hpp"
 
 namespace caffe {
 
+typedef ThreadLocalStore<Caffe*> ThreadCaffe;
+
 Caffe& Caffe::Get() {
-  static Caffe instance;
-  return instance;
+  auto ret = ThreadCaffe::Get();
+  if (*ret == nullptr) *ret = new Caffe();
+  return **ret;
 }
 
 #ifndef USE_CUDA
