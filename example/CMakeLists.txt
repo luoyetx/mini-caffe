@@ -9,3 +9,6 @@ target_link_libraries(deeplandmark caffe ${OpenCV_LIBS})
 
 add_executable(wgan wgan/main.cpp)
 target_link_libraries(wgan caffe ${OpenCV_LIBS})
+
+add_executable(r-fcn r-fcn/main.cpp)
+target_link_libraries(r-fcn caffe ${OpenCV_LIBS})
