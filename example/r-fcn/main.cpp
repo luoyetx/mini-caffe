@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
     // draw
     const int num_picked = picked.size();
     for (int i = 0; i < num_picked; i++) {
-      BBox& bbox = bboxes[i];
+      BBox& bbox = bboxes[picked[i]];
       cv::Rect rect(bbox.x1, bbox.y1, bbox.x2 - bbox.x1 + 1, bbox.y2 - bbox.y1 + 1);
       cv::rectangle(img, rect, cv::Scalar(0, 0, 255), 2);
       char buff[300];

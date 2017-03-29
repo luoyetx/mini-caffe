@@ -1,5 +1,4 @@
 #include "./proposal_layer.hpp"
-#include "../util/nms.hpp"
 
 namespace caffe {
 
@@ -52,29 +51,6 @@ static int TransformBBox(real_t* box,
   return (box_w >= min_bbox_size) && (box_h >= min_bbox_size);
 }
 
-/*! \brief sort rois by score */
-static void SortBox(real_t* rois, const int left, const int right,
-                    const int num_top) {
-  const real_t pivot_score = rois[(left + right) / 2 * 5 + 4];
-  int i, j;
-  i = left; j = right;
-  do {
-    while (rois[5 * i + 4] > pivot_score) i++;
-    while (rois[5 * j + 4] < pivot_score) j--;
-    if (i <= j) {
-      for (int t = 0; t < 5; t++) {
-        std::swap(rois[5 * i + t], rois[5 * j + t]);
-      }
-      i++;
-      j--;
-    }
-  } while (i <= j);
-  // sort [left, j]
-  if (left < j) SortBox(rois, left, j, num_top);
-  // sort [i, right], if i > num_top, no need to sort
-  if (i < right && i <= num_top) SortBox(rois, i, right, num_top);
-}
-
 /*! \brief generate base anchors */
 static void GenerateAnchors(int base_size,
                              const vector<real_t> ratios,
@@ -91,8 +67,8 @@ static void GenerateAnchors(int base_size,
     const real_t ratio_h = static_cast<real_t>(std::round(ratio_w * ratios[i]));
     for (int j = 0; j < scales.size(); ++j) {
       // transformed width & height for given scale factors
-      const real_t scale_w = 0.5 * static_cast<real_t>(ratio_w * scales[j] - 1);
-      const real_t scale_h = 0.5 * static_cast<real_t>(ratio_h * scales[j] - 1);
+      const real_t scale_w = 0.5f * static_cast<real_t>(ratio_w * scales[j] - 1);
+      const real_t scale_h = 0.5f * static_cast<real_t>(ratio_h * scales[j] - 1);
       // (x1, y1, x2, y2) for transformed box
       const real_t x1 = center - scale_w;
       const real_t x2 = center + scale_w;
@@ -106,59 +82,35 @@ static void GenerateAnchors(int base_size,
     }
   }
 }
-static void sort_box(real_t list_cpu[], const int start, const int end,
+
+/*! \brief sort rois by score */
+static void SortBBox(real_t* rois, const int start, const int end,
                      const int num_top) {
-  const real_t pivot_score = list_cpu[start * 5 + 4];
+  const real_t pivot_score = rois[start * 5 + 4];
   int left = start + 1, right = end;
-  real_t temp[5];
-  while (left <= right)
-  {
-    while (left <= end && list_cpu[left * 5 + 4] >= pivot_score)
-      ++left;
-    while (right > start && list_cpu[right * 5 + 4] <= pivot_score)
-      --right;
-    if (left <= right)
-    {
-      for (int i = 0; i < 5; ++i)
-      {
-        temp[i] = list_cpu[left * 5 + i];
-      }
-      for (int i = 0; i < 5; ++i)
-      {
-        list_cpu[left * 5 + i] = list_cpu[right * 5 + i];
-      }
-      for (int i = 0; i < 5; ++i)
-      {
-        list_cpu[right * 5 + i] = temp[i];
+  while (left <= right) {
+    while (left <= end && rois[left * 5 + 4] >= pivot_score) ++left;
+    while (right > start && rois[right * 5 + 4] <= pivot_score) --right;
+    if (left <= right) {
+      for (int i = 0; i < 5; ++i) {
+        std::swap(rois[left * 5 + i], rois[right * 5 + i]);
       }
       ++left;
       --right;
     }
   }
 
-  if (right > start)
-  {
-    for (int i = 0; i < 5; ++i)
-    {
-      temp[i] = list_cpu[start * 5 + i];
-    }
-    for (int i = 0; i < 5; ++i)
-    {
-      list_cpu[start * 5 + i] = list_cpu[right * 5 + i];
-    }
-    for (int i = 0; i < 5; ++i)
-    {
-      list_cpu[right * 5 + i] = temp[i];
+  if (right > start) {
+    for (int i = 0; i < 5; ++i) {
+      std::swap(rois[start * 5 + i], rois[right * 5 + i]);
     }
   }
 
-  if (start < right - 1)
-  {
-    sort_box(list_cpu, start, right - 1, num_top);
+  if (start < right - 1)  {
+    SortBBox(rois, start, right - 1, num_top);
   }
-  if (right + 1 < num_top && right + 1 < end)
-  {
-    sort_box(list_cpu, right + 1, end, num_top);
+  if (right + 1 < num_top && right + 1 < end) {
+    SortBBox(rois, right + 1, end, num_top);
   }
 }
 
@@ -205,39 +157,31 @@ static void NonMaximumSuppressionCPU(const int num_proposals,
                                      int& num_rois,
                                      const real_t nms_th,
                                      const int max_num_rois) {
-  typedef std::multimap<real_t, int> ScoreMapper;
-  ScoreMapper sm;
   vector<float> areas(num_proposals);
   const real_t* proposal = proposals;
   for (int i = 0; i < num_proposals; i++) {
     areas[i] = (proposal[2] - proposal[0] + 1)*(proposal[3] - proposal[1] + 1);
-    sm.insert(ScoreMapper::value_type(proposal[4], i));
     proposal += 5;
   }
   int counter = 0;
-  while (!sm.empty()) {
-    int last_idx = sm.rbegin()->second;
-    rois_indices[counter++] = last_idx;
-    if (counter == max_num_rois) break;
-    const real_t* last = proposals + last_idx * 5;
-    for (ScoreMapper::iterator it = sm.begin(); it != sm.end();) {
-      int idx = it->second;
-      const real_t* curr = proposals + idx * 5;
-      float x1 = std::max(curr[0], last[0]);
-      float y1 = std::max(curr[1], last[1]);
-      float x2 = std::min(curr[2], last[2]);
-      float y2 = std::min(curr[3], last[3]);
-      float w = std::max(0.f, x2 - x1 + 1);
-      float h = std::max(0.f, y2 - y1 + 1);
-      float ov = (w*h) / (areas[idx] + areas[last_idx] - w*h);
-      if (ov > nms_th) {
-        ScoreMapper::iterator it_ = it;
-        it_++;
-        sm.erase(it);
-        it = it_;
-      }
-      else {
-        it++;
+  vector<bool> removed(num_proposals, false);
+  for (int i = 0; i < num_proposals; i++) {
+    if (!removed[i]) {
+      removed[i] = true;
+      rois_indices[counter++] = i;
+      if (counter == max_num_rois) break;
+      for (int j = i + 1; j < num_proposals; j++) {
+        const real_t* p1 = proposals + i * 5;
+        const real_t* p2 = proposals + j * 5;
+        const real_t x1 = std::max(p1[0], p2[0]);
+        const real_t y1 = std::max(p1[1], p2[1]);
+        const real_t x2 = std::min(p1[2], p2[2]);
+        const real_t y2 = std::min(p1[3], p2[3]);
+        const real_t w = std::max(0.f, x2 - x1 + 1);
+        const real_t h = std::max(0.f, y2 - y1 + 1);
+        const real_t area = w*h;
+        float ov = area / (areas[i] + areas[j] - area);
+        if (ov > nms_th) removed[j] = true;
       }
     }
   }
@@ -349,15 +293,11 @@ void ProposalLayer::Forward_cpu(const vector<Blob*>& bottom,
                        img_height, img_width,
                        min_bbox_size, feat_stride_);
 
-  //SortBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
-  sort_box(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
+  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
 
-  //NonMaximumSuppressionCPU(pre_nms_topn, proposals_.cpu_data(),
-  //                         roi_indices_.mutable_cpu_data(), num_rois,
-  //                         nms_thresh_, post_nms_topn_);
-  nms_cpu(pre_nms_topn, proposals_.cpu_data(),
-          roi_indices_.mutable_cpu_data(), &num_rois,
-          0, nms_thresh_, post_nms_topn_);
+  NonMaximumSuppressionCPU(pre_nms_topn, proposals_.cpu_data(),
+                           roi_indices_.mutable_cpu_data(), num_rois,
+                           nms_thresh_, post_nms_topn_);
 
   RetrieveRoisCPU(num_rois, proposals_.cpu_data(), roi_indices_.cpu_data(),
                   rois, rois_score);
