@@ -8,23 +8,23 @@
 namespace caffe {
 
 class ProposalLayer : public Layer {
-public:
+ public:
   explicit ProposalLayer(const LayerParameter& param)
-    : Layer(param) {}
+      : Layer(param) {}
   virtual void LayerSetUp(const vector<Blob*>& bottom,
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
-                        const vector<Blob*>& top) {
+                       const vector<Blob*>& top) {
     //LOG(FATAL) << "Reshaping happens during the call to forward.";
   }
 
-  virtual inline const char* type() const { return "ProposalLayer"; }
+  virtual const char* type() const { return "ProposalLayer"; }
 
-protected:
+ protected:
   virtual void Forward_cpu(const vector<Blob*>& bottom,
-                            const vector<Blob*>& top);
+                           const vector<Blob*>& top);
   virtual void Forward_gpu(const vector<Blob*>& bottom,
-                            const vector<Blob*>& top);
+                           const vector<Blob*>& top);
 
   int base_size_;
   int feat_stride_;
