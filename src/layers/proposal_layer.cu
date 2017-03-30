@@ -1,247 +1,194 @@
-#include "caffe/layers/proposal_layer.hpp"
-#include "caffe/util/nms.hpp"
+#include "./proposal_layer.hpp"
+#include "../util/nms.hpp"
 
 namespace caffe {
 
-template <typename Dtype>
-__device__
-static
-int transform_box(Dtype box[],
-                  const Dtype dx, const Dtype dy,
-                  const Dtype d_log_w, const Dtype d_log_h,
-                  const Dtype img_W, const Dtype img_H,
-                  const Dtype min_box_W, const Dtype min_box_H)
-{
+__device__ static
+int TransformBBox(real_t* box,
+                  const real_t dx, const real_t dy,
+                  const real_t d_log_w, const real_t d_log_h,
+                  const real_t img_width, const real_t img_height,
+                  const real_t min_box_size) {
   // width & height of box
-  const Dtype w = box[2] - box[0] + (Dtype)1;
-  const Dtype h = box[3] - box[1] + (Dtype)1;
+  const real_t w = box[2] - box[0] + 1;
+  const real_t h = box[3] - box[1] + 1;
   // center location of box
-  const Dtype ctr_x = box[0] + (Dtype)0.5 * w;
-  const Dtype ctr_y = box[1] + (Dtype)0.5 * h;
+  const real_t ctr_x = box[0] + 0.5f * w;
+  const real_t ctr_y = box[1] + 0.5f * h;
 
   // new center location according to gradient (dx, dy)
-  const Dtype pred_ctr_x = dx * w + ctr_x;
-  const Dtype pred_ctr_y = dy * h + ctr_y;
+  const real_t pred_ctr_x = dx * w + ctr_x;
+  const real_t pred_ctr_y = dy * h + ctr_y;
   // new width & height according to gradient d(log w), d(log h)
-  const Dtype pred_w = exp(d_log_w) * w;
-  const Dtype pred_h = exp(d_log_h) * h;
+  const real_t pred_w = exp(d_log_w) * w;
+  const real_t pred_h = exp(d_log_h) * h;
 
   // update upper-left corner location
-  box[0] = pred_ctr_x - (Dtype)0.5 * pred_w;
-  box[1] = pred_ctr_y - (Dtype)0.5 * pred_h;
+  box[0] = pred_ctr_x - 0.5f * pred_w;
+  box[1] = pred_ctr_y - 0.5f * pred_h;
   // update lower-right corner location
-  box[2] = pred_ctr_x + (Dtype)0.5 * pred_w;
-  box[3] = pred_ctr_y + (Dtype)0.5 * pred_h;
+  box[2] = pred_ctr_x + 0.5f * pred_w;
+  box[3] = pred_ctr_y + 0.5f * pred_h;
 
   // adjust new corner locations to be within the image region,
-  box[0] = max((Dtype)0,  min(box[0],  img_W - (Dtype)1));
-  box[1] = max((Dtype)0,  min(box[1],  img_H - (Dtype)1));
-  box[2] = max((Dtype)0,  min(box[2],  img_W - (Dtype)1));
-  box[3] = max((Dtype)0,  min(box[3],  img_H - (Dtype)1));
+  box[0] = max(static_cast<real_t>(0),  min(box[0],  img_width - 1));
+  box[1] = max(static_cast<real_t>(0),  min(box[1],  img_height - 1));
+  box[2] = max(static_cast<real_t>(0),  min(box[2],  img_width - 1));
+  box[3] = max(static_cast<real_t>(0),  min(box[3],  img_height - 1));
 
   // recompute new width & height
-  const Dtype box_w = box[2] - box[0] + (Dtype)1;
-  const Dtype box_h = box[3] - box[1] + (Dtype)1;
+  const real_t box_w = box[2] - box[0] + 1;
+  const real_t box_h = box[3] - box[1] + 1;
 
   // check if new box's size >= threshold
-  return (box_w >= min_box_W) * (box_h >= min_box_H);
+  return (box_w >= min_box_size) && (box_h >= min_box_size);
 }
 
-template <typename Dtype>
-static
-void sort_box(Dtype list_cpu[], const int start, const int end,
-              const int num_top)
-{
-  const Dtype pivot_score = list_cpu[start * 5 + 4];
-  int left = start + 1, right = end;
-  Dtype temp[5];
-  while (left <= right) {
-    while (left <= end && list_cpu[left * 5 + 4] >= pivot_score) ++left;
-    while (right > start && list_cpu[right * 5 + 4] <= pivot_score) --right;
-    if (left <= right) {
-      for (int i = 0; i < 5; ++i) {
-        temp[i] = list_cpu[left * 5 + i];
-      }
-      for (int i = 0; i < 5; ++i) {
-        list_cpu[left * 5 + i] = list_cpu[right * 5 + i];
-      }
-      for (int i = 0; i < 5; ++i) {
-        list_cpu[right * 5 + i] = temp[i];
-      }
-      ++left;
-      --right;
+/*! \brief sort rois by score */
+static void SortBBox(real_t* rois, const int left, const int right,
+                     const int num_top) {
+  int first = left;
+  int last = right;
+  auto __Copy__ = [](real_t* from, real_t* to) {
+    for (int i = 0; i < 5; i++) {
+      to[i] = from[i];
     }
+  };
+  real_t key[5];
+  __Copy__(rois + 5 * first, key);
+  while (first < last) {
+    while (first < last && rois[last * 5 + 4] <= key[4]) last--;
+    __Copy__(rois + 5 * last, rois + 5 * first);
+    while (first < last && rois[first * 5 + 4] >= key[4]) first++;
+    __Copy__(rois + 5 * first, rois + 5 * last);
   }
-
-  if (right > start) {
-    for (int i = 0; i < 5; ++i) {
-      temp[i] = list_cpu[start * 5 + i];
-    }
-    for (int i = 0; i < 5; ++i) {
-      list_cpu[start * 5 + i] = list_cpu[right * 5 + i];
-    }
-    for (int i = 0; i < 5; ++i) {
-      list_cpu[right * 5 + i] = temp[i];
-    }
-  }
-
-  if (start < right - 1) {
-    sort_box(list_cpu, start, right - 1, num_top);
-  }
-  if (right + 1 < num_top && right + 1 < end) {
-    sort_box(list_cpu, right + 1, end, num_top);
-  }
+  // first == last
+  __Copy__(key, rois + 5 * first);
+  // sort [left, first)
+  if (left < first - 1) SortBBox(rois, left, first - 1, num_top);
+  // sort (first, right], if first >= num_top, no need for rest
+  if (first + 1 < num_top && first + 1 < right) SortBBox(rois, first + 1, right, num_top);
 }
 
-template <typename Dtype>
-__global__
-static
-void enumerate_proposals_gpu(const int nthreads,
-                             const Dtype bottom4d[],
-                             const Dtype d_anchor4d[],
-                             const Dtype anchors[],
-                             Dtype proposals[],
-                             const int num_anchors,
-                             const int bottom_H, const int bottom_W,
-                             const Dtype img_H, const Dtype img_W,
-                             const Dtype min_box_H, const Dtype min_box_W,
-                             const int feat_stride)
-{
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    const int h = index / num_anchors / bottom_W;
-    const int w = (index / num_anchors) % bottom_W;
+__global__ static
+void GenerataProposalsGPU(const int num_proposals,
+                          const real_t* score_map,
+                          const real_t* bbox_map,
+                          const real_t anchors[],
+                          real_t* proposals,
+                          const int num_anchors,
+                          const int fm_height, const int fm_width,
+                          const real_t img_height, const real_t img_width,
+                          const real_t min_bbox_size, const int feat_stride) {
+  CUDA_KERNEL_LOOP(index, num_proposals) {
+    const int h = index / num_anchors / fm_width;
+    const int w = (index / num_anchors) % fm_width;
     const int k = index % num_anchors;
-    const Dtype x = w * feat_stride;
-    const Dtype y = h * feat_stride;
-    const Dtype* p_box = d_anchor4d + h * bottom_W + w;
-    const Dtype* p_score = bottom4d + h * bottom_W + w;
+    const real_t x = w * feat_stride;
+    const real_t y = h * feat_stride;
+    const real_t* box = bbox_map + h * fm_width + w;
+    const real_t* score = score_map + h * fm_width + w;
 
-    const int bottom_area = bottom_H * bottom_W;
-    const Dtype dx = p_box[(k * 4 + 0) * bottom_area];
-    const Dtype dy = p_box[(k * 4 + 1) * bottom_area];
-    const Dtype d_log_w = p_box[(k * 4 + 2) * bottom_area];
-    const Dtype d_log_h = p_box[(k * 4 + 3) * bottom_area];
+    const int fm_stride = fm_height * fm_width;
+    const Dtype dx = box[(k * 4 + 0) * fm_stride];
+    const Dtype dy = box[(k * 4 + 1) * fm_stride];
+    const Dtype d_log_w = box[(k * 4 + 2) * fm_stride];
+    const Dtype d_log_h = box[(k * 4 + 3) * fm_stride];
 
-    Dtype* const p_proposal = proposals + index * 5;
-    p_proposal[0] = x + anchors[k * 4 + 0];
-    p_proposal[1] = y + anchors[k * 4 + 1];
-    p_proposal[2] = x + anchors[k * 4 + 2];
-    p_proposal[3] = y + anchors[k * 4 + 3];
-    p_proposal[4]
-        = transform_box(p_proposal,
-                        dx, dy, d_log_w, d_log_h,
-                        img_W, img_H, min_box_W, min_box_H)
-          * p_score[k * bottom_area];
+    real_t* proposal = proposals + index * 5;
+    proposal[0] = x + anchors[k * 4 + 0];
+    proposal[1] = y + anchors[k * 4 + 1];
+    proposal[2] = x + anchors[k * 4 + 2];
+    proposal[3] = y + anchors[k * 4 + 3];
+    proposal[4] = TransformBBox(proposal, dx, dy, d_log_w, d_log_h,
+                                img_width, img_height, min_bbox_size) *
+                      score[k * fm_stride];
   }
 }
 
-template <typename Dtype>
-__global__
-static
-void retrieve_rois_gpu(const int nthreads,
-                       const int item_index,
-                       const Dtype proposals[],
-                       const int roi_indices[],
-                       Dtype rois[],
-                       Dtype roi_scores[])
-{
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    const Dtype* const proposals_index = proposals + roi_indices[index] * 5;
-    rois[index * 5 + 0] = item_index;
-    rois[index * 5 + 1] = proposals_index[0];
-    rois[index * 5 + 2] = proposals_index[1];
-    rois[index * 5 + 3] = proposals_index[2];
-    rois[index * 5 + 4] = proposals_index[3];
+__global__ static
+void RetrieveRoisGPU(const int num_rois,
+                     const real_t* proposals,
+                     const int* roi_indices,
+                     real_t* rois,
+                     real_t* roi_scores) {
+  CUDA_KERNEL_LOOP(index, num_rois) {
+    const real_t* proposal = proposals + roi_indices[index] * 5;
+    rois[index * 5 + 0] = 0;
+    rois[index * 5 + 1] = proposal[0];
+    rois[index * 5 + 2] = proposal[1];
+    rois[index * 5 + 3] = proposal[2];
+    rois[index * 5 + 4] = proposal[3];
     if (roi_scores) {
-      roi_scores[index] = proposals_index[4];
+      roi_scores[index] = proposal[4];
     }
   }
 }
 
-template <typename Dtype>
-void ProposalLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                                       const vector<Blob<Dtype>*>& top)
-{
+void ProposalLayer::Forward_gpu(const vector<Blob*>& bottom,
+                                const vector<Blob*>& top) {
+  const real_t* anchors_score_map = bottom[0]->gpu_data();
+  const real_t* anchors_bbox_map = bottom[1]->gpu_data();
+  const real_t* im_info = bottom[2]->cpu_data();
+  real_t* rois = top[0]->mutable_gpu_data();
+  real_t* rois_score = (top.size() > 1) ? top[1]->mutable_gpu_data() : null_ptr;
 
-  const Dtype* p_bottom_item = bottom[0]->gpu_data();
-  const Dtype* p_d_anchor_item = bottom[1]->gpu_data();
-  const Dtype* p_img_info_cpu = bottom[2]->cpu_data();
-  Dtype* p_roi_item = top[0]->mutable_gpu_data();
-  Dtype* p_score_item = (top.size() > 1) ? top[1]->mutable_gpu_data() : NULL;
+  CHECK_EQ(bottom[0]->shape(0), 1) << "Only support single scale.";
 
-  vector<int> proposals_shape(2);
-  vector<int> top_shape(2);
-  proposals_shape[0] = 0;
-  proposals_shape[1] = 5;
-  top_shape[0] = 0;
-  top_shape[1] = 5;
+  // bottom shape: (2 x num_anchors) x H x W
+  const int fm_height = bottom[0]->height();
+  const int fm_width = bottom[0]->width();
+  // input image height & width
+  const real_t img_height = img_info[0];
+  const real_t img_width = img_info[1];
+  // scale factor for height & width
+  const real_t scale_factor = im_info[2];
+  // minimum box width & height
+  const real_t min_bbox_size = min_size_ * scale_factor;
+  // number of all proposals = num_anchors * H * W
+  const int num_proposals = anchors_.shape(0) * fm_height * fm_width;
+  // number of top-n proposals before NMS
+  const int pre_nms_topn = std::min(num_proposals,  pre_nms_topn_);
+  // number of final RoIs
+  int num_rois = 0;
 
-  for (int n = 0; n < bottom[0]->shape(0); ++n) {
-    // bottom shape: (2 x num_anchors) x H x W
-    const int bottom_H = bottom[0]->height();
-    const int bottom_W = bottom[0]->width();
-    // input image height & width
-    const Dtype img_H = p_img_info_cpu[0];
-    const Dtype img_W = p_img_info_cpu[1];
-    // minimum box width & height
-    const Dtype min_box_H = min_size_;
-    const Dtype min_box_W = min_size_;
-    // number of all proposals = num_anchors * H * W
-    const int num_proposals = anchors_.shape(0) * bottom_H * bottom_W;
-    // number of top-n proposals before NMS
-    const int pre_nms_topn = std::min(num_proposals,  pre_nms_topn_);
-    // number of final RoIs
-    int num_rois = 0;
+  // enumerate all proposals
+  //   num_proposals = num_anchors * H * W
+  //   (x1, y1, x2, y2, score) for each proposal
+  // NOTE: for bottom, only foreground scores are passed
+  // also clip bbox inside bbox boundary and filter bbox with min_bbox_size
+  vector<int> proposals_shape{num_proposals, 5};
+  proposals_.Reshape(proposals_shape);
+  GenerataProposalsGPU<<<CAFFE_GET_BLOCKS(num_proposals), CAFFE_CUDA_NUM_THREADS>>>(
+      num_proposals,
+      anchors_score_map+num_proposals, // score for positive
+      anchors_bbox_map,
+      anchors_.gpu_data(),
+      proposals_.mutable_gpu_data(),
+      anchors_.shape(0),
+      fm_height, fm_width,
+      img_height, img_width,
+      min_bbox_size, feat_stride_);
+  CUDA_POST_KERNEL_CHECK;
 
-    // enumerate all proposals
-    //   num_proposals = num_anchors * H * W
-    //   (x1, y1, x2, y2, score) for each proposal
-    // NOTE: for bottom, only foreground scores are passed
-    proposals_shape[0] = num_proposals;
-    proposals_.Reshape(proposals_shape);
-    enumerate_proposals_gpu<Dtype><<<CAFFE_GET_BLOCKS(num_proposals),
-                                     CAFFE_CUDA_NUM_THREADS>>>(
-        num_proposals,
-        p_bottom_item + num_proposals,  p_d_anchor_item,
-        anchors_.gpu_data(),  proposals_.mutable_gpu_data(),  anchors_.shape(0),
-        bottom_H,  bottom_W,  img_H,  img_W,  min_box_H,  min_box_W,
-        feat_stride_);
-    CUDA_POST_KERNEL_CHECK;
+  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
 
-    sort_box(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
+  nms_gpu(pre_nms_topn,  proposals_.gpu_data(),  &nms_mask_,
+          roi_indices_.mutable_cpu_data(),  &num_rois,
+          0,  nms_thresh_,  post_nms_topn_);
 
-    nms_gpu(pre_nms_topn,  proposals_.gpu_data(),  &nms_mask_,
-            roi_indices_.mutable_cpu_data(),  &num_rois,
-            0,  nms_thresh_,  post_nms_topn_);
+  RetrieveRoisGPU<<<CAFFE_GET_BLOCKS(num_rois), CAFFE_CUDA_NUM_THREADS>>>(
+      num_rois, proposals_.gpu_data(), roi_indices_.gpu_data(),
+      rois, rois_score);
+  CUDA_POST_KERNEL_CHECK;
 
-    retrieve_rois_gpu<Dtype><<<CAFFE_GET_BLOCKS(num_rois),
-                               CAFFE_CUDA_NUM_THREADS>>>(
-        num_rois,  n,  proposals_.gpu_data(),  roi_indices_.gpu_data(),
-        p_roi_item,  p_score_item);
-    CUDA_POST_KERNEL_CHECK;
-
-    top_shape[0] += num_rois;
-    
-    p_bottom_item += bottom[0]->offset(1);
-    p_d_anchor_item += bottom[1]->offset(1);
-    p_roi_item += num_rois * 5;
-    p_score_item += num_rois * 1;
-  }
-
+  // reshape if num_rois < post_nms_topn_
+  vector<int> top_shape{num_rois, 5};
   top[0]->Reshape(top_shape);
   if (top.size() > 1) {
     top_shape.pop_back();
     top[1]->Reshape(top_shape);
   }
 }
-
-template <typename Dtype>
-void ProposalLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-                                        const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  NOT_IMPLEMENTED;
-}
-
-INSTANTIATE_LAYER_GPU_FUNCS(ProposalLayer);
-
 
 }  // namespace caffe

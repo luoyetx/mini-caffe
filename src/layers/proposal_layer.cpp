@@ -247,11 +247,11 @@ void ProposalLayer::LayerSetUp(const vector<Blob*> &bottom,
 
 void ProposalLayer::Forward_cpu(const vector<Blob*>& bottom,
                                 const vector<Blob*>& top) {
-  const real_t *anchors_score_map = bottom[0]->cpu_data();
-  const real_t *anchors_bbox_map = bottom[1]->cpu_data();
-  const real_t *im_info = bottom[2]->cpu_data();
-  real_t *rois = top[0]->mutable_cpu_data();
-  real_t *rois_score = (top.size() > 1) ? top[1]->mutable_cpu_data() : nullptr;
+  const real_t* anchors_score_map = bottom[0]->cpu_data();
+  const real_t* anchors_bbox_map = bottom[1]->cpu_data();
+  const real_t* im_info = bottom[2]->cpu_data();
+  real_t* rois = top[0]->mutable_cpu_data();
+  real_t* rois_score = (top.size() > 1) ? top[1]->mutable_cpu_data() : nullptr;
 
   CHECK_EQ(bottom[0]->shape(0), 1) << "Only support single scale.";
 
