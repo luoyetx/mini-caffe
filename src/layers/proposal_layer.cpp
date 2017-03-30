@@ -84,34 +84,29 @@ static void GenerateAnchors(int base_size,
 }
 
 /*! \brief sort rois by score */
-static void SortBBox(real_t* rois, const int start, const int end,
+static void SortBBox(real_t* rois, const int left, const int right,
                      const int num_top) {
-  const real_t pivot_score = rois[start * 5 + 4];
-  int left = start + 1, right = end;
-  while (left <= right) {
-    while (left <= end && rois[left * 5 + 4] >= pivot_score) ++left;
-    while (right > start && rois[right * 5 + 4] <= pivot_score) --right;
-    if (left <= right) {
-      for (int i = 0; i < 5; ++i) {
-        std::swap(rois[left * 5 + i], rois[right * 5 + i]);
-      }
-      ++left;
-      --right;
+  int first = left;
+  int last = right;
+  auto __Copy__ = [](real_t* from, real_t* to) {
+    for (int i = 0; i < 5; i++) {
+      to[i] = from[i];
     }
+  };
+  real_t key[5];
+  __Copy__(rois + 5 * first, key);
+  while (first < last) {
+    while (first < last && rois[last * 5 + 4] <= key[4]) last--;
+    __Copy__(rois + 5 * last, rois + 5 * first);
+    while (first < last && rois[first * 5 + 4] >= key[4]) first++;
+    __Copy__(rois + 5 * first, rois + 5 * last);
   }
-
-  if (right > start) {
-    for (int i = 0; i < 5; ++i) {
-      std::swap(rois[start * 5 + i], rois[right * 5 + i]);
-    }
-  }
-
-  if (start < right - 1)  {
-    SortBBox(rois, start, right - 1, num_top);
-  }
-  if (right + 1 < num_top && right + 1 < end) {
-    SortBBox(rois, right + 1, end, num_top);
-  }
+  // first == last
+  __Copy__(key, rois + 5 * first);
+  // sort [left, first)
+  if (left < first - 1) SortBBox(rois, left, first - 1, num_top);
+  // sort (first, right], if first >= num_top, no need for rest
+  if (first + 1 < num_top && first + 1 < right) SortBBox(rois, first + 1, right, num_top);
 }
 
 /*! \brief generate proposal bboxes based on base anchors and feature map */
