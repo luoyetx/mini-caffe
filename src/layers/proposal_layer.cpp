@@ -284,7 +284,7 @@ void ProposalLayer::Forward_cpu(const vector<Blob*>& bottom,
   // also clip bbox inside bbox boundary and filter bbox with min_bbox_size
   vector<int> proposals_shape{num_proposals, 5};
   proposals_.Reshape(proposals_shape);
-  GenerateProposalsCPU(anchors_score_map,
+  GenerateProposalsCPU(anchors_score_map+num_proposals, // score for positive
                        anchors_bbox_map,
                        anchors_.cpu_data(),
                        proposals_.mutable_cpu_data(),

@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
   int width = img.cols;
   const int kSizeMin = 600;
   const int kSizeMax = 1000;
-  const float kScoreThreshold = 0.3f;
+  const float kScoreThreshold = 0.6f;
   const char* kClassNames[] = { "__background__", "aeroplane", "bicycle", "bird", "boat",
                                 "bottle", "bus", "car", "cat", "chair",
                                 "cow", "diningtable", "dog", "horse",
