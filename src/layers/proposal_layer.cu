@@ -90,10 +90,10 @@ void GenerataProposalsGPU(const int num_proposals,
     const real_t* score = score_map + h * fm_width + w;
 
     const int fm_stride = fm_height * fm_width;
-    const Dtype dx = box[(k * 4 + 0) * fm_stride];
-    const Dtype dy = box[(k * 4 + 1) * fm_stride];
-    const Dtype d_log_w = box[(k * 4 + 2) * fm_stride];
-    const Dtype d_log_h = box[(k * 4 + 3) * fm_stride];
+    const real_t dx = box[(k * 4 + 0) * fm_stride];
+    const real_t dy = box[(k * 4 + 1) * fm_stride];
+    const real_t d_log_w = box[(k * 4 + 2) * fm_stride];
+    const real_t d_log_h = box[(k * 4 + 3) * fm_stride];
 
     real_t* proposal = proposals + index * 5;
     proposal[0] = x + anchors[k * 4 + 0];
@@ -131,7 +131,7 @@ void ProposalLayer::Forward_gpu(const vector<Blob*>& bottom,
   const real_t* anchors_bbox_map = bottom[1]->gpu_data();
   const real_t* im_info = bottom[2]->cpu_data();
   real_t* rois = top[0]->mutable_gpu_data();
-  real_t* rois_score = (top.size() > 1) ? top[1]->mutable_gpu_data() : null_ptr;
+  real_t* rois_score = (top.size() > 1) ? top[1]->mutable_gpu_data() : nullptr;
 
   CHECK_EQ(bottom[0]->shape(0), 1) << "Only support single scale.";
 
@@ -139,8 +139,8 @@ void ProposalLayer::Forward_gpu(const vector<Blob*>& bottom,
   const int fm_height = bottom[0]->height();
   const int fm_width = bottom[0]->width();
   // input image height & width
-  const real_t img_height = img_info[0];
-  const real_t img_width = img_info[1];
+  const real_t img_height = im_info[0];
+  const real_t img_width = im_info[1];
   // scale factor for height & width
   const real_t scale_factor = im_info[2];
   // minimum box width & height

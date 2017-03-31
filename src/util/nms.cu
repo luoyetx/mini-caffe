@@ -1,4 +1,5 @@
-#include "caffe/util/nms.hpp"
+#include "./nms.hpp"
+#include "../common.hpp"
 
 #define DIV_THEN_CEIL(x, y)  (((x) + (y) - 1) / (y))
 
@@ -138,7 +139,7 @@ void nms_mask(const Dtype boxes[], unsigned long long mask[],
 template <typename Dtype>
 void nms_gpu(const int num_boxes,
              const Dtype boxes_gpu[],
-             Blob<int>* const p_mask,
+             BlobInt* const p_mask,
              int index_out_cpu[],
              int* const num_out,
              const int base_index,
@@ -194,7 +195,7 @@ void nms_gpu(const int num_boxes,
 template
 void nms_gpu(const int num_boxes,
              const float boxes_gpu[],
-             Blob<int>* const p_mask,
+             BlobInt* const p_mask,
              int index_out_cpu[],
              int* const num_out,
              const int base_index,
@@ -202,7 +203,7 @@ void nms_gpu(const int num_boxes,
 template
 void nms_gpu(const int num_boxes,
              const double boxes_gpu[],
-             Blob<int>* const p_mask,
+             BlobInt* const p_mask,
              int index_out_cpu[],
              int* const num_out,
              const int base_index,
