@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
   int width = img.cols;
   const int kSizeMin = 600;
   const int kSizeMax = 1000;
-  const float kScoreThreshold = 0.6f;
+  const float kScoreThreshold = 0.8f;
   const char* kClassNames[] = { "__background__", "aeroplane", "bicycle", "bird", "boat",
                                 "bottle", "bus", "car", "cat", "chair",
                                 "cow", "diningtable", "dog", "horse",
@@ -111,10 +111,10 @@ int main(int argc, char* argv[]) {
         bbox.y1 = rois->data_at(i, 2, 0, 0);
         bbox.x2 = rois->data_at(i, 3, 0, 0);
         bbox.y2 = rois->data_at(i, 4, 0, 0);
-        const float dx = bbox_pred->data_at(i, 4 * c + 0, 0, 0);
-        const float dy = bbox_pred->data_at(i, 4 * c + 1, 0, 0);
-        const float d_log_w = bbox_pred->data_at(i, 4 * c + 2, 0, 0);
-        const float d_log_h = bbox_pred->data_at(i, 4 * c + 3, 0, 0);
+        const float dx = bbox_pred->data_at(i, 4 + 0, 0, 0);
+        const float dy = bbox_pred->data_at(i, 4 + 1, 0, 0);
+        const float d_log_w = bbox_pred->data_at(i, 4 + 2, 0, 0);
+        const float d_log_h = bbox_pred->data_at(i, 4 + 3, 0, 0);
         TransforBBox(bbox, dx, dy, d_log_w, d_log_h, imgResized.cols, imgResized.rows);
         bbox.x1 /= scale_factor;
         bbox.y1 /= scale_factor;

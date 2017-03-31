@@ -34,7 +34,6 @@ void PSROIPoolingLayer::Reshape(const vector<Blob*>& bottom,
   height_ = bottom[0]->height();
   width_ = bottom[0]->width();
   top[0]->Reshape(bottom[1]->num(), output_dim_, pooled_height_, pooled_width_);
-  mapping_channel_.Reshape(bottom[1]->num(), output_dim_, pooled_height_, pooled_width_);
 }
 
 void PSROIPoolingLayer::Forward_cpu(const vector<Blob*>& bottom,

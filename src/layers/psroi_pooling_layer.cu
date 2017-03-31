@@ -77,7 +77,6 @@ void PSROIPoolingLayer::Forward_gpu(const vector<Blob*>& bottom,
   const real_t* bottom_data = bottom[0]->gpu_data();
   const real_t* bottom_rois = bottom[1]->gpu_data();
   real_t* top_data = top[0]->mutable_gpu_data();
-  int* mapping_channel_ptr = mapping_channel_.mutable_gpu_data();
   int count = top[0]->count();
   caffe_gpu_set(count, static_cast<real_t>(0), top_data);
   // NOLINT_NEXT_LINE(whitespace/operators)
