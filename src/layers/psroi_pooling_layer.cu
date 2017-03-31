@@ -36,8 +36,8 @@ __global__ void PSROIPoolingForward(const int nthreads,
     real_t roi_end_h = static_cast<real_t>(round(bottom_rois[4]) + 1.) * spatial_scale;
 
     // Force too small ROIs to be 1x1
-    real_t roi_width = max(roi_end_w - roi_start_w, 0.1); //avoid 0
-    real_t roi_height = max(roi_end_h - roi_start_h, 0.1);
+    real_t roi_width = max(roi_end_w - roi_start_w, static_cast<real_t>(0.1)); //avoid 0
+    real_t roi_height = max(roi_end_h - roi_start_h, static_cast<real_t>(0.1));
 
     // Compute w and h at bottom
     real_t bin_size_h = roi_height / static_cast<real_t>(pooled_height);
@@ -60,8 +60,8 @@ __global__ void PSROIPoolingForward(const int nthreads,
 
     bottom_data += (roi_batch_ind * channels + c) * height * width;
     real_t out_sum = 0;
-    for (int h = hstart; h < hend; ++h){
-      for (int w = wstart; w < wend; ++w){
+    for (int h = hstart; h < hend; ++h) {
+      for (int w = wstart; w < wend; ++w) {
         int bottom_index = h*width + w;
         out_sum += bottom_data[bottom_index];
       }

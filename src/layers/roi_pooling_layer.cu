@@ -11,9 +11,9 @@ using std::min;
 namespace caffe {
 
 __global__ void ROIPoolForward(const int nthreads, const real_t* bottom_data,
-    const real_t spatial_scale, const int channels, const int height,
-    const int width, const int pooled_height, const int pooled_width,
-    const real_t* bottom_rois, real_t* top_data) {
+                               const real_t spatial_scale, const int channels, const int height,
+                               const int width, const int pooled_height, const int pooled_width,
+                               const real_t* bottom_rois, real_t* top_data) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     // (n, c, ph, pw) is an element in the pooled output
     int pw = index % pooled_width;
@@ -58,9 +58,7 @@ __global__ void ROIPoolForward(const int nthreads, const real_t* bottom_data,
     for (int h = hstart; h < hend; ++h) {
       for (int w = wstart; w < wend; ++w) {
         int bottom_index = h * width + w;
-        if (bottom_data[bottom_index] > maxval) {
-          maxval = bottom_data[bottom_index];
-        }
+        maxval = max(maxval, bottom_data[bottom_index]);
       }
     }
     top_data[index] = maxval;

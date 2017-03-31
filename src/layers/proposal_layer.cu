@@ -1,6 +1,5 @@
 #include "./proposal_layer.hpp"
 #include "../util/math_functions.hpp"
-#include "../util/nms.hpp"
 
 namespace caffe {
 

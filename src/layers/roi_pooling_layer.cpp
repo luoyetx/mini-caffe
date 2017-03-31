@@ -94,9 +94,7 @@ void ROIPoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
           for (int h = hstart; h < hend; ++h) {
             for (int w = wstart; w < wend; ++w) {
               const int index = h * width_ + w;
-              if (batch_data[index] > top_data[pool_index]) {
-                top_data[pool_index] = batch_data[index];
-              }
+              top_data[pool_index] = max(top_data[pool_index], batch_data[index]);
             }
           }
         }
