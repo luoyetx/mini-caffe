@@ -40,6 +40,9 @@ static vector<int> NonMaximumSuppression(const vector<float>& score,
                                          const float nms_th);
 
 int main(int argc, char* argv[]) {
+  if (caffe::GPUAvailable()) {
+    caffe::SetMode(caffe::GPU, 0);
+  }
   Net net("../models/r-fcn/faster-rcnn.prototxt");
   net.CopyTrainedLayersFrom("../models/r-fcn/faster-rcnn.caffemodel");
 
@@ -82,7 +85,11 @@ int main(int argc, char* argv[]) {
   im_info->mutable_cpu_data()[1] = imgResized.cols;
   im_info->mutable_cpu_data()[2] = scale_factor;
 
+  caffe::Profiler* profiler = caffe::Profiler::Get();
+  profiler->TurnON();
   net.Forward();
+  profiler->TurnOFF();
+  profiler->DumpProfile("profile.json");
 
   shared_ptr<Blob> rois = net.blob_by_name("rois");
   shared_ptr<Blob> cls_prob = net.blob_by_name("cls_prob");

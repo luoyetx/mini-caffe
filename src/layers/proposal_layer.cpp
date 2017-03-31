@@ -152,7 +152,7 @@ static void NonMaximumSuppressionCPU(const int num_proposals,
                                      int& num_rois,
                                      const real_t nms_th,
                                      const int max_num_rois) {
-  vector<float> areas(num_proposals);
+  vector<real_t> areas(num_proposals);
   const real_t* proposal = proposals;
   for (int i = 0; i < num_proposals; i++) {
     areas[i] = (proposal[2] - proposal[0] + 1)*(proposal[3] - proposal[1] + 1);
@@ -175,7 +175,7 @@ static void NonMaximumSuppressionCPU(const int num_proposals,
         const real_t w = std::max(0.f, x2 - x1 + 1);
         const real_t h = std::max(0.f, y2 - y1 + 1);
         const real_t area = w*h;
-        float ov = area / (areas[i] + areas[j] - area);
+        real_t ov = area / (areas[i] + areas[j] - area);
         if (ov > nms_th) removed[j] = true;
       }
     }

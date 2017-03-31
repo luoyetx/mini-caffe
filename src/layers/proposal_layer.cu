@@ -1,5 +1,5 @@
 #include "./proposal_layer.hpp"
-#include "../util/nms.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
@@ -125,6 +125,89 @@ void RetrieveRoisGPU(const int num_rois,
   }
 }
 
+__device__ inline
+real_t IoU(const real_t* A, const real_t* B) {
+  const real_t x1 = max(A[0], B[0]);
+  const real_t y1 = max(A[1], B[1]);
+  const real_t x2 = min(A[2], B[2]);
+  const real_t y2 = min(A[3], B[3]);
+  const real_t w = max(static_cast<real_t>(0), x2 - x1 + 1);
+  const real_t h = max(static_cast<real_t>(0), y2 - y1 + 1);
+  const real_t s = w * h;
+  const real_t sA = (A[2]-A[0]+1)*(A[3]-A[1]+1);
+  const real_t sB = (B[2]-B[0]+1)*(B[3]-B[1]+1);
+  return s / (sA + sB - s);
+}
+
+#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
+const int kThreadsPerBlock = sizeof(unsigned long long)*8;
+
+__global__ static
+void NMSKernel(const int num_rois, const real_t nms_th,
+               const real_t* rois, unsigned long long* mask) {
+  const int row_start = blockIdx.y*kThreadsPerBlock;
+  const int col_start = blockIdx.x*kThreadsPerBlock;
+  const int row_end = min(num_rois - row_start, kThreadsPerBlock);
+  const int col_end = min(num_rois - col_start, kThreadsPerBlock);
+
+  __shared__ real_t block_rois[kThreadsPerBlock*4];
+  if (threadIdx.x < col_end) {
+    block_rois[threadIdx.x*4 + 0] = rois[(col_start + threadIdx.x)*5 + 0];
+    block_rois[threadIdx.x*4 + 1] = rois[(col_start + threadIdx.x)*5 + 1];
+    block_rois[threadIdx.x*4 + 2] = rois[(col_start + threadIdx.x)*5 + 2];
+    block_rois[threadIdx.x*4 + 3] = rois[(col_start + threadIdx.x)*5 + 3];
+  }
+  __syncthreads();
+  if (threadIdx.x < row_end) {
+    const int cur_roi_idx = row_start + threadIdx.x;
+    const real_t* cur_roi = rois + cur_roi_idx*5;
+    unsigned long long t = 0;
+    int start = (row_start == col_start) ? threadIdx.x+1 : 0;
+    for (int i = start; i < col_end; i++) {
+      if (IoU(cur_roi, block_rois + i*4) > nms_th) {
+        t |= 1ULL << i;
+      }
+    }
+    const int num_blocks = DIVUP(num_rois, kThreadsPerBlock);
+    mask[cur_roi_idx * num_blocks + blockIdx.x] = t;
+  }
+}
+
+static void NonMaximumSuppressionGPU(const int num_proposals,
+                                     const real_t* proposals,
+                                     BlobInt* mask,
+                                     int* rois_indices,
+                                     int& num_rois,
+                                     const real_t nms_th,
+                                     const int max_num_rois) {
+  const int num_blocks = DIVUP(num_proposals, kThreadsPerBlock);
+  const dim3 blocks(num_blocks, num_blocks);
+  vector<int> mask_shape(2);
+  mask_shape[0] = num_proposals;
+  mask_shape[1] = num_blocks*sizeof(unsigned long long)/sizeof(int);
+  mask->Reshape(mask_shape);
+  NMSKernel<<<blocks, kThreadsPerBlock>>>(
+      num_proposals, nms_th, proposals,
+      reinterpret_cast<unsigned long long*>(mask->mutable_gpu_data()));
+  CUDA_POST_KERNEL_CHECK;
+  const unsigned long long* mask_cpu = reinterpret_cast<const unsigned long long*>(mask->cpu_data());
+  vector<unsigned long long> remv(num_blocks, 0);
+  int num_to_keep = 0;
+  for (int i = 0; i < num_proposals; i++) {
+    const int row = i / kThreadsPerBlock;
+    const int col = i % kThreadsPerBlock;
+    if (!(remv[row] & (1ULL<<col))) {
+      rois_indices[num_to_keep++] = i;
+      if (num_to_keep == max_num_rois) break;
+      const unsigned long long* p = mask_cpu + i * num_blocks;
+      for (int j = row; j < num_blocks; j++) {
+        remv[j] |= p[j];
+      }
+    }
+  }
+  num_rois = num_to_keep;
+}
+
 void ProposalLayer::Forward_gpu(const vector<Blob*>& bottom,
                                 const vector<Blob*>& top) {
   const real_t* anchors_score_map = bottom[0]->gpu_data();
@@ -173,9 +256,9 @@ void ProposalLayer::Forward_gpu(const vector<Blob*>& bottom,
 
   SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
 
-  nms_gpu(pre_nms_topn,  proposals_.gpu_data(),  &nms_mask_,
-          roi_indices_.mutable_cpu_data(),  &num_rois,
-          0,  nms_thresh_,  post_nms_topn_);
+  NonMaximumSuppressionGPU(num_proposals, proposals_.mutable_gpu_data(),
+                           &nms_mask_, roi_indices_.mutable_cpu_data(),
+                           num_rois, nms_thresh_, post_nms_topn_);
 
   RetrieveRoisGPU<<<CAFFE_GET_BLOCKS(num_rois), CAFFE_CUDA_NUM_THREADS>>>(
       num_rois, proposals_.gpu_data(), roi_indices_.gpu_data(),
