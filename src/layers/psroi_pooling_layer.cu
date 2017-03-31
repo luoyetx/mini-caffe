@@ -19,8 +19,7 @@ __global__ void PSROIPoolingForward(const int nthreads,
                                     const real_t* bottom_rois,
                                     const int output_dim,
                                     const int group_size,
-                                    real_t* top_data,
-                                    int* mapping_channel) {
+                                    real_t* top_data) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     // The output is in order (n, ctop, ph, pw)
     int pw = index % pooled_width;
@@ -70,7 +69,6 @@ __global__ void PSROIPoolingForward(const int nthreads,
 
     real_t bin_area = (hend - hstart)*(wend - wstart);
     top_data[index] = is_empty ? 0. : out_sum/bin_area;
-    mapping_channel[index] = c;
   }
 }
 
@@ -82,11 +80,10 @@ void PSROIPoolingLayer::Forward_gpu(const vector<Blob*>& bottom,
   int* mapping_channel_ptr = mapping_channel_.mutable_gpu_data();
   int count = top[0]->count();
   caffe_gpu_set(count, static_cast<real_t>(0), top_data);
-  caffe_gpu_set(count, -1, mapping_channel_ptr);
   // NOLINT_NEXT_LINE(whitespace/operators)
   PSROIPoolingForward<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
       count, bottom_data, spatial_scale_, channels_, height_, width_, pooled_height_,
-      pooled_width_, bottom_rois, output_dim_, group_size_, top_data, mapping_channel_ptr);
+      pooled_width_, bottom_rois, output_dim_, group_size_, top_data);
   CUDA_POST_KERNEL_CHECK;
 }
 

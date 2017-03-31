@@ -48,7 +48,6 @@ class PSROIPoolingLayer : public Layer {
 
   int pooled_height_;
   int pooled_width_;
-  BlobInt mapping_channel_;
 };
 
 }  // namespace caffe
