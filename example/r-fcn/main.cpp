@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
   Net net("../models/r-fcn/test_agnostic.prototxt");
   net.CopyTrainedLayersFrom("../models/r-fcn/resnet50_rfcn_final.caffemodel");
 
-  Mat img = imread("../r-fcn/test.jpg");
+  Mat img = imread("../r-fcn/004545.jpg");
   int height = img.rows;
   int width = img.cols;
   const int kSizeMin = 600;
@@ -69,9 +69,9 @@ int main(int argc, char* argv[]) {
 
   vector<Mat> bgr;
   cv::split(imgResized, bgr);
-  bgr[0].convertTo(bgr[0], CV_32F, 1.f, 102.9801f);
-  bgr[1].convertTo(bgr[1], CV_32F, 1.f, 115.9465f);
-  bgr[2].convertTo(bgr[2], CV_32F, 1.f, 122.7717f);
+  bgr[0].convertTo(bgr[0], CV_32F, 1.f, -102.9801f);
+  bgr[1].convertTo(bgr[1], CV_32F, 1.f, -115.9465f);
+  bgr[2].convertTo(bgr[2], CV_32F, 1.f, -122.7717f);
 
   shared_ptr<Blob> data = net.blob_by_name("data");
   data->Reshape(1, 3, imgResized.rows, imgResized.cols);
