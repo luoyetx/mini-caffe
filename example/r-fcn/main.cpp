@@ -43,8 +43,8 @@ int main(int argc, char* argv[]) {
   if (caffe::GPUAvailable()) {
     caffe::SetMode(caffe::GPU, 0);
   }
-  Net net("../models/r-fcn/faster-rcnn.prototxt");
-  net.CopyTrainedLayersFrom("../models/r-fcn/faster-rcnn.caffemodel");
+  Net net("../models/r-fcn/test_agnostic.prototxt");
+  net.CopyTrainedLayersFrom("../models/r-fcn/resnet50_rfcn_final.caffemodel");
 
   Mat img = imread("../r-fcn/test.jpg");
   int height = img.rows;
