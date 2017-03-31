@@ -1,5 +1,6 @@
 #include "./proposal_layer.hpp"
 #include "../util/math_functions.hpp"
+#include "../util/nms.hpp"
 
 namespace caffe {
 
@@ -139,8 +140,8 @@ real_t IoU(const real_t* A, const real_t* B) {
   return s / (sA + sB - s);
 }
 
-#define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
-const int kThreadsPerBlock = sizeof(unsigned long long)*8;
+#define DIVUP(x, y) (((x) + (y) - 1) / (y))
+static const int kThreadsPerBlock = sizeof(unsigned long long)*8;
 
 __global__ static
 void NMSKernel(const int num_rois, const real_t nms_th,
@@ -151,18 +152,19 @@ void NMSKernel(const int num_rois, const real_t nms_th,
   const int col_end = min(num_rois - col_start, kThreadsPerBlock);
 
   __shared__ real_t block_rois[kThreadsPerBlock*4];
-  if (threadIdx.x < col_end) {
-    block_rois[threadIdx.x*4 + 0] = rois[(col_start + threadIdx.x)*5 + 0];
-    block_rois[threadIdx.x*4 + 1] = rois[(col_start + threadIdx.x)*5 + 1];
-    block_rois[threadIdx.x*4 + 2] = rois[(col_start + threadIdx.x)*5 + 2];
-    block_rois[threadIdx.x*4 + 3] = rois[(col_start + threadIdx.x)*5 + 3];
+  const int tid = threadIdx.x;
+  if (tid < col_end) {
+    block_rois[tid*4 + 0] = rois[(col_start + tid)*5 + 0];
+    block_rois[tid*4 + 1] = rois[(col_start + tid)*5 + 1];
+    block_rois[tid*4 + 2] = rois[(col_start + tid)*5 + 2];
+    block_rois[tid*4 + 3] = rois[(col_start + tid)*5 + 3];
   }
   __syncthreads();
-  if (threadIdx.x < row_end) {
-    const int cur_roi_idx = row_start + threadIdx.x;
+  if (tid < row_end) {
+    const int cur_roi_idx = row_start + tid;
     const real_t* cur_roi = rois + cur_roi_idx*5;
     unsigned long long t = 0;
-    int start = (row_start == col_start) ? threadIdx.x+1 : 0;
+    int start = (row_start == col_start) ? tid+1 : 0;
     for (int i = start; i < col_end; i++) {
       if (IoU(cur_roi, block_rois + i*4) > nms_th) {
         t |= 1ULL << i;
@@ -256,7 +258,7 @@ void ProposalLayer::Forward_gpu(const vector<Blob*>& bottom,
 
   SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
 
-  NonMaximumSuppressionGPU(num_proposals, proposals_.mutable_gpu_data(),
+  NonMaximumSuppressionGPU(pre_nms_topn_, proposals_.mutable_gpu_data(),
                            &nms_mask_, roi_indices_.mutable_cpu_data(),
                            num_rois, nms_thresh_, post_nms_topn_);
 
