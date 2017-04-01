@@ -22,7 +22,7 @@ void ROIPoolingLayer::LayerSetUp(const vector<Blob*>& bottom,
   pooled_height_ = roi_pool_param.pooled_h();
   pooled_width_ = roi_pool_param.pooled_w();
   spatial_scale_ = roi_pool_param.spatial_scale();
-  LOG(INFO) << "Spatial scale: " << spatial_scale_;
+  //LOG(INFO) << "Spatial scale: " << spatial_scale_;
 }
 
 void ROIPoolingLayer::Reshape(const vector<Blob*>& bottom,
@@ -94,9 +94,7 @@ void ROIPoolingLayer::Forward_cpu(const vector<Blob*>& bottom,
           for (int h = hstart; h < hend; ++h) {
             for (int w = wstart; w < wend; ++w) {
               const int index = h * width_ + w;
-              if (batch_data[index] > top_data[pool_index]) {
-                top_data[pool_index] = batch_data[index];
-              }
+              top_data[pool_index] = max(top_data[pool_index], batch_data[index]);
             }
           }
         }
