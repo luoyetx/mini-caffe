@@ -180,7 +180,7 @@ message LayerParameter {
   repeated NetStateRule exclude = 9;
 
   // Parameters shared by loss layers.
-  optional LossParameter loss_param = 101;
+  optional LossParameter loss_param = 200;
 
   // Layer type-specific parameters.
   //
@@ -188,42 +188,42 @@ message LayerParameter {
   // for their implementation. These layers include an Engine type and
   // engine parameter for selecting the implementation.
   // The default for the engine is set by the ENGINE switch at compile-time.
-  optional ArgMaxParameter argmax_param = 103;
-  optional BatchNormParameter batch_norm_param = 139;
-  optional BiasParameter bias_param = 141;
-  optional BNParameter bn_param = 151;
-  optional ConcatParameter concat_param = 104;
-  optional ConvolutionParameter convolution_param = 106;
-  optional CropParameter crop_param = 144;
-  optional DropoutParameter dropout_param = 108;
-  optional EltwiseParameter eltwise_param = 110;
-  optional ELUParameter elu_param = 140;
-  optional EmbedParameter embed_param = 137;
-  optional ExpParameter exp_param = 111;
-  optional FlattenParameter flatten_param = 135;
-  optional InnerProductParameter inner_product_param = 117;
-  optional InputParameter input_param = 143;
-  optional LogParameter log_param = 134;
-  optional LRNParameter lrn_param = 118;
-  optional MVNParameter mvn_param = 120;
-  optional ParameterParameter parameter_param = 145;
-  optional PoolingParameter pooling_param = 121;
-  optional PowerParameter power_param = 122;
-  optional PReLUParameter prelu_param = 131;
-  optional ProposalParameter proposal_param = 1231;
-  optional PSROIPoolingParameter psroi_pooling_param = 1241;
-  optional ReductionParameter reduction_param = 136;
-  optional ReLUParameter relu_param = 123;
-  optional ReshapeParameter reshape_param = 133;
-  optional ROIPoolingParameter roi_pooling_param = 147;
-  optional ScaleParameter scale_param = 142;
-  optional SigmoidParameter sigmoid_param = 124;
-  optional SoftmaxParameter softmax_param = 125;
-  optional SPPParameter spp_param = 132;
-  optional SliceParameter slice_param = 126;
-  optional TanHParameter tanh_param = 127;
-  optional ThresholdParameter threshold_param = 128;
-  optional TileParameter tile_param = 138;
+  optional ArgMaxParameter argmax_param = 201;
+  optional BatchNormParameter batch_norm_param = 202;
+  optional BiasParameter bias_param = 203;
+  optional BNParameter bn_param = 203;
+  optional ConcatParameter concat_param = 205;
+  optional ConvolutionParameter convolution_param = 206;
+  optional CropParameter crop_param = 207;
+  optional DropoutParameter dropout_param = 208;
+  optional EltwiseParameter eltwise_param = 209;
+  optional ELUParameter elu_param = 210;
+  optional EmbedParameter embed_param = 211;
+  optional ExpParameter exp_param = 212;
+  optional FlattenParameter flatten_param = 213;
+  optional InnerProductParameter inner_product_param = 214;
+  optional InputParameter input_param = 215;
+  optional LogParameter log_param = 216;
+  optional LRNParameter lrn_param = 217;
+  optional MVNParameter mvn_param = 218;
+  optional ParameterParameter parameter_param = 219;
+  optional PoolingParameter pooling_param = 220;
+  optional PowerParameter power_param = 222;
+  optional PReLUParameter prelu_param = 223;
+  optional ProposalParameter proposal_param = 224;
+  optional PSROIPoolingParameter psroi_pooling_param = 225;
+  optional ReductionParameter reduction_param = 226;
+  optional ReLUParameter relu_param = 227;
+  optional ReshapeParameter reshape_param = 228;
+  optional ROIPoolingParameter roi_pooling_param = 229;
+  optional ScaleParameter scale_param = 230;
+  optional SigmoidParameter sigmoid_param = 231;
+  optional SoftmaxParameter softmax_param = 232;
+  optional SPPParameter spp_param = 233;
+  optional SliceParameter slice_param = 234;
+  optional TanHParameter tanh_param = 235;
+  optional ThresholdParameter threshold_param = 236;
+  optional TileParameter tile_param = 237;
 }
 
 // Message that stores parameters shared by loss layers
