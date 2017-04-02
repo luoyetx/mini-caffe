@@ -51,8 +51,10 @@ endif(MSVC)
 # source file structure
 file(GLOB CAFFE_INCLUDE ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.h
                         ${CMAKE_CURRENT_LIST_DIR}/include/caffe/*.hpp)
+file(GLOB CAFFE_INCLUDE_GRAPH ${CMAKE_CURRENT_LIST_DIR}/include/caffe/graph/*.hpp)
 file(GLOB CAFFE_SRC ${CMAKE_CURRENT_LIST_DIR}/src/*.hpp
                     ${CMAKE_CURRENT_LIST_DIR}/src/*.cpp)
+file(GLOB CAFFE_SRC_GRAPH ${CMAKE_CURRENT_LIST_DIR}/src/graph/*.cpp)
 file(GLOB CAFFE_SRC_LAYERS ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.hpp
                            ${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cpp)
 file(GLOB CAFFE_SRC_UTIL ${CMAKE_CURRENT_LIST_DIR}/src/util/*.hpp
@@ -62,7 +64,9 @@ file(GLOB CAFFE_SRC_PROTO ${CMAKE_CURRENT_LIST_DIR}/src/proto/caffe.pb.h
 
 # cpp code
 set(CAFFE_COMPILE_CODE ${CAFFE_INCLUDE}
+                       ${CAFFE_INCLUDE_GRAPH}
                        ${CAFFE_SRC}
+                       ${CAFFE_SRC_GRAPH}
                        ${CAFFE_SRC_LAYERS}
                        ${CAFFE_SRC_UTIL}
                        ${CAFFE_SRC_PROTO})
@@ -118,7 +122,9 @@ endif()
 
 # file structure
 source_group(include FILES ${CAFFE_INCLUDE})
+source_group(include\\graph FILES ${CAFFE_INCLUDE_GRAPH})
 source_group(src FILES ${CAFFE_SRC})
+source_group(src\\graph FILES ${CAFFE_SRC_GRAPH})
 source_group(src\\layers FILES ${CAFFE_SRC_LAYERS})
 source_group(src\\util FILES ${CAFFE_SRC_UTIL})
 source_group(src\\proto FILES ${CAFFE_SRC_PROTO})
