@@ -220,6 +220,17 @@ class LogMessageFatal {
   void operator=(const LogMessageFatal&);
 };
 
+// This class is used to explicitly ignore values in the conditional
+// logging macros.  This avoids compiler warnings like "value computed
+// is not used" and "statement has no effect".
+class LogMessageVoidify {
+ public:
+  LogMessageVoidify() {}
+  // This has to be an operator with a precedence lower than << but
+  // higher than "?:". See its usage.
+  void operator&(std::ostream&) {}
+};
+
 }  // namespace caffe
 
 #endif  // CAFFE_LOGGING_H_

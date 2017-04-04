@@ -17,6 +17,10 @@ class ProposalLayer : public Layer {
                        const vector<Blob*>& top) {
     //LOG(FATAL) << "Reshaping happens during the call to forward.";
   }
+  virtual void ClearInternalBuffer() {
+    proposals_.Release();
+    nms_mask_.Release();
+  }
 
   virtual const char* type() const { return "ProposalLayer"; }
 
