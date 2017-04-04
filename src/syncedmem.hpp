@@ -36,6 +36,9 @@ class MemoryPool {
   void ReturnCPU(CpuBlock cpu_block);
   void ReturnGPU(GpuBlock gpu_block);
 
+  MemPoolState GetState();
+  void Clear();
+
  private:
   friend ThreadLocalStore<MemoryPool>;
   MemoryPool() {}

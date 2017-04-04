@@ -126,19 +126,7 @@ MemoryPool* MemoryPool::Get() {
 }
 
 MemoryPool::~MemoryPool() {
-  for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); it++) {
-    free(it->second.ptr);
-  }
-#ifdef USE_CUDA
-  for (auto it = gpu_pool_.begin(); it != gpu_pool_.end(); it++) {
-    cudaSetDevice(it->second.device);
-    cudaError_t err = cudaFree(it->second.ptr);
-    // ignore unloading error, as memory has already been recycled
-    if (err != cudaSuccess && err != cudaErrorCudartUnloading) {
-      LOG(FATAL) << "CUDA: " << cudaGetErrorString(err);
-    }
-  }
-#endif  // USE_CUDA
+  Clear();
 }
 
 inline double MemSize(int size) {
@@ -215,6 +203,51 @@ void MemoryPool::ReturnGPU(GpuBlock block) {
 #else
   NO_GPU;
 #endif  // USE_CUDA
+}
+
+void MemoryPool::Clear() {
+  for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); it++) {
+    free(it->second.ptr);
+  }
+#ifdef USE_CUDA
+  for (auto it = gpu_pool_.begin(); it != gpu_pool_.end(); it++) {
+    cudaSetDevice(it->second.device);
+    cudaError_t err = cudaFree(it->second.ptr);
+    // ignore unloading error, as memory has already been recycled
+    if (err != cudaSuccess && err != cudaErrorCudartUnloading) {
+      LOG(FATAL) << "CUDA: " << cudaGetErrorString(err);
+    }
+  }
+#endif  // USE_CUDA
+}
+
+MemPoolState MemoryPool::GetState() {
+  MemPoolState st;
+  st.cpu_mem = st.unused_cpu_mem = 0;
+  st.gpu_mem = st.unused_gpu_mem = 0;
+  for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); it++) {
+    st.cpu_mem += it->second.size;
+  }
+  for (auto it = unused_cpu_pool_.begin(); it != unused_cpu_pool_.end(); it++) {
+    st.unused_cpu_mem += it->second.size;
+  }
+#ifdef USE_CUDA
+  for (auto it = gpu_pool_.begin(); it != gpu_pool_.end(); it++) {
+    st.gpu_mem += it->second.size;
+  }
+  for (auto it = unused_gpu_pool_.begin(); it != unused_gpu_pool_.end(); it++) {
+    st.unused_gpu_mem += it->second.size;
+  }
+#endif  // USE_CUDA
+  return st;
+}
+
+void MemPoolClear() {
+  MemoryPool::Get()->Clear();
+}
+
+MemPoolState MemPoolGetState() {
+  return MemoryPool::Get()->GetState();
 }
 
 }  // namespace caffe
