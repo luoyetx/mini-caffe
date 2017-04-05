@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
   }
   Net net("../models/r-fcn/test_agnostic.prototxt");
   net.CopyTrainedLayersFrom("../models/r-fcn/resnet50_rfcn_final.caffemodel");
+  net.MarkOutputs({ "rois" });
 
   Mat img = imread("../r-fcn/004545.jpg");
   int height = img.rows;

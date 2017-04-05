@@ -135,7 +135,7 @@ inline double MemSize(int size) {
 
 inline bool ShouldBorrowMem(int has, int wants) {
   static const int ratio = 2;
-  return has / 2 < wants;
+  return has / 2 <= wants;
 }
 
 CpuBlock MemoryPool::RequestCPU(int size) {
