@@ -40,19 +40,16 @@ class MemoryPool {
   std::multimap<CpuKey, MemBlock> unused_cpu_pool_;
   std::multimap<GpuKey, MemBlock> unused_gpu_pool_;
 
-  //// small object pool for size <= 128 bytes
+  //// small object pool on CPU for size <= 128 bytes
   const int kMaxGPUs = 8;
   const int kElementSize = 128;
   const int kPageSize = 1 << 20;  // 1 MB
   struct LinkedList {
     LinkedList* next{nullptr};
   };
-  LinkedList* cpu_head_;
-  MemBlock cpu_curr_page_;
-  int cpu_curr_ptr_;
-  std::vector<LinkedList*> gpu_heads_;  // one head per GPU
-  std::vector<MemBlock> gpu_curr_pages_;
-  std::vector<int> gpu_curr_ptrs_;
+  LinkedList* head_;
+  MemBlock curr_page_;
+  int curr_ptr_;
 };
 
 class SyncedMemory {
