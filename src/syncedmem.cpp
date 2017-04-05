@@ -141,7 +141,7 @@ inline double MemSize(int size) {
 }
 
 inline bool ShouldBorrowMem(int has, int wants) {
-  static const int ratio = 2;
+  const int ratio = 2;
   return has / 2 <= wants;
 }
 

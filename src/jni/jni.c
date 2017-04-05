@@ -120,6 +120,17 @@ CaffeJNIMethod(Net, Destroy, jint)(JNIEnv *env, jobject thiz) {
   return 0;
 }
 
+CaffeJNIMethod(Net, MarkOutput, jint)(JNIEnv *env, jobject thiz,
+                                      jstring name) {
+  NetHandle net;
+  JNIGetHandleFromObj(thiz, net);
+  const char *name_cstr = (*env)->GetStringUTFChars(env, name, NULL);
+  CHECK_SUCCESS(CaffeNetMarkOutput(net, name_cstr), {
+    (*env)->ReleaseStringUTFChars(env, name, name_cstr);
+  });
+  return 0;
+}
+
 CaffeJNIMethod(Net, Forward, jint)(JNIEnv *env, jobject thiz) {
   NetHandle net;
   JNIGetHandleFromObj(thiz, net);
