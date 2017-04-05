@@ -41,9 +41,9 @@ class MemoryPool {
   std::multimap<GpuKey, MemBlock> unused_gpu_pool_;
 
   //// small object pool for size <= 128 bytes
-  static const int kMaxGPUs = 8;
-  static const int kElementSize = 128;
-  static const int kPageSize = 1 << 20;  // 1 MB
+  const int kMaxGPUs = 8;
+  const int kElementSize = 128;
+  const int kPageSize = 1 << 20;  // 1 MB
   struct LinkedList {
     LinkedList* next{nullptr};
   };

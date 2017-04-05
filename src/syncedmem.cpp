@@ -258,7 +258,7 @@ MemBlock MemoryPool::RequestGPU(int size, int device) {
       if (cur_device != device) {
         CUDA_CHECK(cudaSetDevice(cur_device));
       }
-      gpu_pool_.push(block);
+      gpu_pool_.push_back(block);
       DLOG(INFO) << "[GPU] Requested " << MemSize(size) << " M, Create " << MemSize(block.size) << " M";
       return block;
     }
