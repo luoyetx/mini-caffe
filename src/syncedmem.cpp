@@ -4,22 +4,21 @@
 
 namespace caffe {
 
-using CpuBlock = MemoryPool::CpuBlock;
-using GpuBlock = MemoryPool::GpuBlock;
+using MemBlock = MemoryPool::MemBlock;
 
-static void CaffeMallocHost(CpuBlock& block, size_t size) {
+static void CaffeMallocHost(MemBlock& block, size_t size) {
   block = MemoryPool::Get()->RequestCPU(size);
 }
 
-static void CaffeFreeHost(CpuBlock block) {
+static void CaffeFreeHost(MemBlock block) {
   MemoryPool::Get()->ReturnCPU(block);
 }
 
-static void CaffeMallocDevice(GpuBlock& block, size_t size, int device) {
+static void CaffeMallocDevice(MemBlock& block, size_t size, int device) {
   block = MemoryPool::Get()->RequestGPU(size, device);
 }
 
-static void CaffeFreeDevice(GpuBlock block) {
+static void CaffeFreeDevice(MemBlock block) {
   MemoryPool::Get()->ReturnGPU(block);
 }
 
@@ -125,12 +124,23 @@ MemoryPool* MemoryPool::Get() {
   return ThreadLocalStore<MemoryPool>::Get();
 }
 
+MemoryPool::MemoryPool() {
+  cpu_head_ = nullptr;
+  cpu_curr_page_.device = -1;
+  cpu_curr_page_.size = 0;
+  cpu_curr_page_.ptr = nullptr;
+  cpu_curr_ptr_ = kPageSize;  // used to trigger allocate
+  gpu_heads_.resize(kMaxGPUs, nullptr);
+  gpu_curr_pages_.resize(kMaxGPUs, cpu_curr_page_);
+  gpu_curr_ptrs_.resize(kMaxGPUs, kPageSize);
+}
+
 MemoryPool::~MemoryPool() {
   Clear();
 }
 
 inline double MemSize(int size) {
-  return std::round(static_cast<double>(size) / (1024 * 1024));
+  return std::round(static_cast<double>(size) / (1024 * 1024) * 100) / 100;
 }
 
 inline bool ShouldBorrowMem(int has, int wants) {
@@ -138,81 +148,158 @@ inline bool ShouldBorrowMem(int has, int wants) {
   return has / 2 <= wants;
 }
 
-CpuBlock MemoryPool::RequestCPU(int size) {
-  CpuKey key{size};
-  auto it = unused_cpu_pool_.lower_bound(key);
-  if (it == unused_cpu_pool_.end() || !ShouldBorrowMem(it->second.size,size)) {
-    CpuBlock block;
+MemBlock MemoryPool::RequestCPU(int size) {
+  MemBlock block;
+  if (size <= kElementSize) {  // small object <= 128 bytes
+    block.device = -1;
     block.size = size;
-    block.ptr = malloc(size);
-    cpu_pool_.insert(CpuBlockPair{block.Key(), block});
-    DLOG(INFO) << "[CPU] Requested " << MemSize(size) << ", Create " << MemSize(block.size);
-    return block;
+    if (cpu_head_ != nullptr) {
+      block.ptr = static_cast<void*>(cpu_head_);
+      cpu_head_ = cpu_head_->next;
+    }
+    else {
+      if (cpu_curr_ptr_ < kPageSize) {
+        block.ptr = static_cast<void*>(static_cast<char*>(cpu_curr_page_.ptr) + cpu_curr_ptr_);
+        cpu_curr_ptr_ += kElementSize;
+      }
+      else {
+        cpu_curr_page_.device = -1;
+        cpu_curr_page_.size = kPageSize;
+        cpu_curr_page_.ptr = malloc(kPageSize);
+        cpu_pool_.push_back(cpu_curr_page_);
+        block.ptr = cpu_curr_page_.ptr;
+        cpu_curr_ptr_ = kElementSize;
+      }
+    }
   }
   else {
-    CpuBlock block = it->second;
-    unused_cpu_pool_.erase(it);
-    DLOG(INFO) << "[CPU] Requested " << MemSize(size) << ", Get " << MemSize(block.size);
-    return block;
+    CpuKey key{size};
+    auto it = unused_cpu_pool_.lower_bound(key);
+    if (it == unused_cpu_pool_.end() || !ShouldBorrowMem(it->second.size, size)) {
+      block.device = -1;
+      block.size = size;
+      block.ptr = malloc(size);
+      cpu_pool_.push_back(block);
+      DLOG(INFO) << "[CPU] Requested " << MemSize(size) << " M, Create " << MemSize(block.size) << " M";
+    }
+    else {
+      block = it->second;
+      unused_cpu_pool_.erase(it);
+      DLOG(INFO) << "[CPU] Requested " << MemSize(size) << " M, Get " << MemSize(block.size) << " M";
+    }
+  }
+  return block;
+}
+
+void MemoryPool::ReturnCPU(MemBlock block) {
+  if (block.size <= kElementSize) {
+    LinkedList* p = static_cast<LinkedList*>(block.ptr);
+    p->next = cpu_head_;
+    cpu_head_ = p;
+  }
+  else {
+    CpuKey key{ block.size };
+    unused_cpu_pool_.insert(std::make_pair(key, block));
+    DLOG(INFO) << "[CPU] Return " << MemSize(block.size) << " M";
   }
 }
 
-void MemoryPool::ReturnCPU(CpuBlock block) {
-  DLOG(INFO) << "[CPU] Return " << MemSize(block.size);
-  unused_cpu_pool_.insert(CpuBlockPair{block.Key(), block});
-}
-
-GpuBlock MemoryPool::RequestGPU(int size, int device) {
+MemBlock MemoryPool::RequestGPU(int size, int device) {
+  MemBlock block;
 #ifdef USE_CUDA
-  GpuKey key{device, size};
-  auto it = unused_gpu_pool_.lower_bound(key);
-  if (it == unused_gpu_pool_.end() || it->second.device != device ||
-      !ShouldBorrowMem(it->second.size, size)) {
-    int cur_device;
-    CUDA_CHECK(cudaGetDevice(&cur_device));
-    if (cur_device != device) {
-      CUDA_CHECK(cudaSetDevice(device));
-    }
-    GpuBlock block;
-    block.size = size;
+  if (size <= kElementSize) {
     block.device = device;
-    CUDA_CHECK(cudaMalloc(&block.ptr, size));
-    if (cur_device != device) {
-      CUDA_CHECK(cudaSetDevice(cur_device));
+    block.size = size;
+    CHECK_LT(device, kMaxGPUs);
+    LinkedList* gpu_head = gpu_heads_[device];
+    MemBlock& gpu_curr_page = gpu_curr_pages_[device];
+    int gpu_curr_ptr = gpu_curr_ptrs_[device];
+    if (gpu_heads_[device] != nullptr) {
+      block.ptr = static_cast<void*>(gpu_head);
+      gpu_heads_[device] = gpu_head->next;
     }
-    gpu_pool_.insert(GpuBlockPair{block.Key(), block});
-    DLOG(INFO) << "[GPU] Requested " << MemSize(size) << ", Create " << MemSize(block.size);
-    return block;
+    else {
+      if (gpu_curr_ptr < kPageSize) {
+        block.ptr = static_cast<void*>(static_cast<char*>(gpu_curr_page.ptr) + gpu_curr_ptr);
+        gpu_curr_ptrs_[device] += kElementSize;
+      }
+      else {
+        gpu_curr_page.device = device;
+        gpu_curr_page.size = kPageSize;
+        gpu_curr_page.ptr = nullptr;
+        int cur_device;
+        CUDA_CHECK(cudaGetDevice(&cur_device));
+        if (cur_device != device) {
+          CUDA_CHECK(cudaSetDevice(device));
+        }
+        CUDA_CHECK(cudaMalloc(&gpu_curr_page.ptr, kPageSize));
+        if (cur_device != device) {
+          CUDA_CHECK(cudaSetDevice(cur_device));
+        }
+        gpu_pool_.push_back(gpu_curr_page);
+        block.ptr = gpu_curr_page.ptr;
+        gpu_curr_ptrs_[device] = kElementSize;
+      }
+    }
   }
   else {
-    GpuBlock block = it->second;
-    unused_gpu_pool_.erase(it);
-    DLOG(INFO) << "[GPU] Requested " << MemSize(size) << ", Get " << MemSize(block.size);
-    return block;
+    GpuKey key{device, size};
+    auto it = unused_gpu_pool_.lower_bound(key);
+    if (it == unused_gpu_pool_.end() || it->second.device != device ||
+        !ShouldBorrowMem(it->second.size, size)) {
+      int cur_device;
+      CUDA_CHECK(cudaGetDevice(&cur_device));
+      if (cur_device != device) {
+        CUDA_CHECK(cudaSetDevice(device));
+      }
+      block.size = size;
+      block.device = device;
+      CUDA_CHECK(cudaMalloc(&block.ptr, size));
+      if (cur_device != device) {
+        CUDA_CHECK(cudaSetDevice(cur_device));
+      }
+      gpu_pool_.push(block);
+      DLOG(INFO) << "[GPU] Requested " << MemSize(size) << " M, Create " << MemSize(block.size) << " M";
+      return block;
+    }
+    else {
+      block = it->second;
+      unused_gpu_pool_.erase(it);
+      DLOG(INFO) << "[GPU] Requested " << MemSize(size) << " M, Get " << MemSize(block.size) << " M";
+      return block;
+    }
   }
 #else
   NO_GPU;
-  return GpuBlock();
 #endif  // USE_CUDA
+  return block;
 }
 
-void MemoryPool::ReturnGPU(GpuBlock block) {
+void MemoryPool::ReturnGPU(MemBlock block) {
 #ifdef USE_CUDA
-  DLOG(INFO) << "[GPU] Return " << MemSize(block.size);
-  unused_gpu_pool_.insert(GpuBlockPair{block.Key(), block});
+  if (block.size <= kElementSize) {
+    LinkedList* p = static_cast<LinkedList*>(block.ptr);
+    p->next = gpu_heads_[block.device];
+    gpu_heads_[block.device] = p;
+  }
+  else {
+    GpuKey key{block.device, block.size};
+    unused_gpu_pool_.insert(std::make_pair(key, block));
+    DLOG(INFO) << "[GPU] Return " << MemSize(block.size) << " M";
+  }
 #else
   NO_GPU;
 #endif  // USE_CUDA
 }
 
 void MemoryPool::Clear() {
-  for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); it++) {
-    free(it->second.ptr);
+  for (auto& block : cpu_pool_) {
+    free(block.ptr);
   }
 #ifdef USE_CUDA
-  for (auto it = gpu_pool_.begin(); it != gpu_pool_.end(); it++) {
-    cudaSetDevice(it->second.device);
-    cudaError_t err = cudaFree(it->second.ptr);
+  for (auto& block : gpu_pool_) {
+    cudaSetDevice(block.device);
+    cudaError_t err = cudaFree(block.ptr);
     // ignore unloading error, as memory has already been recycled
     if (err != cudaSuccess && err != cudaErrorCudartUnloading) {
       LOG(FATAL) << "CUDA: " << cudaGetErrorString(err);
@@ -225,15 +312,15 @@ MemPoolState MemoryPool::GetState() {
   MemPoolState st;
   st.cpu_mem = st.unused_cpu_mem = 0;
   st.gpu_mem = st.unused_gpu_mem = 0;
-  for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); it++) {
-    st.cpu_mem += it->second.size;
+  for (auto& block : cpu_pool_) {
+    st.cpu_mem += block.size;
   }
   for (auto it = unused_cpu_pool_.begin(); it != unused_cpu_pool_.end(); it++) {
     st.unused_cpu_mem += it->second.size;
   }
 #ifdef USE_CUDA
-  for (auto it = gpu_pool_.begin(); it != gpu_pool_.end(); it++) {
-    st.gpu_mem += it->second.size;
+  for (auto& block : gpu_pool_) {
+    st.gpu_mem += block.size;
   }
   for (auto it = unused_gpu_pool_.begin(); it != unused_gpu_pool_.end(); it++) {
     st.unused_gpu_mem += it->second.size;

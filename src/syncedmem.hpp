@@ -12,51 +12,51 @@ namespace caffe {
 class MemoryPool {
  public:
   using GpuKey = std::pair<int, int>;
-  struct GpuBlock {
-    int device = -1;
-    int size = 0;
-    void* ptr = nullptr;
-
-    GpuKey Key() const { return GpuKey{device, size}; }
-  };
-  using GpuBlockPair = std::pair<GpuKey, GpuBlock>;
   using CpuKey = int;
-  struct CpuBlock {
-    int size = 0;
-    void* ptr = nullptr;
-
-    CpuKey Key() const { return CpuKey{size}; }
+  struct MemBlock {
+    int device{-1};
+    int size{0};
+    void* ptr{nullptr};
   };
-  using CpuBlockPair = std::pair<CpuKey, CpuBlock>;
 
   static MemoryPool* Get();
 
-  CpuBlock RequestCPU(int size);
-  GpuBlock RequestGPU(int size, int device);
-  void ReturnCPU(CpuBlock cpu_block);
-  void ReturnGPU(GpuBlock gpu_block);
+  MemBlock RequestCPU(int size);
+  MemBlock RequestGPU(int size, int device);
+  void ReturnCPU(MemBlock cpu_block);
+  void ReturnGPU(MemBlock gpu_block);
 
   MemPoolState GetState();
   void Clear();
 
  private:
   friend ThreadLocalStore<MemoryPool>;
-  MemoryPool() {}
+  MemoryPool();
   ~MemoryPool();
   DISABLE_COPY_AND_ASSIGN(MemoryPool);
 
-  std::multimap<CpuKey, CpuBlock> cpu_pool_;
-  std::multimap<GpuKey, GpuBlock> gpu_pool_;
-  std::multimap<CpuKey, CpuBlock> unused_cpu_pool_;
-  std::multimap<GpuKey, GpuBlock> unused_gpu_pool_;
+  std::vector<MemBlock> cpu_pool_;
+  std::vector<MemBlock> gpu_pool_;
+  std::multimap<CpuKey, MemBlock> unused_cpu_pool_;
+  std::multimap<GpuKey, MemBlock> unused_gpu_pool_;
+
+  //// small object pool for size <= 128 bytes
+  static const int kMaxGPUs = 8;
+  static const int kElementSize = 128;
+  static const int kPageSize = 1 << 20;  // 1 MB
+  struct LinkedList {
+    LinkedList* next{nullptr};
+  };
+  LinkedList* cpu_head_;
+  MemBlock cpu_curr_page_;
+  int cpu_curr_ptr_;
+  std::vector<LinkedList*> gpu_heads_;  // one head per GPU
+  std::vector<MemBlock> gpu_curr_pages_;
+  std::vector<int> gpu_curr_ptrs_;
 };
 
 class SyncedMemory {
  public:
-  //SyncedMemory()
-  //    : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(0), head_(UNINITIALIZED),
-  //    own_cpu_data_(false), cpu_malloc_use_cuda_(false), own_gpu_data_(false),
-  //    gpu_device_(-1) {}
   explicit SyncedMemory(size_t size)
       : cpu_block_(), gpu_block_(), size_(size), head_(UNINITIALIZED) {}
   ~SyncedMemory();
@@ -71,8 +71,8 @@ class SyncedMemory {
  private:
   void to_cpu();
   void to_gpu();
-  MemoryPool::CpuBlock cpu_block_;
-  MemoryPool::GpuBlock gpu_block_;
+  MemoryPool::MemBlock cpu_block_;
+  MemoryPool::MemBlock gpu_block_;
   size_t size_;
   SyncedHead head_;
 
