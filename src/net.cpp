@@ -79,7 +79,7 @@ void Net::AppendTop(const NetParameter& param, const int layer_id,
     int blob_id = (*blob_name_to_idx)[blob_name];
     top_vecs_[layer_id].push_back(blobs_[blob_id].get());
     top_id_vecs_[layer_id].push_back(blob_id);
-    blob_life_time_[blob_id] = std::max(blob_life_time_[blob_id], layer_id);
+    blob_life_time_[blob_id] = std::max(blob_life_time_[blob_id], layer_id + 1);
   } else if (blob_name_to_idx &&
              blob_name_to_idx->find(blob_name) != blob_name_to_idx->end()) {
     // If we are not doing in-place computation but have duplicated blobs,
@@ -92,7 +92,7 @@ void Net::AppendTop(const NetParameter& param, const int layer_id,
     const int blob_id = blobs_.size();
     blobs_.push_back(blob_pointer);
     blob_names_.push_back(blob_name);
-    blob_life_time_.push_back(layer_id);
+    blob_life_time_.push_back(layer_id + 1);
     if (blob_name_to_idx) { (*blob_name_to_idx)[blob_name] = blob_id; }
     top_id_vecs_[layer_id].push_back(blob_id);
     top_vecs_[layer_id].push_back(blob_pointer.get());
