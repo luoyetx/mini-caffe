@@ -249,6 +249,7 @@ void MemoryPool::Clear() {
   for (auto& block : cpu_pool_) {
     free(block.ptr);
   }
+  cpu_pool_.clear();
 #ifdef USE_CUDA
   for (auto& block : gpu_pool_) {
     cudaSetDevice(block.device);
@@ -258,6 +259,7 @@ void MemoryPool::Clear() {
       LOG(FATAL) << "CUDA: " << cudaGetErrorString(err);
     }
   }
+  gpu_pool_.clear();
 #endif  // USE_CUDA
 }
 
