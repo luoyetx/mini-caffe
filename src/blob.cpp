@@ -25,7 +25,8 @@ void Blob::Reshape(const vector<int>& shape) {
   count_ = 1;
   shape_.resize(shape.size());
   if (!shape_data_ || shape_data_->size() < shape.size() * sizeof(int)) {
-    shape_data_.reset(new SyncedMemory(shape.size() * sizeof(int)));
+    static_assert(kMaxBlobAxes*sizeof(int) == MemoryPool::kElementSize, "Static Assert Error");
+    shape_data_.reset(new SyncedMemory(kMaxBlobAxes * sizeof(int)));
   }
   int* shape_data = static_cast<int*>(shape_data_->mutable_cpu_data());
   for (int i = 0; i < shape.size(); ++i) {
@@ -96,7 +97,8 @@ real_t* Blob::mutable_gpu_data() {
 
 void Blob::Release() {
   data_ = nullptr;
-  shape_data_ = nullptr;
+  // no need to free shape data, cache it in blob level
+  //shape_data_ = nullptr;
   shape_.clear();
   count_ = 0;
   capacity_ = 0;

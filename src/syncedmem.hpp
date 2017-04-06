@@ -8,9 +8,18 @@
 
 namespace caffe {
 
-/*! \brief Thread local MemoryPool */
+/*!
+ * \brief Thread local MemoryPool
+ *  This memory pool holds all memory for blobs in every thread.
+ */
 class MemoryPool {
  public:
+  // small object size
+  enum {
+    kElementSize = 128,
+    kPageSize = 1 << 20,  // 1 MB
+  };
+
   using GpuKey = std::pair<int, int>;
   using CpuKey = int;
   struct MemBlock {
@@ -20,13 +29,26 @@ class MemoryPool {
   };
 
   static MemoryPool* Get();
-
+  /*!
+   * \brief request memory from cpu
+   * \param size memory size
+   * \return memory block holds data size >= size
+   */
   MemBlock RequestCPU(int size);
+  /*!
+   * \brief request memory from gpu
+   * \param size memory size
+   * \param device gpu device id
+   * \return memory block holds data size >= size
+   */
   MemBlock RequestGPU(int size, int device);
+  /*! \brief return cpu memory block */
   void ReturnCPU(MemBlock cpu_block);
+  /*! \brief return gpu memory block */
   void ReturnGPU(MemBlock gpu_block);
-
+  /*! \brief get memory pool statistics */
   MemPoolState GetState();
+  /*! \brief free all unused memory in pool */
   void Clear();
 
  private:
@@ -40,9 +62,6 @@ class MemoryPool {
   std::multimap<GpuKey, MemBlock> gpu_pool_;
 
   //// small object pool on CPU for size <= 128 bytes
-  const int kMaxGPUs = 8;
-  const int kElementSize = 128;
-  const int kPageSize = 1 << 20;  // 1 MB
   struct LinkedList {
     LinkedList* next{nullptr};
   };

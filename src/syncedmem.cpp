@@ -1,3 +1,5 @@
+#include <sstream>
+#include <iomanip>
 #include "./common.hpp"
 #include "./syncedmem.hpp"
 #include "./util/math_functions.hpp"
@@ -146,8 +148,23 @@ MemoryPool::~MemoryPool() {
   }
 }
 
-inline double MemSize(int size) {
-  return std::round(static_cast<double>(size) / (1024 * 1024) * 100) / 100;
+inline std::string MemSize(double size) {
+  std::stringstream os;
+  if (size < 1024.) {
+    os << static_cast<int>(size) << " B";
+  }
+  else {
+    size /= 1024.;
+    os << std::setprecision(3);
+    if (size < 1024.) {
+      os << size << " K";
+    }
+    else {
+      size /= 1024.;
+      os << size << " M";
+    }
+  }
+  return os.str();
 }
 
 inline bool ShouldBorrowMem(int has, int wants) {
@@ -188,13 +205,13 @@ MemBlock MemoryPool::RequestCPU(int size) {
       block.size = size;
       block.ptr = malloc(size);
       st_.cpu_mem += size;
-      DLOG(INFO) << "[CPU] Requested " << MemSize(size) << " M, Create " << MemSize(block.size) << " M";
+      DLOG(INFO) << "[CPU] Requested " << MemSize(size) << ", Create " << MemSize(block.size);
     }
     else {
       block = it->second;
       cpu_pool_.erase(it);
       st_.unused_cpu_mem -= block.size;
-      DLOG(INFO) << "[CPU] Requested " << MemSize(size) << " M, Get " << MemSize(block.size) << " M";
+      DLOG(INFO) << "[CPU] Requested " << MemSize(size) << ", Get " << MemSize(block.size);
     }
   }
   return block;
@@ -210,7 +227,7 @@ void MemoryPool::ReturnCPU(MemBlock block) {
     CpuKey key{block.size};
     cpu_pool_.insert(std::make_pair(key, block));
     st_.unused_cpu_mem += block.size;
-    DLOG(INFO) << "[CPU] Return " << MemSize(block.size) << " M";
+    DLOG(INFO) << "[CPU] Return " << MemSize(block.size);
   }
 }
 
@@ -233,14 +250,14 @@ MemBlock MemoryPool::RequestGPU(int size, int device) {
     if (cur_device != device) {
       CUDA_CHECK(cudaSetDevice(cur_device));
     }
-    DLOG(INFO) << "[GPU] Requested " << MemSize(size) << " M, Create " << MemSize(block.size) << " M";
+    DLOG(INFO) << "[GPU] Requested " << MemSize(size) << ", Create " << MemSize(block.size);
     return block;
   }
   else {
     block = it->second;
     gpu_pool_.erase(it);
     st_.unused_gpu_mem -= block.size;
-    DLOG(INFO) << "[GPU] Requested " << MemSize(size) << " M, Get " << MemSize(block.size) << " M";
+    DLOG(INFO) << "[GPU] Requested " << MemSize(size) << ", Get " << MemSize(block.size);
     return block;
   }
 #else
@@ -254,7 +271,7 @@ void MemoryPool::ReturnGPU(MemBlock block) {
   GpuKey key{block.device, block.size};
   gpu_pool_.insert(std::make_pair(key, block));
   st_.unused_gpu_mem += block.size;
-  DLOG(INFO) << "[GPU] Return " << MemSize(block.size) << " M";
+  DLOG(INFO) << "[GPU] Return " << MemSize(block.size);
 #else
   NO_GPU;
 #endif  // USE_CUDA
