@@ -154,6 +154,10 @@ CAFFE_API int CaffeSetMode(int mode, int device);
  * \note  this function is thread safe
  */
 CAFFE_API const char *CaffeGetLastError();
+/*!
+ * \brief clear unused memory in threaded memory pool
+ */
+CAFFE_API int CaffeMemoryPoolClear();
 
 #ifdef __cplusplus
 }

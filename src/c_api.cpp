@@ -206,3 +206,9 @@ int CaffeAPIHandleException(caffe::Error &e) {
   CaffeAPISetLastError(e.what());
   return -1;
 }
+
+int CaffeMemoryPoolClear() {
+  API_BEGIN();
+  caffe::MemPoolClear();
+  API_END();
+}

@@ -11,7 +11,7 @@
 /*! \brief Timer */
 class Timer {
   using Clock = std::chrono::high_resolution_clock;
-public:
+ public:
   /*! \brief start or restart timer */
   inline void Tic() {
     start_ = Clock::now();
@@ -26,7 +26,7 @@ public:
     return duration.count();
   }
 
-private:
+ private:
   Clock::time_point start_, end_;
 };
 
@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
   std::mt19937 gen(rd());
   std::normal_distribution<float> nd(0, 1);
   auto input = net.blob_by_name("data");
+  input->Reshape({1, 100, 1, 1});
   float *data = input->mutable_cpu_data();
   const int n = input->count();
   for (int i = 0; i < n; ++i) {

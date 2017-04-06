@@ -189,6 +189,7 @@ int main(int argc, char *argv[]) {
     timer.Toc();
     LOG(INFO) << "Forward NIN costs " << timer.Elasped() << " ms";
   }
+  caffe::MemPoolClear();
   // test googlenet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#cnn-models-for-salient-object-subitizing
   {
     LOG(INFO) << "Test GoogLeNet";
@@ -201,6 +202,7 @@ int main(int argc, char *argv[]) {
     timer.Toc();
     LOG(INFO) << "Forward GoogLeNet costs " << timer.Elasped() << " ms";
   }
+  caffe::MemPoolClear();
   // test resnet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#imagenet-pre-trained-models-with-batch-normalization
   {
     LOG(INFO) << "Test ResNet";
@@ -256,4 +258,5 @@ void thread_test() {
   auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
   LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
   test.Forward();
+  caffe::MemPoolClear();
 }

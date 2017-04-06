@@ -133,7 +133,21 @@ MemoryPool::MemoryPool() {
 }
 
 MemoryPool::~MemoryPool() {
-  Clear();
+  for (auto& block : cpu_pool_) {
+    free(block.ptr);
+  }
+  cpu_pool_.clear();
+#ifdef USE_CUDA
+  for (auto& block : gpu_pool_) {
+    cudaSetDevice(block.device);
+    cudaError_t err = cudaFree(block.ptr);
+    // ignore unloading error, as memory has already been recycled
+    if (err != cudaSuccess && err != cudaErrorCudartUnloading) {
+      LOG(FATAL) << "CUDA: " << cudaGetErrorString(err);
+    }
+  }
+  gpu_pool_.clear();
+#endif  // USE_CUDA
 }
 
 inline double MemSize(int size) {
@@ -245,21 +259,21 @@ void MemoryPool::ReturnGPU(MemBlock block) {
 #endif  // USE_CUDA
 }
 
-void MemoryPool::Clear() {
-  for (auto& block : cpu_pool_) {
-    free(block.ptr);
+void MemoryPool::ClearUnused() {
+  for (auto it = unused_cpu_pool_.begin(); it != unused_cpu_pool_.end(); it++) {
+    free(it->second.ptr);
   }
-  cpu_pool_.clear();
+  unused_cpu_pool_.clear();
 #ifdef USE_CUDA
-  for (auto& block : gpu_pool_) {
-    cudaSetDevice(block.device);
-    cudaError_t err = cudaFree(block.ptr);
+  for (auto it = unused_gpu_pool_.begin(); it != unused_gpu_pool_.end(); it++) {
+    cudaSetDevice(it->second.device);
+    cudaError_t err = cudaFree(it->second.ptr);
     // ignore unloading error, as memory has already been recycled
     if (err != cudaSuccess && err != cudaErrorCudartUnloading) {
       LOG(FATAL) << "CUDA: " << cudaGetErrorString(err);
     }
   }
-  gpu_pool_.clear();
+  unused_gpu_pool_.clear();
 #endif  // USE_CUDA
 }
 
@@ -285,7 +299,7 @@ MemPoolState MemoryPool::GetState() {
 }
 
 void MemPoolClear() {
-  MemoryPool::Get()->Clear();
+  MemoryPool::Get()->ClearUnused();
 }
 
 MemPoolState MemPoolGetState() {

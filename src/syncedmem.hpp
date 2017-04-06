@@ -27,7 +27,7 @@ class MemoryPool {
   void ReturnGPU(MemBlock gpu_block);
 
   MemPoolState GetState();
-  void Clear();
+  void ClearUnused();
 
  private:
   friend ThreadLocalStore<MemoryPool>;

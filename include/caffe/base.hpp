@@ -73,7 +73,7 @@ struct MemPoolState {
 };
 /*! \brief get memory usage in current thread */
 CAFFE_API MemPoolState MemPoolGetState();
-/*! \brief clear memory pool in current thread, be sure of what you want to do */
+/*! \brief clear unused memory pool in current thread */
 CAFFE_API void MemPoolClear();
 
 }  // namespace caffe
