@@ -125,29 +125,25 @@ MemoryPool* MemoryPool::Get() {
 }
 
 MemoryPool::MemoryPool() {
+  // init small object pool
   head_ = nullptr;
   curr_page_.device = -1;
   curr_page_.size = 0;
   curr_page_.ptr = nullptr;
   curr_ptr_ = kPageSize;  // used to trigger allocate
+  obj_pool_.clear();
+  // init status
+  st_.cpu_mem = st_.unused_cpu_mem = 0;
+  st_.gpu_mem = st_.unused_gpu_mem = 0;
 }
 
 MemoryPool::~MemoryPool() {
-  for (auto& block : cpu_pool_) {
+  // all memory should be returned to pool
+  Clear();
+  // small object pool
+  for (auto& block : obj_pool_) {
     free(block.ptr);
   }
-  cpu_pool_.clear();
-#ifdef USE_CUDA
-  for (auto& block : gpu_pool_) {
-    cudaSetDevice(block.device);
-    cudaError_t err = cudaFree(block.ptr);
-    // ignore unloading error, as memory has already been recycled
-    if (err != cudaSuccess && err != cudaErrorCudartUnloading) {
-      LOG(FATAL) << "CUDA: " << cudaGetErrorString(err);
-    }
-  }
-  gpu_pool_.clear();
-#endif  // USE_CUDA
 }
 
 inline double MemSize(int size) {
@@ -177,7 +173,8 @@ MemBlock MemoryPool::RequestCPU(int size) {
         curr_page_.device = -1;
         curr_page_.size = kPageSize;
         curr_page_.ptr = malloc(kPageSize);
-        cpu_pool_.push_back(curr_page_);
+        st_.cpu_mem += kPageSize;
+        obj_pool_.push_back(curr_page_);
         block.ptr = curr_page_.ptr;
         curr_ptr_ = kElementSize;
       }
@@ -185,17 +182,18 @@ MemBlock MemoryPool::RequestCPU(int size) {
   }
   else {
     CpuKey key{size};
-    auto it = unused_cpu_pool_.lower_bound(key);
-    if (it == unused_cpu_pool_.end() || !ShouldBorrowMem(it->second.size, size)) {
+    auto it = cpu_pool_.lower_bound(key);
+    if (it == cpu_pool_.end() || !ShouldBorrowMem(it->second.size, size)) {
       block.device = -1;
       block.size = size;
       block.ptr = malloc(size);
-      cpu_pool_.push_back(block);
+      st_.cpu_mem += size;
       DLOG(INFO) << "[CPU] Requested " << MemSize(size) << " M, Create " << MemSize(block.size) << " M";
     }
     else {
       block = it->second;
-      unused_cpu_pool_.erase(it);
+      cpu_pool_.erase(it);
+      st_.unused_cpu_mem -= block.size;
       DLOG(INFO) << "[CPU] Requested " << MemSize(size) << " M, Get " << MemSize(block.size) << " M";
     }
   }
@@ -209,8 +207,9 @@ void MemoryPool::ReturnCPU(MemBlock block) {
     head_ = p;
   }
   else {
-    CpuKey key{ block.size };
-    unused_cpu_pool_.insert(std::make_pair(key, block));
+    CpuKey key{block.size};
+    cpu_pool_.insert(std::make_pair(key, block));
+    st_.unused_cpu_mem += block.size;
     DLOG(INFO) << "[CPU] Return " << MemSize(block.size) << " M";
   }
 }
@@ -219,8 +218,8 @@ MemBlock MemoryPool::RequestGPU(int size, int device) {
   MemBlock block;
 #ifdef USE_CUDA
   GpuKey key{device, size};
-  auto it = unused_gpu_pool_.lower_bound(key);
-  if (it == unused_gpu_pool_.end() || it->second.device != device ||
+  auto it = gpu_pool_.lower_bound(key);
+  if (it == gpu_pool_.end() || it->second.device != device ||
       !ShouldBorrowMem(it->second.size, size)) {
     int cur_device;
     CUDA_CHECK(cudaGetDevice(&cur_device));
@@ -230,16 +229,17 @@ MemBlock MemoryPool::RequestGPU(int size, int device) {
     block.size = size;
     block.device = device;
     CUDA_CHECK(cudaMalloc(&block.ptr, size));
+    st_.gpu_mem += size;
     if (cur_device != device) {
       CUDA_CHECK(cudaSetDevice(cur_device));
     }
-    gpu_pool_.push_back(block);
     DLOG(INFO) << "[GPU] Requested " << MemSize(size) << " M, Create " << MemSize(block.size) << " M";
     return block;
   }
   else {
     block = it->second;
-    unused_gpu_pool_.erase(it);
+    gpu_pool_.erase(it);
+    st_.unused_gpu_mem -= block.size;
     DLOG(INFO) << "[GPU] Requested " << MemSize(size) << " M, Get " << MemSize(block.size) << " M";
     return block;
   }
@@ -252,54 +252,63 @@ MemBlock MemoryPool::RequestGPU(int size, int device) {
 void MemoryPool::ReturnGPU(MemBlock block) {
 #ifdef USE_CUDA
   GpuKey key{block.device, block.size};
-  unused_gpu_pool_.insert(std::make_pair(key, block));
+  gpu_pool_.insert(std::make_pair(key, block));
+  st_.unused_gpu_mem += block.size;
   DLOG(INFO) << "[GPU] Return " << MemSize(block.size) << " M";
 #else
   NO_GPU;
 #endif  // USE_CUDA
 }
 
-void MemoryPool::ClearUnused() {
-  for (auto it = unused_cpu_pool_.begin(); it != unused_cpu_pool_.end(); it++) {
+void MemoryPool::Clear() {
+  for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); ++it) {
     free(it->second.ptr);
+    st_.cpu_mem -= it->second.size;
+    st_.unused_cpu_mem -= it->second.size;
   }
-  unused_cpu_pool_.clear();
+  cpu_pool_.clear();
 #ifdef USE_CUDA
-  for (auto it = unused_gpu_pool_.begin(); it != unused_gpu_pool_.end(); it++) {
-    cudaSetDevice(it->second.device);
-    cudaError_t err = cudaFree(it->second.ptr);
+  int cur_device;
+  cudaError_t err = cudaGetDevice(&cur_device);
+  if (err == cudaErrorCudartUnloading) {
+    // we are shutting down the program
     // ignore unloading error, as memory has already been recycled
-    if (err != cudaSuccess && err != cudaErrorCudartUnloading) {
-      LOG(FATAL) << "CUDA: " << cudaGetErrorString(err);
-    }
+    gpu_pool_.clear();
+    return;
   }
-  unused_gpu_pool_.clear();
+  for (auto it = gpu_gool_begin(); it != gpu_pool_.end(); ++it) {
+    if (cur_device != device) {
+      CUDA_CHECK(cudaSetDevice(device));
+    }
+    CUDA_CHECK(cudaFree(it->second.ptr));
+    if (cur_device != device) {
+      CUDA_CHECK(cudaSetDevice(cur_device));
+    }
+    st_.gpu_mem -= it->second.size;
+    st_.unused_gpu_mem -= it->second.size;
+  }
+  gpu_pool_.clear();
 #endif  // USE_CUDA
 }
 
 MemPoolState MemoryPool::GetState() {
-  MemPoolState st;
-  st.cpu_mem = st.unused_cpu_mem = 0;
-  st.gpu_mem = st.unused_gpu_mem = 0;
-  for (auto& block : cpu_pool_) {
-    st.cpu_mem += block.size;
+  int unused_cpu_mem = 0;
+  int unused_gpu_mem = 0;
+  for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); ++it) {
+    unused_cpu_mem += it->second.size;
   }
-  for (auto it = unused_cpu_pool_.begin(); it != unused_cpu_pool_.end(); it++) {
-    st.unused_cpu_mem += it->second.size;
-  }
+  CHECK_EQ(unused_cpu_mem, st_.unused_cpu_mem);
 #ifdef USE_CUDA
-  for (auto& block : gpu_pool_) {
-    st.gpu_mem += block.size;
+  for (auto it = gpu_pool_.begin(); it != gpu_pool_.end(); ++it) {
+    unused_gpu_mem += it->second.size;
   }
-  for (auto it = unused_gpu_pool_.begin(); it != unused_gpu_pool_.end(); it++) {
-    st.unused_gpu_mem += it->second.size;
-  }
+  CHECK_EQ(unused_gpu_mem, st_.unused_gpu_mem);
 #endif  // USE_CUDA
-  return st;
+  return st_;
 }
 
 void MemPoolClear() {
-  MemoryPool::Get()->ClearUnused();
+  MemoryPool::Get()->Clear();
 }
 
 MemPoolState MemPoolGetState() {

@@ -189,7 +189,6 @@ int main(int argc, char *argv[]) {
     timer.Toc();
     LOG(INFO) << "Forward NIN costs " << timer.Elasped() << " ms";
   }
-  caffe::MemPoolClear();
   // test googlenet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#cnn-models-for-salient-object-subitizing
   {
     LOG(INFO) << "Test GoogLeNet";
@@ -202,7 +201,6 @@ int main(int argc, char *argv[]) {
     timer.Toc();
     LOG(INFO) << "Forward GoogLeNet costs " << timer.Elasped() << " ms";
   }
-  caffe::MemPoolClear();
   // test resnet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#imagenet-pre-trained-models-with-batch-normalization
   {
     LOG(INFO) << "Test ResNet";
@@ -236,6 +234,13 @@ int main(int argc, char *argv[]) {
   shared_ptr<NetParameter> model_param = ReadBinaryNetParameterFromBuffer(caffemodel.c_str(), caffemodel.length());
   Net net(*network_param);
   net.CopyTrainedLayersFrom(*model_param);
+
+  MemPoolState st = caffe::MemPoolGetState();
+  auto __Calc__ = [](int size) -> double {
+    return std::round(static_cast<double>(size) / (1024 * 1024) * 100) / 100;
+  };
+  LOG(INFO) << "[CPU] Hold " << __Calc__(st.cpu_mem) << " M, Not Uses " << __Calc__(st.unused_cpu_mem) << " M";
+  LOG(INFO) << "[GPU] Hold " << __Calc__(st.gpu_mem) << " M, Not Uses " << __Calc__(st.unused_gpu_mem) << " M";
 
   // test multi-thread
   const int kThreads = 3;

@@ -56,6 +56,12 @@ void Net::Init(const NetParameter& param) {
       AppendParam(param, layer_id, param_id);
     }
   }
+  CHECK_EQ(std::string(layers_[0]->type()), std::string("Input"))
+      << "Network\'s first layer should be Input Layer.";
+  // for most case, not fully convolutional network, hold input data will be convenient
+  for (int blob_id : top_id_vecs_[0]) {
+    blob_life_time_[blob_id] = layers_.size();
+  }
   for (size_t blob_id = 0; blob_id < blob_names_.size(); ++blob_id) {
     blob_names_index_[blob_names_[blob_id]] = blob_id;
   }
@@ -223,7 +229,7 @@ void Net::MarkOutputs(const std::vector<std::string>& outs) {
       LOG(FATAL) << "blob (" << name << ") is not availiable in Net";
     }
     int blob_id = it->second;
-    blob_life_time_[blob_id] = std::numeric_limits<int>::max();
+    blob_life_time_[blob_id] = layers_.size();
   }
 }
 

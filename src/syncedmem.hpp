@@ -27,7 +27,7 @@ class MemoryPool {
   void ReturnGPU(MemBlock gpu_block);
 
   MemPoolState GetState();
-  void ClearUnused();
+  void Clear();
 
  private:
   friend ThreadLocalStore<MemoryPool>;
@@ -35,10 +35,9 @@ class MemoryPool {
   ~MemoryPool();
   DISABLE_COPY_AND_ASSIGN(MemoryPool);
 
-  std::vector<MemBlock> cpu_pool_;
-  std::vector<MemBlock> gpu_pool_;
-  std::multimap<CpuKey, MemBlock> unused_cpu_pool_;
-  std::multimap<GpuKey, MemBlock> unused_gpu_pool_;
+  //// pool for unused memory
+  std::multimap<CpuKey, MemBlock> cpu_pool_;
+  std::multimap<GpuKey, MemBlock> gpu_pool_;
 
   //// small object pool on CPU for size <= 128 bytes
   const int kMaxGPUs = 8;
@@ -50,6 +49,10 @@ class MemoryPool {
   LinkedList* head_;
   MemBlock curr_page_;
   int curr_ptr_;
+  std::vector<MemBlock> obj_pool_;
+
+  //// memory pool status
+  MemPoolState st_;
 };
 
 class SyncedMemory {
