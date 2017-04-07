@@ -62,6 +62,7 @@ CNN::CNN(const string &network, const string &model) {
 
 vector<Point2f> CNN::forward(const Mat &data, const string &layer) {
   shared_ptr<Blob> blob = cnn->blob_by_name("data");
+  blob->Reshape(1, 1, data.rows, data.cols);
   float *blob_data = blob->mutable_cpu_data();
   const float *ptr = NULL;
   for (int i = 0; i < data.rows; i++) {

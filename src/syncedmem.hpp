@@ -2,71 +2,98 @@
 #define CAFFE_SYNCEDMEM_HPP_
 
 #include <cstdlib>
-
+#include <map>
 #include "./common.hpp"
+#include "./thread_local.hpp"
 
 namespace caffe {
 
-// If CUDA is available and in GPU mode, host memory will be allocated pinned,
-// using cudaMallocHost. It avoids dynamic pinning for transfers (DMA).
-// The improvement in performance seems negligible in the single GPU case,
-// but might be more significant for parallel training. Most importantly,
-// it improved stability for large models on many GPUs.
-inline void CaffeMallocHost(void** ptr, size_t size, bool* use_cuda) {
-#ifdef USE_CUDA
-  if (Caffe::mode() == Caffe::GPU) {
-    CUDA_CHECK(cudaMallocHost(ptr, size));
-    *use_cuda = true;
-    return;
-  }
-#endif
-  *ptr = malloc(size);
-  *use_cuda = false;
-  CHECK(*ptr) << "host allocation of size " << size << " failed";
-}
+/*!
+ * \brief Thread local MemoryPool
+ *  This memory pool holds all memory for blobs in every thread.
+ */
+class MemoryPool {
+ public:
+  // small object size
+  enum {
+    kElementSize = 128,
+    kPageSize = 1 << 20,  // 1 MB
+  };
 
-inline void CaffeFreeHost(void* ptr, bool use_cuda) {
-#ifdef USE_CUDA
-  if (use_cuda) {
-    CUDA_CHECK(cudaFreeHost(ptr));
-    return;
-  }
-#endif
-  free(ptr);
-}
+  using GpuKey = std::pair<int, int>;
+  using CpuKey = int;
+  struct MemBlock {
+    int device{-1};
+    int size{0};
+    void* ptr{nullptr};
+  };
+
+  static MemoryPool* Get();
+  /*!
+   * \brief request memory from cpu
+   * \param size memory size
+   * \return memory block holds data size >= size
+   */
+  MemBlock RequestCPU(int size);
+  /*!
+   * \brief request memory from gpu
+   * \param size memory size
+   * \param device gpu device id
+   * \return memory block holds data size >= size
+   */
+  MemBlock RequestGPU(int size, int device);
+  /*! \brief return cpu memory block */
+  void ReturnCPU(MemBlock cpu_block);
+  /*! \brief return gpu memory block */
+  void ReturnGPU(MemBlock gpu_block);
+  /*! \brief get memory pool statistics */
+  MemPoolState GetState();
+  /*! \brief free all unused memory in pool */
+  void Clear();
+
+ private:
+  friend ThreadLocalStore<MemoryPool>;
+  MemoryPool();
+  ~MemoryPool();
+  DISABLE_COPY_AND_ASSIGN(MemoryPool);
+
+  //// pool for unused memory
+  std::multimap<CpuKey, MemBlock> cpu_pool_;
+  std::multimap<GpuKey, MemBlock> gpu_pool_;
+
+  //// small object pool on CPU for size <= 128 bytes
+  struct LinkedList {
+    LinkedList* next{nullptr};
+  };
+  LinkedList* head_;
+  MemBlock curr_page_;
+  int curr_ptr_;
+  std::vector<MemBlock> obj_pool_;
+
+  //// memory pool status
+  MemPoolState st_;
+};
 
 class SyncedMemory {
-public:
-  SyncedMemory()
-    : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(0), head_(UNINITIALIZED),
-    own_cpu_data_(false), cpu_malloc_use_cuda_(false), own_gpu_data_(false),
-    gpu_device_(-1) {}
+ public:
   explicit SyncedMemory(size_t size)
-    : cpu_ptr_(NULL), gpu_ptr_(NULL), size_(size), head_(UNINITIALIZED),
-    own_cpu_data_(false), cpu_malloc_use_cuda_(false), own_gpu_data_(false),
-    gpu_device_(-1) {}
+      : cpu_block_(), gpu_block_(), size_(size), head_(UNINITIALIZED) {}
   ~SyncedMemory();
   const void* cpu_data();
-  void set_cpu_data(void* data);
   const void* gpu_data();
-  void set_gpu_data(void* data);
   void* mutable_cpu_data();
   void* mutable_gpu_data();
   enum SyncedHead { UNINITIALIZED, HEAD_AT_CPU, HEAD_AT_GPU, SYNCED };
   SyncedHead head() { return head_; }
   size_t size() { return size_; }
 
-private:
+ private:
   void to_cpu();
   void to_gpu();
-  void* cpu_ptr_;
-  void* gpu_ptr_;
+  MemoryPool::MemBlock cpu_block_;
+  MemoryPool::MemBlock gpu_block_;
   size_t size_;
   SyncedHead head_;
-  bool own_cpu_data_;
-  bool cpu_malloc_use_cuda_;
-  bool own_gpu_data_;
-  int gpu_device_;
 
   DISABLE_COPY_AND_ASSIGN(SyncedMemory);
 };  // class SyncedMemory

@@ -129,6 +129,9 @@ class CAFFE_API Net {
   /// @brief calculate memory usage in MB
   real_t MemSize() const;
 
+  /// @brief mark extra output named blob
+  void MarkOutputs(const std::vector<std::string>& outs);
+
  protected:
   // Helpers for Init.
   /// @brief Append a new top blob to the net.
@@ -152,6 +155,7 @@ class CAFFE_API Net {
   /// @brief the blobs storing intermediate results between the layer.
   vector<shared_ptr<Blob> > blobs_;
   vector<string> blob_names_;
+  vector<int> blob_life_time_;
   std::map<string, int> blob_names_index_;
   /// @brief parameters in the network.
   vector<shared_ptr<Blob> > params_;

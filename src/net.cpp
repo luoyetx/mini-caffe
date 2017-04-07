@@ -56,6 +56,12 @@ void Net::Init(const NetParameter& param) {
       AppendParam(param, layer_id, param_id);
     }
   }
+  CHECK_EQ(std::string(layers_[0]->type()), std::string("Input"))
+      << "Network\'s first layer should be Input Layer.";
+  // for most case, not fully convolutional network, hold input data will be convenient
+  for (int blob_id : top_id_vecs_[0]) {
+    blob_life_time_[blob_id] = layers_.size();
+  }
   for (size_t blob_id = 0; blob_id < blob_names_.size(); ++blob_id) {
     blob_names_index_[blob_names_[blob_id]] = blob_id;
   }
@@ -76,8 +82,10 @@ void Net::AppendTop(const NetParameter& param, const int layer_id,
   if (blob_name_to_idx && layer_param->bottom_size() > top_id &&
       blob_name == layer_param->bottom(top_id)) {
     // In-place computation
-    top_vecs_[layer_id].push_back(blobs_[(*blob_name_to_idx)[blob_name]].get());
-    top_id_vecs_[layer_id].push_back((*blob_name_to_idx)[blob_name]);
+    int blob_id = (*blob_name_to_idx)[blob_name];
+    top_vecs_[layer_id].push_back(blobs_[blob_id].get());
+    top_id_vecs_[layer_id].push_back(blob_id);
+    blob_life_time_[blob_id] = std::max(blob_life_time_[blob_id], layer_id + 1);
   } else if (blob_name_to_idx &&
              blob_name_to_idx->find(blob_name) != blob_name_to_idx->end()) {
     // If we are not doing in-place computation but have duplicated blobs,
@@ -90,6 +98,7 @@ void Net::AppendTop(const NetParameter& param, const int layer_id,
     const int blob_id = blobs_.size();
     blobs_.push_back(blob_pointer);
     blob_names_.push_back(blob_name);
+    blob_life_time_.push_back(layer_id + 1);
     if (blob_name_to_idx) { (*blob_name_to_idx)[blob_name] = blob_id; }
     top_id_vecs_[layer_id].push_back(blob_id);
     top_vecs_[layer_id].push_back(blob_pointer.get());
@@ -110,6 +119,7 @@ int Net::AppendBottom(const NetParameter& param, const int layer_id,
   const int blob_id = (*blob_name_to_idx)[blob_name];
   bottom_vecs_[layer_id].push_back(blobs_[blob_id].get());
   bottom_id_vecs_[layer_id].push_back(blob_id);
+  blob_life_time_[blob_id] = std::max(blob_life_time_[blob_id], layer_id);
   return blob_id;
 }
 
@@ -154,6 +164,12 @@ void Net::ForwardFromTo(int start, int end) {
     profiler->ScopeStart(layers_[i]->type());
     layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     profiler->ScopeEnd();
+    // try to free bottom blobs
+    for (int blob_idx : bottom_id_vecs_[i]) {
+      if (blob_life_time_[blob_idx] <= i) {
+        blobs_[blob_idx]->Release();
+      }
+    }
   }
 }
 
@@ -203,6 +219,17 @@ void Net::CopyTrainedLayersFrom(const NetParameter& param) {
       const bool kReshape = false;
       target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
     }
+  }
+}
+
+void Net::MarkOutputs(const std::vector<std::string>& outs) {
+  for (auto& name : outs) {
+    auto it = blob_names_index_.find(name);
+    if (it == blob_names_index_.end()) {
+      LOG(FATAL) << "blob (" << name << ") is not availiable in Net";
+    }
+    int blob_id = it->second;
+    blob_life_time_[blob_id] = layers_.size();
   }
 }
 

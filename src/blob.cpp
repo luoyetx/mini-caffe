@@ -25,7 +25,8 @@ void Blob::Reshape(const vector<int>& shape) {
   count_ = 1;
   shape_.resize(shape.size());
   if (!shape_data_ || shape_data_->size() < shape.size() * sizeof(int)) {
-    shape_data_.reset(new SyncedMemory(shape.size() * sizeof(int)));
+    static_assert(kMaxBlobAxes*sizeof(int) == MemoryPool::kElementSize, "Static Assert Error");
+    shape_data_.reset(new SyncedMemory(kMaxBlobAxes * sizeof(int)));
   }
   int* shape_data = static_cast<int*>(shape_data_->mutable_cpu_data());
   for (int i = 0; i < shape.size(); ++i) {
@@ -37,7 +38,7 @@ void Blob::Reshape(const vector<int>& shape) {
     shape_[i] = shape[i];
     shape_data[i] = shape[i];
   }
-  if (count_ > capacity_) {
+  if (count_ != capacity_) {
     capacity_ = count_;
     data_.reset(new SyncedMemory(capacity_ * sizeof(real_t)));
   }
@@ -79,11 +80,6 @@ const real_t* Blob::cpu_data() const {
   return static_cast<const real_t*>(data_->cpu_data());
 }
 
-void Blob::set_cpu_data(real_t* data) {
-  CHECK(data);
-  data_->set_cpu_data(data);
-}
-
 real_t* Blob::mutable_cpu_data() {
   CHECK(data_);
   return static_cast<real_t*>(data_->mutable_cpu_data());
@@ -97,6 +93,15 @@ const real_t* Blob::gpu_data() const {
 real_t* Blob::mutable_gpu_data() {
   CHECK(data_);
   return static_cast<real_t*>(data_->mutable_gpu_data());
+}
+
+void Blob::Release() {
+  data_ = nullptr;
+  // no need to free shape data, cache it in blob level
+  //shape_data_ = nullptr;
+  shape_.clear();
+  count_ = 0;
+  capacity_ = 0;
 }
 
 void Blob::ShareData(const Blob& other) {
@@ -192,11 +197,6 @@ void Blob::ToProto(BlobProto* proto) const {
 const int* BlobInt::cpu_data() const {
   CHECK(data_);
   return static_cast<const int*>(data_->cpu_data());
-}
-
-void BlobInt::set_cpu_data(int* data) {
-  CHECK(data);
-  data_->set_cpu_data(data);
 }
 
 int* BlobInt::mutable_cpu_data() {

@@ -67,6 +67,12 @@ CAFFE_API int CaffeNetCreateFromBuffer(const char *net_buffer, int nb_len,
 /*! \brief destroy network */
 CAFFE_API int CaffeNetDestroy(NetHandle net);
 /*!
+ * \brief mark internal blob as output
+ * \param net net handle
+ * \param name blob name
+ */
+CAFFE_API int CaffeNetMarkOutput(NetHandle net, const char *name);
+/*!
  * \brief forward network
  * \note  fill network input blobs before calling this function
  */
@@ -148,6 +154,10 @@ CAFFE_API int CaffeSetMode(int mode, int device);
  * \note  this function is thread safe
  */
 CAFFE_API const char *CaffeGetLastError();
+/*!
+ * \brief clear unused memory in threaded memory pool
+ */
+CAFFE_API int CaffeMemoryPoolClear();
 
 #ifdef __cplusplus
 }

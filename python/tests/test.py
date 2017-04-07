@@ -43,6 +43,7 @@ def test_network():
     # set up network
     net = mcaffe.Net(os.path.join(model_dir, 'resnet.prototxt'),
                      os.path.join(model_dir, 'resnet.caffemodel'))
+    net.mark_output("conv1")
     mcaffe.Profiler.open_scope("resnet")
     blob = net.get_blob('data')
     shape = blob.shape

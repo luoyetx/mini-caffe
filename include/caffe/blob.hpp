@@ -188,9 +188,8 @@ class CAFFE_API Blob {
     return cpu_data()[offset(index)];
   }
 
-  const real_t* cpu_data() const;
-  void set_cpu_data(real_t* data);
   const int* gpu_shape() const;
+  const real_t* cpu_data() const;
   const real_t* gpu_data() const;
   real_t* mutable_cpu_data();
   real_t* mutable_gpu_data();
@@ -207,6 +206,9 @@ class CAFFE_API Blob {
    * shared_ptr calls its destructor when reset with the "=" operator.
    */
   void ShareData(const Blob& other);
+
+  /*! \brief release memory */
+  void Release();
 
   bool ShapeEquals(const BlobProto& other);
 
@@ -246,7 +248,6 @@ class BlobInt : public Blob {
   }
 
   const int* cpu_data() const;
-  void set_cpu_data(int* data);
   const int* gpu_data() const;
   int* mutable_cpu_data();
   int* mutable_gpu_data();

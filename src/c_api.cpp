@@ -70,6 +70,12 @@ int CaffeNetDestroy(NetHandle net) {
   API_END();
 }
 
+int CaffeNetMarkOutput(NetHandle net, const char *name) {
+  API_BEGIN();
+  static_cast<caffe::Net*>(net)->MarkOutputs({name});
+  API_END();
+}
+
 int CaffeNetForward(NetHandle net) {
   API_BEGIN();
   static_cast<caffe::Net*>(net)->Forward();
@@ -199,4 +205,10 @@ const char *CaffeGetLastError() {
 int CaffeAPIHandleException(caffe::Error &e) {
   CaffeAPISetLastError(e.what());
   return -1;
+}
+
+int CaffeMemoryPoolClear() {
+  API_BEGIN();
+  caffe::MemPoolClear();
+  API_END();
 }

@@ -115,6 +115,9 @@ class Layer {
   inline void Forward(const vector<Blob*>& bottom,
                       const vector<Blob*>& top);
 
+  /*! \brief clear internal buffer */
+  virtual void ClearInternalBuffer() {}
+
   /**
    * @brief Returns the vector of learnable parameter blobs.
    */
@@ -276,6 +279,7 @@ inline void Layer::Forward(const vector<Blob*>& bottom,
   default:
     LOG(FATAL) << "Unknown caffe mode.";
   }
+  ClearInternalBuffer();
 }
 
 // Serialize LayerParameter to protocol buffer

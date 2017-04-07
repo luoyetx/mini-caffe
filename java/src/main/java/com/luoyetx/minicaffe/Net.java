@@ -37,6 +37,17 @@ public final class Net {
         }
     }
     /**
+     * mark network internal blob as output
+     * mark inside blob if you need to use it and it is not an output blob,
+     * otherwise you may get the wrong result
+     * @param name blob name
+     */
+    public void markOutput(String name) {
+        if (jniMarkOutput(name) != 0) {
+            throw new RuntimeException(Utils.GetLastError());
+        }
+    }
+    /**
      * forward the network
      * this function may make blobs in Java side out of date,
      * call `Blob.syncToJava` if need
@@ -61,6 +72,7 @@ public final class Net {
     private native int jniCreate(String net_path, String model_path);
     private native int jniCreateFromBuffer(byte[] net_buffer, byte[] model_buffer);
     private native int jniDestroy();
+    private native int jniMarkOutput(String name);
     private native int jniForward();
     private native int jniGetBlob(String name, Blob blob);
     // internal Net handle

@@ -188,39 +188,17 @@ void CuDNNConvolutionLayer::Reshape(const vector<Blob*>& bottom,
   size_t total_max_workspace = max_workspace *
                                (this->group_ * CUDNN_STREAMS_PER_GROUP);
 
-  // this is the total amount of storage needed over all groups + streams
-  if (total_max_workspace > workspaceSizeInBytes) {
-    //DLOG(INFO) << "Reallocating workspace storage: " << total_max_workspace;
-    workspaceSizeInBytes = total_max_workspace;
+  //DLOG(INFO) << "Reallocating workspace storage: " << total_max_workspace;
+  workspaceSizeInBytes = total_max_workspace;
 
-    // free the existing workspace and allocate a new (larger) one
-    cudaFree(this->workspaceData);
+  // free the existing workspace and allocate a new (larger) one
+  int size = (workspaceSizeInBytes) / sizeof(real_t) + 1;
+  workspaceDataBlob.Reshape({1, size});
+  workspaceData = workspaceDataBlob.mutable_gpu_data();
 
-    cudaError_t err = cudaMalloc(&(this->workspaceData), workspaceSizeInBytes);
-    if (err != cudaSuccess) {
-      // force zero memory path
-      for (int i = 0; i < bottom.size(); i++) {
-        workspace_fwd_sizes_[i] = 0;
-        workspace_bwd_filter_sizes_[i] = 0;
-        workspace_bwd_data_sizes_[i] = 0;
-        fwd_algo_[i] = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM;
-        bwd_filter_algo_[i] = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0;
-        bwd_data_algo_[i] = CUDNN_CONVOLUTION_BWD_DATA_ALGO_0;
-      }
-
-      // NULL out all workspace pointers
-      for (int g = 0; g < (this->group_ * CUDNN_STREAMS_PER_GROUP); g++) {
-        workspace[g] = NULL;
-      }
-      // NULL out underlying data
-      workspaceData = NULL;
-      workspaceSizeInBytes = 0;
-    }
-
-    // if we succeed in the allocation, set pointer aliases for workspaces
-    for (int g = 0; g < (this->group_ * CUDNN_STREAMS_PER_GROUP); g++) {
-      workspace[g] = reinterpret_cast<char *>(workspaceData) + g*max_workspace;
-    }
+  // if we succeed in the allocation, set pointer aliases for workspaces
+  for (int g = 0; g < (this->group_ * CUDNN_STREAMS_PER_GROUP); g++) {
+    workspace[g] = reinterpret_cast<char *>(workspaceData) + g*max_workspace;
   }
 
   // Tensor descriptor for bias.
@@ -249,7 +227,6 @@ CuDNNConvolutionLayer::~CuDNNConvolutionLayer() {
     cudnnDestroy(handle_[g]);
   }
 
-  cudaFree(workspaceData);
   delete [] stream_;
   delete [] handle_;
   delete [] fwd_algo_;
