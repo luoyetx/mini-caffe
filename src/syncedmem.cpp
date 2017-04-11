@@ -293,7 +293,8 @@ void MemoryPool::Clear() {
     gpu_pool_.clear();
     return;
   }
-  for (auto it = gpu_gool_begin(); it != gpu_pool_.end(); ++it) {
+  for (auto it = gpu_pool_.begin(); it != gpu_pool_.end(); ++it) {
+    int device = it->second.device;
     if (cur_device != device) {
       CUDA_CHECK(cudaSetDevice(device));
     }
