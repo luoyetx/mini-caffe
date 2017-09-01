@@ -49,14 +49,16 @@ STUB_GPU(ConvolutionLayer);
 static shared_ptr<Layer> CreateLayer(const LayerParameter &param) {
   ConvolutionParameter conv_param = param.convolution_param();
 #ifdef USE_CUDNN
-  bool use_dilation = false;
-  for (int i = 0; i < conv_param.dilation_size(); ++i) {
-    if (conv_param.dilation(i) > 1) {
-      use_dilation = true;
+  if (Caffe::mode() == Caffe::GPU) {
+    bool use_dilation = false;
+    for (int i = 0; i < conv_param.dilation_size(); ++i) {
+      if (conv_param.dilation(i) > 1) {
+        use_dilation = true;
+      }
     }
-  }
-  if (!use_dilation) {
-    return shared_ptr<Layer>(new CuDNNConvolutionLayer(param));
+    if (!use_dilation) {
+      return shared_ptr<Layer>(new CuDNNConvolutionLayer(param));
+    }
   }
 #endif  // USE_CUDNN
   return shared_ptr<Layer>(new ConvolutionLayer(param));
