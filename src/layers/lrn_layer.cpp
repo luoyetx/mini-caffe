@@ -170,9 +170,9 @@ STUB_GPU_FORWARD(LRNLayer, CrossChannelForward);
 
 // Get LRN layer according to engine
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-  LRNParameter lrn_param = param.lrn_param();
 #ifdef USE_CUDNN
   if (Caffe::mode() == Caffe::GPU) {
+    LRNParameter lrn_param = param.lrn_param();
     if (lrn_param.norm_region() == LRNParameter_NormRegion_WITHIN_CHANNEL) {
       return shared_ptr<Layer>(new CuDNNLCNLayer(param));
     }
@@ -186,9 +186,8 @@ static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
       }
     }
   }
-#else
-  return shared_ptr<Layer>(new LRNLayer(param));
 #endif  // USE_CUDNN
+  return shared_ptr<Layer>(new LRNLayer(param));
 }
 
 REGISTER_LAYER_CREATOR(LRN, CreateLayer);

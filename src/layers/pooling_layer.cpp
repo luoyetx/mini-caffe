@@ -195,7 +195,6 @@ STUB_GPU(PoolingLayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
-  PoolingParameter pooling_param = param.pooling_param();
 #ifdef USE_CUDNN
   if (Caffe::mode() == Caffe::GPU) {
     if (param.top_size() == 1) {

@@ -32,9 +32,8 @@ static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
   if (Caffe::mode() == Caffe::GPU) {
     return shared_ptr<Layer>(new CuDNNTanHLayer(param));
   }
-#else
-  return shared_ptr<Layer>(new TanHLayer(param));
 #endif  // USE_CUDNN
+  return shared_ptr<Layer>(new TanHLayer(param));
 }
 
 REGISTER_LAYER_CREATOR(TanH, CreateLayer);

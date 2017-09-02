@@ -34,9 +34,8 @@ static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
   if (Caffe::mode() == Caffe::GPU) {
     return shared_ptr<Layer>(new CuDNNSigmoidLayer(param));
   }
-#else
-  return shared_ptr<Layer>(new SigmoidLayer(param));
 #endif  // USE_CUDNN
+  return shared_ptr<Layer>(new SigmoidLayer(param));
 }
 
 REGISTER_LAYER_CREATOR(Sigmoid, CreateLayer);
