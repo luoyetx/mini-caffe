@@ -61,18 +61,21 @@ test_script:
       cd python
       set PATH=%PYTHON2%;%PYTHON2%\Scripts;%PATH%
       python --version
-      pip install numpy
+      pip install numpy protobuf
       python tests/test.py
       python setup.py install
       python setup.py clean
       set PATH=%PYTHON3%;%PYTHON3%\Scripts;%PATH%
       python --version
-      pip install numpy
+      pip install numpy protobuf
       python tests/test.py
       python setup.py install
       python setup.py clean
       cd ..
   - cmd: |
+      set PATH=%PYTHON2%;%PYTHON2%\Scripts;%PATH%
+      python tools/fuse_bn.py --net ./build/model/resnet.prototxt --weight ./build/model/resnet.caffemodel
+      set PATH=%PYTHON3%;%PYTHON3%\Scripts;%PATH%
       python tools/fuse_bn.py --net ./build/model/resnet.prototxt --weight ./build/model/resnet.caffemodel
 
 branches:

@@ -41,4 +41,5 @@ python3 setup.py clean
 cd ..
 
 # fuse bn
-python tools/fuse_bn.py --net ./build/model/resnet.prototxt --weight ./build/model/resnet.caffemodel
+python2 tools/fuse_bn.py --net ./build/model/resnet.prototxt --weight ./build/model/resnet.caffemodel
+python3 tools/fuse_bn.py --net ./build/model/resnet.prototxt --weight ./build/model/resnet.caffemodel
