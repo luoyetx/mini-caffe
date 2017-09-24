@@ -39,6 +39,3 @@ python3 tests/test.py
 python3 setup.py build
 python3 setup.py clean
 cd ..
-
-# fuse bn
-python2 tools/fuse_bn.py --net ./build/model/resnet.prototxt --weight ./build/model/resnet.caffemodel
