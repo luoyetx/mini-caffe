@@ -70,10 +70,11 @@ STUB_GPU(SoftmaxLayer);
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
 #ifdef USE_CUDNN
-  return shared_ptr<Layer>(new CuDNNSoftmaxLayer(param));
-#else
-  return shared_ptr<Layer>(new SoftmaxLayer(param));
+  if (Caffe::mode() == Caffe::GPU) {
+    return shared_ptr<Layer>(new CuDNNSoftmaxLayer(param));
+  }
 #endif  // USE_CUDNN
+  return shared_ptr<Layer>(new SoftmaxLayer(param));
 }
 
 REGISTER_LAYER_CREATOR(Softmax, CreateLayer);
