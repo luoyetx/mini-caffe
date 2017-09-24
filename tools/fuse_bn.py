@@ -6,8 +6,7 @@ from __future__ import print_function
 import os
 import argparse
 import numpy as np
-import caffe
-from caffe.proto import caffe_pb2
+import caffe_pb2
 import google.protobuf as pb2
 
 

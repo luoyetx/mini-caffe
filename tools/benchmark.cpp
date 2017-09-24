@@ -17,6 +17,9 @@ int main(int argc, char *argv[]) {
   if (gpu_id >= 0 && caffe::GPUAvailable()) {
     caffe::SetMode(caffe::GPU, gpu_id);
   }
+  else {
+    gpu_id = -1;
+  }
 
   caffe::Net net(proto);
   net.CopyTrainedLayersFrom(model);
