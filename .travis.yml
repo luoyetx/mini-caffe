@@ -15,13 +15,12 @@ addons:
       - gcc-4.8
       - g++-4.8
       - python-numpy
+      - python-protobuf
       - python3-numpy
       - python3-setuptools
 
 install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-  - pip install protobuf
-  - pip3 install protobuf
 
 script:
   - ./travis.sh
