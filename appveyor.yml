@@ -50,6 +50,7 @@ test_script:
       cd build\Release
       run_net
       run_net_c
+      benchmark ./model/resnet.prototxt ./model/resnet.caffemodel 1 -1
       move model ..
       cd ../..
   - cmd: |
@@ -71,6 +72,8 @@ test_script:
       python setup.py install
       python setup.py clean
       cd ..
+  - cmd: |
+      python tools/fuse_bn.py --net ./build/model/resnet.prototxt --weight ./build/model/resnet.caffemodel
 
 branches:
   only:
