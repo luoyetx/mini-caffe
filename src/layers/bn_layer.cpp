@@ -149,10 +149,11 @@ STUB_GPU(BNLayer);
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter &param) {
 #ifdef USE_CUDNN
-  return shared_ptr<Layer>(new CuDNNBNLayer(param));
-#else
-  return shared_ptr<Layer>(new BNLayer(param));
+  if (Caffe::mode() == Caffe::GPU) {
+    return shared_ptr<Layer>(new CuDNNBNLayer(param));
+  }
 #endif  // USE_CUDNN
+  return shared_ptr<Layer>(new BNLayer(param));
 }
 
 REGISTER_LAYER_CREATOR(BN, CreateLayer);

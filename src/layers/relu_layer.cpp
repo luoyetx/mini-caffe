@@ -36,10 +36,11 @@ STUB_GPU(ReLULayer);
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter& param) {
 #ifdef USE_CUDNN
-  return shared_ptr<Layer>(new CuDNNReLULayer(param));
-#else
-  return shared_ptr<Layer>(new ReLULayer(param));
+  if (Caffe::mode() == Caffe::GPU) {
+     return shared_ptr<Layer>(new CuDNNReLULayer(param));
+  }
 #endif  // USE_CUDNN
+  return shared_ptr<Layer>(new ReLULayer(param));
 }
 
 REGISTER_LAYER_CREATOR(ReLU, CreateLayer);

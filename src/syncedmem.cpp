@@ -41,7 +41,7 @@ inline void SyncedMemory::to_cpu() {
   switch (head_) {
   case UNINITIALIZED:
     CaffeMallocHost(cpu_block_, size_);
-    caffe_memset(size_, 0, cpu_block_.ptr);
+    //caffe_memset(size_, 0, cpu_block_.ptr);
     head_ = HEAD_AT_CPU;
     break;
   case HEAD_AT_GPU:
@@ -68,7 +68,7 @@ inline void SyncedMemory::to_gpu() {
   case UNINITIALIZED:
     CUDA_CHECK(cudaGetDevice(&device));
     CaffeMallocDevice(gpu_block_, size_, device);
-    caffe_gpu_memset(size_, 0, gpu_block_.ptr);
+    //caffe_gpu_memset(size_, 0, gpu_block_.ptr);
     head_ = HEAD_AT_GPU;
     break;
   case HEAD_AT_CPU:

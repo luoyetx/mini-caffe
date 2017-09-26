@@ -20,6 +20,7 @@ unzip -o model.zip
 # test
 ./run_net
 ./run_net_c
+./benchmark ./model/resnet.prototxt ./model/resnet.caffemodel 1 -1
 cd ..
 
 # java test
@@ -37,3 +38,4 @@ python3 --version
 python3 tests/test.py
 python3 setup.py build
 python3 setup.py clean
+cd ..
