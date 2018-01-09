@@ -20,11 +20,11 @@ class MemoryPool {
     kPageSize = 1 << 20,  // 1 MB
   };
 
-  using GpuKey = std::pair<int, int>;
-  using CpuKey = int;
+  using GpuKey = std::pair<int, size_t>;
+  using CpuKey = size_t;
   struct MemBlock {
     int device{-1};
-    int size{0};
+    size_t size{0};
     void* ptr{nullptr};
   };
 
@@ -34,14 +34,14 @@ class MemoryPool {
    * \param size memory size
    * \return memory block holds data size >= size
    */
-  MemBlock RequestCPU(int size);
+  MemBlock RequestCPU(size_t size);
   /*!
    * \brief request memory from gpu
    * \param size memory size
    * \param device gpu device id
    * \return memory block holds data size >= size
    */
-  MemBlock RequestGPU(int size, int device);
+  MemBlock RequestGPU(size_t size, int device);
   /*! \brief return cpu memory block */
   void ReturnCPU(MemBlock cpu_block);
   /*! \brief return gpu memory block */
