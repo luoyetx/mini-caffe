@@ -288,7 +288,7 @@ void ProposalLayer::Forward_cpu(const vector<Blob*>& bottom,
                        img_height, img_width,
                        min_bbox_size, feat_stride_);
 
-  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
+  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn);
 
   NonMaximumSuppressionCPU(pre_nms_topn, proposals_.cpu_data(),
                            roi_indices_.mutable_cpu_data(), num_rois,
