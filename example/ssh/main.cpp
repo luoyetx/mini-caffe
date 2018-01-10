@@ -84,14 +84,14 @@ std::vector<BBox> ForwardNet(Net& net, const Mat& img, float scale_factor, bool 
     int num_rois = bboxes->num();
     vector<BBox> rois;
     rois.reserve(num_rois);
-    for (int i = 0; i < num_rois; i++) {
-      float score = probs->data_at(i, 0, 0, 0);
+    for (int j = 0; j < num_rois; j++) {
+      float score = probs->data_at(j, 0, 0, 0);
       if (score > th) {
         BBox bbox;
-        bbox.x1 = bboxes->data_at(i, 1, 0, 0) / scale_factor;
-        bbox.y1 = bboxes->data_at(i, 2, 0, 0) / scale_factor;
-        bbox.x2 = bboxes->data_at(i, 3, 0, 0) / scale_factor;
-        bbox.y2 = bboxes->data_at(i, 4, 0, 0) / scale_factor;
+        bbox.x1 = bboxes->data_at(j, 1, 0, 0) / scale_factor;
+        bbox.y1 = bboxes->data_at(j, 2, 0, 0) / scale_factor;
+        bbox.x2 = bboxes->data_at(j, 3, 0, 0) / scale_factor;
+        bbox.y2 = bboxes->data_at(j, 4, 0, 0) / scale_factor;
         bbox.score = score;
         rois.push_back(bbox);
       }
