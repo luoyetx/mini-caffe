@@ -31,9 +31,6 @@ void Blob::Reshape(const vector<int>& shape) {
   int* shape_data = static_cast<int*>(shape_data_->mutable_cpu_data());
   for (int i = 0; i < shape.size(); ++i) {
     CHECK_GE(shape[i], 0);
-    if (count_ != 0) {
-      CHECK_LE(shape[i], std::numeric_limits<int>::max() / count_) << "blob size exceeds INT_MAX";
-    }
     count_ *= shape[i];
     shape_[i] = shape[i];
     shape_data[i] = shape[i];

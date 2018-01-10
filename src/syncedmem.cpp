@@ -167,7 +167,7 @@ inline std::string MemSize(double size) {
   return os.str();
 }
 
-inline bool ShouldBorrowMem(int has, int wants) {
+inline bool ShouldBorrowMem(size_t has, size_t wants) {
   const int ratio = 2;
   return has / 2 <= wants;
 }
