@@ -15,6 +15,11 @@ Generate anime face using WGAN. Model is trained by [luoyetx/WGAN](https://githu
 
 [Object Detection via Region-based Fully Convolutional Networks](https://arxiv.org/abs/1605.06409) is converted from [Orpine/py-R-FCN](https://github.com/Orpine/py-R-FCN). Donwload `resnet50_rfcn_final.caffemodel` then you can run the code.
 
+
+### SSH
+
+[SSH: Single Stage Headless Face Detector](https://arxiv.org/abs/1708.03979) is converted from [mahyarnajibi/SSH](https://github.com/mahyarnajibi/SSH). Download `SSH.caffemodel` and run the code on GPU.
+
 ### Build
 
 You need [OpenCV](http://opencv.org/) to build examples.
