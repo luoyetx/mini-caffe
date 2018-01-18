@@ -112,6 +112,6 @@ class Net(object):
         """
         for k, v in kwargs.items():
             blob = self.get_blob(k)
-            blob.reshape(v.shape)
+            blob.reshape(*v.shape)
             blob.data[...] = v
         check_call(LIB.CaffeNetForward(self.handle))

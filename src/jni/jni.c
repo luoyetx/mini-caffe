@@ -31,23 +31,22 @@
 CaffeJNIMethod(Blob, SyncToJava, jint)(JNIEnv *env, jobject thiz) {
   BlobHandle blob;
   JNIGetHandleFromObj(thiz, blob);
-  int num = CaffeBlobNum(blob);
-  int channels = CaffeBlobChannels(blob);
-  int height = CaffeBlobHeight(blob);
-  int width = CaffeBlobWidth(blob);
+  int shape_size = 0;
+  int* shape_data = NULL;
+  CaffeBlobShape(blob, &shape_size, &shape_data);
   float *data = CaffeBlobData(blob);
   // set meta data
   jclass kls = (*env)->GetObjectClass(env, thiz);
-  jfieldID field = (*env)->GetFieldID(env, kls, "num", "I");
-  (*env)->SetIntField(env, thiz, field, num);
-  field = (*env)->GetFieldID(env, kls, "channels", "I");
-  (*env)->SetIntField(env, thiz, field, channels);
-  field = (*env)->GetFieldID(env, kls, "height", "I");
-  (*env)->SetIntField(env, thiz, field, height);
-  field = (*env)->GetFieldID(env, kls, "width", "I");
-  (*env)->SetIntField(env, thiz, field, width);
+  jintArray java_shape = (*env)->NewIntArray(env, shape_size);
+  (*env)->SetIntArrayRegion(env, java_shape, 0, shape_size, shape_data);
+  jfieldID field = (*env)->GetFieldID(env, kls, "shape", "[I");
+  (*env)->SetObjectField(env, thiz, field, java_shape);
   // set float array data
-  int length = num*channels*height*width;
+  int length = 1;
+  int i = 0;
+  for (i = 0; i < shape_size; i++) {
+    length *= shape_data[i];
+  }
   jfloatArray java_data = (*env)->NewFloatArray(env, length);
   (*env)->SetFloatArrayRegion(env, java_data, 0, length, data);
   field = (*env)->GetFieldID(env, kls, "data", "[F");
@@ -60,19 +59,21 @@ CaffeJNIMethod(Blob, SyncToC, jint)(JNIEnv *env, jobject thiz) {
   JNIGetHandleFromObj(thiz, blob);
   // get meta
   jclass kls = (*env)->GetObjectClass(env, thiz);
-  jfieldID field = (*env)->GetFieldID(env, kls, "num", "I");
-  jint num = (*env)->GetIntField(env, thiz, field);
-  field = (*env)->GetFieldID(env, kls, "channels", "I");
-  jint channels = (*env)->GetIntField(env, thiz, field);
-  field = (*env)->GetFieldID(env, kls, "height", "I");
-  jint height = (*env)->GetIntField(env, thiz, field);
-  field = (*env)->GetFieldID(env, kls, "width", "I");
-  jint width = (*env)->GetIntField(env, thiz, field);
+  jfieldID field = (*env)->GetFieldID(env, kls, "shape", "[I");
+  jintArray shape = (*env)->GetObjectField(env, thiz, field);
+  jint* shape_data = (*env)->GetPrimitiveArrayCritical(env, shape, NULL);
+  int shape_size = (*env)->GetArrayLength(env, shape);
+  int length = 1;
+  int i = 0;
+  for (i = 0; i < shape_size; i++) {
+    length *= shape_data[i];
+  }
+  CHECK_SUCCESS(CaffeBlobReshape(blob, shape_size, shape_data), {
+    (*env)->ReleasePrimitiveArrayCritical(env, shape, shape_data, 0);
+  });
   // get float array data
   field = (*env)->GetFieldID(env, kls, "data", "[F");
   jfloatArray java_data = (*env)->GetObjectField(env, thiz, field);
-  CHECK_SUCCESS(CaffeBlobReshape(blob, num, channels, height, width));
-  int length = num*channels*height*width;
   float *data = CaffeBlobData(blob);
   jfloat *data_ = (*env)->GetPrimitiveArrayCritical(env, java_data, NULL);
   memcpy(data, data_, length * sizeof(float));

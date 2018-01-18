@@ -36,7 +36,7 @@ class Blob(object):
         shape = [ctypes_shape[i] for i in range(ctypes_n.value)]
         return shape
 
-    def reshape(self, shape):
+    def reshape(self, *shape):
         """reshape this blob, this also affect the internal data buffer.
         Data return by `data` may be invalid
 
