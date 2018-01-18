@@ -107,7 +107,11 @@ class Net(object):
         """
         check_call(LIB.CaffeNetMarkOutput(self.handle, c_str(name)))
 
-    def forward(self):
+    def forward(self, **kwargs):
         """forward network, need to fill data blobs before call this function
         """
+        for k, v in kwargs.items():
+            blob = self.get_blob(k)
+            blob.reshape(v.shape)
+            blob.data[...] = v
         check_call(LIB.CaffeNetForward(self.handle))
