@@ -35,7 +35,8 @@ int main(int argc, char *argv[]) {
   CHECK(channels == 3);
   CHECK(height == 224);
   CHECK(width == 224);
-  CHECK(CaffeBlobReshape(blob, num, channels, height, width) == 0);
+  int shape[] = { num, channels, height, width };
+  CHECK(CaffeBlobReshape(blob, 4, shape) == 0);
   // copy data
   real_t *data = CaffeBlobData(blob);
   int count = num * channels * height * width;

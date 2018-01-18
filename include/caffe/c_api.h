@@ -36,9 +36,8 @@ CAFFE_API real_t *CaffeBlobData(BlobHandle blob);
  * \brief reshape blob
  * \note  this may change blob data pointer
  */
-CAFFE_API int CaffeBlobReshape(BlobHandle blob,
-                               int num, int channels,
-                               int height, int width);
+CAFFE_API int CaffeBlobReshape(BlobHandle blob, int shape_size, int* shape);
+CAFFE_API int CaffeBlobShape(BlobHandle blob, int* shape_size, int** shape);
 
 // Net API
 
