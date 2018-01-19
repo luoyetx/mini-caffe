@@ -34,6 +34,10 @@ real_t *CaffeBlobData(BlobHandle blob) {
   return static_cast<caffe::Blob*>(blob)->mutable_cpu_data();
 }
 
+int CaffeBlobCount(BlobHandle blob) {
+  return static_cast<caffe::Blob*>(blob)->count();
+}
+
 typedef ThreadLocalStore<std::vector<int> > BlobShapeStore;
 
 int CaffeBlobReshape(BlobHandle blob, int shape_size, int* shape) {

@@ -42,11 +42,7 @@ CaffeJNIMethod(Blob, SyncToJava, jint)(JNIEnv *env, jobject thiz) {
   jfieldID field = (*env)->GetFieldID(env, kls, "shape", "[I");
   (*env)->SetObjectField(env, thiz, field, java_shape);
   // set float array data
-  int length = 1;
-  int i = 0;
-  for (i = 0; i < shape_size; i++) {
-    length *= shape_data[i];
-  }
+  int length = CaffeBlobCount(blob);
   jfloatArray java_data = (*env)->NewFloatArray(env, length);
   (*env)->SetFloatArrayRegion(env, java_data, 0, length, data);
   field = (*env)->GetFieldID(env, kls, "data", "[F");
@@ -63,11 +59,7 @@ CaffeJNIMethod(Blob, SyncToC, jint)(JNIEnv *env, jobject thiz) {
   jintArray shape = (*env)->GetObjectField(env, thiz, field);
   jint* shape_data = (*env)->GetPrimitiveArrayCritical(env, shape, NULL);
   int shape_size = (*env)->GetArrayLength(env, shape);
-  int length = 1;
-  int i = 0;
-  for (i = 0; i < shape_size; i++) {
-    length *= shape_data[i];
-  }
+  int length = CaffeBlobCount(blob);
   CHECK_SUCCESS(CaffeBlobReshape(blob, shape_size, shape_data), {
     (*env)->ReleasePrimitiveArrayCritical(env, shape, shape_data, 0);
   });
