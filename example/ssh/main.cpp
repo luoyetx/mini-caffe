@@ -124,6 +124,7 @@ int main(int argc, char* argv[]) {
   Mat img = imread("../ssh/demo.jpg");
 
   Profiler* profiler = Profiler::Get();
+  profiler->TurnON();
   uint64_t tic = profiler->Now();
 
   //vector<float> scales{ 1200 };
@@ -159,6 +160,8 @@ int main(int argc, char* argv[]) {
   vector<int> keep = NonMaximumSuppression(rois, nms_thresh);
 
   uint64_t toc = profiler->Now();
+  profiler->TurnOFF();
+  profiler->DumpProfile("ssh-profile.json");
   LOG(INFO) << "Time cost " << double(toc - tic) / 1000 << " ms";
 
   for (int i = 0; i < keep.size(); i++) {
