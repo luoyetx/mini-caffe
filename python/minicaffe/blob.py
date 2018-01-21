@@ -26,8 +26,8 @@ class Blob(object):
         """get blob shape
 
         Returns:
-        s: list(int)
-            num, channels, height, width
+        shape: list(int)
+            shape of this blob
         """
         ctypes_n = ctypes.c_int32()
         ctypes_shape = ctypes.POINTER(ctypes.c_int32)()
@@ -42,8 +42,8 @@ class Blob(object):
 
         Parameters
         ----------
-        num, channels, height, width: int
-            blob num, channels, height, width
+        shape: list(int)
+            shape of this blob
         """
         shape_size = len(shape)
         ctypes_shape = (ctypes.c_int32 * shape_size)(*shape)

@@ -109,6 +109,11 @@ class Net(object):
 
     def forward(self, **kwargs):
         """forward network, need to fill data blobs before call this function
+
+        Parameters
+        ==========
+        kwargs: dict(str: np.array)
+            input blob map
         """
         for k, v in kwargs.items():
             blob = self.get_blob(k)
