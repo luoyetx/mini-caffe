@@ -138,7 +138,7 @@ int main(int argc, char* argv[]) {
   }
 
   profiler->TurnOFF();
-  profiler->DumpProfile("rfcn-profile.json");
+  profiler->DumpProfile("./rfcn-profile.json");
 
   MemPoolState st = caffe::MemPoolGetState();
   auto __Calc__ = [](int size) -> double {
@@ -146,6 +146,7 @@ int main(int argc, char* argv[]) {
   };
   LOG(INFO) << "[CPU] Hold " << __Calc__(st.cpu_mem) << " M, Not Uses " << __Calc__(st.unused_cpu_mem) << " M";
   LOG(INFO) << "[GPU] Hold " << __Calc__(st.gpu_mem) << " M, Not Uses " << __Calc__(st.unused_gpu_mem) << " M";
+  cv::imwrite("./rfcn-result.jpg", img);
   cv::imshow("result", img);
   cv::waitKey(0);
   return 0;

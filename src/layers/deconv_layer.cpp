@@ -2,6 +2,10 @@
 
 #include "./deconv_layer.hpp"
 
+#ifdef USE_CUDNN
+#include "./cudnn/cudnn_deconv_layer.hpp"
+#endif  // USE_CUDNN
+
 namespace caffe {
 
 void DeconvolutionLayer::compute_output_shape() {
@@ -41,6 +45,24 @@ void DeconvolutionLayer::Forward_cpu(const vector<Blob*>& bottom,
 STUB_GPU(DeconvolutionLayer);
 #endif
 
-REGISTER_LAYER_CLASS(Deconvolution);
+static shared_ptr<Layer> CreateLayer(const LayerParameter &param) {
+#ifdef USE_CUDNN
+  if (Caffe::mode() == Caffe::GPU) {
+    ConvolutionParameter conv_param = param.convolution_param();
+    bool use_dilation = false;
+    for (int i = 0; i < conv_param.dilation_size(); ++i) {
+      if (conv_param.dilation(i) > 1) {
+        use_dilation = true;
+      }
+    }
+    if (!use_dilation) {
+      return shared_ptr<Layer>(new CuDNNDeconvolutionLayer(param));
+    }
+  }
+#endif  // USE_CUDNN
+  return shared_ptr<Layer>(new DeconvolutionLayer(param));
+}
+
+REGISTER_LAYER_CREATOR(Deconvolution, CreateLayer);
 
 }  // namespace caffe
