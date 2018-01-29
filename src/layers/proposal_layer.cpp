@@ -245,6 +245,18 @@ void ProposalLayer::LayerSetUp(const vector<Blob*> &bottom,
   }
 }
 
+void ProposalLayer::Reshape(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
+  vector<int> top_shape(2);
+  top_shape[0] = bottom[0]->shape(0) * post_nms_topn_;
+  top_shape[1] = 5;
+  top[0]->Reshape(top_shape);
+  if (top.size() > 1) {
+    top_shape.pop_back();
+    top[1]->Reshape(top_shape);
+  }
+}
+
 void ProposalLayer::Forward_cpu(const vector<Blob*>& bottom,
                                 const vector<Blob*>& top) {
   const real_t* anchors_score_map = bottom[0]->cpu_data();
@@ -288,7 +300,7 @@ void ProposalLayer::Forward_cpu(const vector<Blob*>& bottom,
                        img_height, img_width,
                        min_bbox_size, feat_stride_);
 
-  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
+  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn);
 
   NonMaximumSuppressionCPU(pre_nms_topn, proposals_.cpu_data(),
                            roi_indices_.mutable_cpu_data(), num_rois,

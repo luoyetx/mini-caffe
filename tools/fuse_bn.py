@@ -7,7 +7,7 @@ import os
 import argparse
 import numpy as np
 import caffe_pb2
-import google.protobuf as pb2
+from google.protobuf import text_format
 
 
 def fuse(weight, bias, mean, var, scale, shift, eps=1e-5):
@@ -105,7 +105,7 @@ def main():
     print(args)
 
     net = caffe_pb2.NetParameter()
-    pb2.text_format.Merge(open(args.net, 'r').read(), net)
+    text_format.Merge(open(args.net, 'r').read(), net)
     weight = caffe_pb2.NetParameter()
     weight.ParseFromString(open(args.weight, 'rb').read())
 
@@ -190,7 +190,7 @@ def main():
     out_net = '_nobn'.join(os.path.splitext(args.net))
     out_weight = '_nobn'.join(os.path.splitext(args.weight))
     with open(out_net, 'w') as fout:
-        fout.write(pb2.text_format.MessageToString(net))
+        fout.write(text_format.MessageToString(net))
     with open(out_weight, 'wb') as fout:
         fout.write(weight.SerializeToString())
 

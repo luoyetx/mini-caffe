@@ -48,6 +48,10 @@ int main(int argc, char* argv[]) {
   net.MarkOutputs({ "rois" });
 
   Mat img = imread("../r-fcn/004545.jpg");
+
+  caffe::Profiler* profiler = caffe::Profiler::Get();
+  profiler->TurnON();
+
   int height = img.rows;
   int width = img.cols;
   const int kSizeMin = 600;
@@ -86,11 +90,7 @@ int main(int argc, char* argv[]) {
   im_info->mutable_cpu_data()[1] = imgResized.cols;
   im_info->mutable_cpu_data()[2] = scale_factor;
 
-  caffe::Profiler* profiler = caffe::Profiler::Get();
-  profiler->TurnON();
   net.Forward();
-  profiler->TurnOFF();
-  profiler->DumpProfile("profile.json");
 
   shared_ptr<Blob> rois = net.blob_by_name("rois");
   shared_ptr<Blob> cls_prob = net.blob_by_name("cls_prob");
@@ -136,6 +136,10 @@ int main(int argc, char* argv[]) {
       cv::putText(img, buff, cv::Point(bbox.x1, bbox.y1), FONT_HERSHEY_PLAIN, 1, Scalar(0, 255, 0));
     }
   }
+
+  profiler->TurnOFF();
+  profiler->DumpProfile("rfcn-profile.json");
+
   MemPoolState st = caffe::MemPoolGetState();
   auto __Calc__ = [](int size) -> double {
     return std::round(static_cast<double>(size) / (1024 * 1024) * 100) / 100;

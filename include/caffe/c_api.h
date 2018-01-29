@@ -32,13 +32,15 @@ CAFFE_API int CaffeBlobHeight(BlobHandle blob);
 CAFFE_API int CaffeBlobWidth(BlobHandle blob);
 /*! \brief get blob data */
 CAFFE_API real_t *CaffeBlobData(BlobHandle blob);
+/*! \brief get blob count */
+CAFFE_API int CaffeBlobCount(BlobHandle blob);
 /*!
  * \brief reshape blob
  * \note  this may change blob data pointer
  */
-CAFFE_API int CaffeBlobReshape(BlobHandle blob,
-                               int num, int channels,
-                               int height, int width);
+CAFFE_API int CaffeBlobReshape(BlobHandle blob, int shape_size, int* shape);
+/*! \brief get blob shape */
+CAFFE_API int CaffeBlobShape(BlobHandle blob, int* shape_size, int** shape);
 
 // Net API
 

@@ -27,10 +27,7 @@ public final class Blob {
     }
     private native int jniSyncToJava();
     private native int jniSyncToC();
-    public int num;
-    public int channels;
-    public int height;
-    public int width;
+    public int[] shape;
     public float[] data;
     // internal Blob handle
     private long handle;

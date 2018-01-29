@@ -255,9 +255,9 @@ void ProposalLayer::Forward_gpu(const vector<Blob*>& bottom,
       min_bbox_size, feat_stride_);
   CUDA_POST_KERNEL_CHECK;
 
-  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
+  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn);
 
-  NonMaximumSuppressionGPU(pre_nms_topn_, proposals_.mutable_gpu_data(),
+  NonMaximumSuppressionGPU(pre_nms_topn, proposals_.mutable_gpu_data(),
                            &nms_mask_, roi_indices_.mutable_cpu_data(),
                            num_rois, nms_thresh_, post_nms_topn_);
 

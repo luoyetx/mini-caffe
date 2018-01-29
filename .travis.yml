@@ -15,6 +15,7 @@ addons:
       - gcc-4.8
       - g++-4.8
       - python-numpy
+      - python-protobuf
       - python3-numpy
       - python3-setuptools
 
