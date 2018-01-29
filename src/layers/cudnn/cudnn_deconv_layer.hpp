@@ -24,6 +24,9 @@ class CuDNNDeconvolutionLayer : public DeconvolutionLayer {
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
+  virtual void ClearInternalBuffer() {
+    workspaceDataBlob.Release();
+  }
   virtual ~CuDNNDeconvolutionLayer();
 
  protected:
@@ -46,7 +49,7 @@ class CuDNNDeconvolutionLayer : public DeconvolutionLayer {
 
   size_t *workspace_bwd_data_sizes_;
   size_t *workspace_bwd_filter_sizes_;
-  size_t workspaceSizeInBytes;  // size of underlying storage
+  Blob workspaceDataBlob;  // hold the real data for workspace
   void *workspaceData;  // underlying storage
   void **workspace;  // aliases into workspaceData
 };

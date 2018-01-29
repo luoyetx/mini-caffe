@@ -29,7 +29,6 @@ void CuDNNConvolutionLayer::LayerSetUp(const vector<Blob*>& bottom,
   workspace_fwd_sizes_ = new size_t[bottom.size()];
 
   // workspace data
-  workspaceSizeInBytes = 0;
   workspaceData = NULL;
   workspace = new void*[this->group_ * CUDNN_STREAMS_PER_GROUP];
 
@@ -141,17 +140,15 @@ void CuDNNConvolutionLayer::Reshape(const vector<Blob*>& bottom,
   size_t total_workspace_fwd = 0;
 
   for (size_t i = 0; i < bottom.size(); i++) {
-    total_workspace_fwd        = std::max(total_workspace_fwd, workspace_fwd_sizes_[i]);
+    total_workspace_fwd = std::max(total_workspace_fwd, workspace_fwd_sizes_[i]);
   }
   // get max over all operations
   size_t max_workspace = total_workspace_fwd;
   // ensure all groups have enough workspace
   size_t total_max_workspace = max_workspace * (this->group_ * CUDNN_STREAMS_PER_GROUP);
 
-  //DLOG(INFO) << "Reallocating workspace storage: " << total_max_workspace;
-  workspaceSizeInBytes = total_max_workspace;
-
   // free the existing workspace and allocate a new (larger) one
+  size_t workspaceSizeInBytes = total_max_workspace;
   int size = (workspaceSizeInBytes) / sizeof(real_t) + 1;
   workspaceDataBlob.Reshape({1, size});
   workspaceData = workspaceDataBlob.mutable_gpu_data();

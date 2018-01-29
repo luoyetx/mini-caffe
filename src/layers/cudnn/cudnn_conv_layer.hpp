@@ -52,7 +52,6 @@ class CuDNNConvolutionLayer : public ConvolutionLayer {
   int bottom_offset_, top_offset_, bias_offset_;
 
   size_t *workspace_fwd_sizes_;
-  size_t workspaceSizeInBytes;  // size of underlying storage
   Blob workspaceDataBlob;  // hold the real data for workspace
   void *workspaceData; // underlying storage
   void **workspace;  // aliases into workspaceData
