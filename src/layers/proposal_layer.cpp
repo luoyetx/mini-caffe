@@ -53,9 +53,9 @@ static int TransformBBox(real_t* box,
 
 /*! \brief generate base anchors */
 static void GenerateAnchors(int base_size,
-                             const vector<real_t> ratios,
-                             const vector<real_t> scales,
-                             Blob& anchors_) {
+                            const vector<real_t> ratios,
+                            const vector<real_t> scales,
+                            Blob& anchors_) {
   // base box's width & height & center location
   const real_t base_area = static_cast<real_t>(base_size * base_size);
   const real_t center = static_cast<real_t>(0.5 * (base_size - 1));

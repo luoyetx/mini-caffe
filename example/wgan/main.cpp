@@ -59,8 +59,9 @@ int main(int argc, char **argv) {
   }
   profiler->ScopeEnd();
   profiler->TurnOFF();
-  profiler->DumpProfile("wgan-profile.json");
+  profiler->DumpProfile("./wgan-profile.json");
   LOG(INFO) << "generate costs " << double(toc - tic) / 1000 << " ms";
+  cv::imwrite("./wgan-result.jpg", canvas);
   cv::imshow("gan-face", canvas);
   cv::waitKey();
   return 0;

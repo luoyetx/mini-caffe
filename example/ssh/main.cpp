@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
 
   uint64_t toc = profiler->Now();
   profiler->TurnOFF();
-  profiler->DumpProfile("ssh-profile.json");
+  profiler->DumpProfile("./ssh-profile.json");
   LOG(INFO) << "Time cost " << double(toc - tic) / 1000 << " ms";
 
   for (int i = 0; i < keep.size(); i++) {
@@ -172,7 +172,7 @@ int main(int argc, char* argv[]) {
     sprintf(buff, "%.2f", bbox.score);
     cv::putText(img, buff, cv::Point(bbox.x1, bbox.y1), FONT_HERSHEY_PLAIN, 1, Scalar(0, 255, 0));
   }
-  cv::imwrite("ssh-result.jpg", img);
+  cv::imwrite("./ssh-result.jpg", img);
   cv::imshow("result", img);
   cv::waitKey(0);
   return 0;
