@@ -29,7 +29,7 @@ struct Mat {
     data_ = new real_t[size];
     memcpy(data_, m.data_, size * sizeof(real_t));
   }
-  Mat(Mat &&m) 
+  Mat(Mat &&m)
     : data_(m.data_) {
     rows_ = m.rows_;
     cols_ = m.cols_;
@@ -120,7 +120,7 @@ struct TestFunctor {
     const int bias = input->offset(0, 1);
     const int bytes = bias * sizeof(real_t);
     for (int k = 0; k < data.size(); k++) {
-      memcpy(input->mutable_cpu_data() + 0 * bias, data[k].data(), bytes);
+      memcpy(input->mutable_cpu_data() + k * bias, data[k].data(), bytes);
     }
     // forward network
     this->net->Forward();
