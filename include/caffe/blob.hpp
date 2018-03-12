@@ -179,8 +179,8 @@ class CAFFE_API Blob {
    */
   void CopyFrom(const Blob& source, bool reshape = false);
 
-  real_t data_at(const int n, const int c,
-                 const int h, const int w) const {
+  real_t data_at(const int n, const int c=0,
+                 const int h=0, const int w=0) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 
@@ -238,8 +238,8 @@ class BlobInt : public Blob {
   explicit BlobInt(const vector<int>& shape)
     : Blob(shape) {}
 
-  int data_at(const int n, const int c,
-                     const int h, const int w) const {
+  int data_at(const int n, const int c=0,
+              const int h=0, const int w=0) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 

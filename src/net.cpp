@@ -161,7 +161,7 @@ void Net::ForwardFromTo(int start, int end) {
   Profiler *profiler = Profiler::Get();
   for (int i = start; i <= end; ++i) {
     // LOG(ERROR) << "Forwarding " << layer_names_[i];
-    profiler->ScopeStart(layers_[i]->type());
+    profiler->ScopeStart(layer_names_[i].c_str());
     layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     profiler->ScopeEnd();
     // try to free bottom blobs

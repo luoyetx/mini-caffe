@@ -41,7 +41,7 @@ inline void SyncedMemory::to_cpu() {
   switch (head_) {
   case UNINITIALIZED:
     CaffeMallocHost(cpu_block_, size_);
-    caffe_memset(size_, 0, cpu_block_.ptr);
+    //caffe_memset(size_, 0, cpu_block_.ptr);
     head_ = HEAD_AT_CPU;
     break;
   case HEAD_AT_GPU:
@@ -68,7 +68,7 @@ inline void SyncedMemory::to_gpu() {
   case UNINITIALIZED:
     CUDA_CHECK(cudaGetDevice(&device));
     CaffeMallocDevice(gpu_block_, size_, device);
-    caffe_gpu_memset(size_, 0, gpu_block_.ptr);
+    //caffe_gpu_memset(size_, 0, gpu_block_.ptr);
     head_ = HEAD_AT_GPU;
     break;
   case HEAD_AT_CPU:
@@ -167,12 +167,12 @@ inline std::string MemSize(double size) {
   return os.str();
 }
 
-inline bool ShouldBorrowMem(int has, int wants) {
+inline bool ShouldBorrowMem(size_t has, size_t wants) {
   const int ratio = 2;
   return has / 2 <= wants;
 }
 
-MemBlock MemoryPool::RequestCPU(int size) {
+MemBlock MemoryPool::RequestCPU(size_t size) {
   MemBlock block;
   if (size <= kElementSize) {  // small object <= 128 bytes
     block.device = -1;
@@ -231,7 +231,7 @@ void MemoryPool::ReturnCPU(MemBlock block) {
   }
 }
 
-MemBlock MemoryPool::RequestGPU(int size, int device) {
+MemBlock MemoryPool::RequestGPU(size_t size, int device) {
   MemBlock block;
 #ifdef USE_CUDA
   GpuKey key{device, size};

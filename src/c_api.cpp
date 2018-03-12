@@ -34,10 +34,25 @@ real_t *CaffeBlobData(BlobHandle blob) {
   return static_cast<caffe::Blob*>(blob)->mutable_cpu_data();
 }
 
-int CaffeBlobReshape(BlobHandle blob, int num, int channels,
-                     int height, int width) {
+int CaffeBlobCount(BlobHandle blob) {
+  return static_cast<caffe::Blob*>(blob)->count();
+}
+
+typedef ThreadLocalStore<std::vector<int> > BlobShapeStore;
+
+int CaffeBlobReshape(BlobHandle blob, int shape_size, int* shape) {
   API_BEGIN();
-  static_cast<caffe::Blob*>(blob)->Reshape(num, channels, height, width);
+  std::vector<int> shape_data(shape, shape + shape_size);
+  static_cast<caffe::Blob*>(blob)->Reshape(shape_data);
+  API_END();
+}
+
+int CaffeBlobShape(BlobHandle blob, int* shape_size, int** shape) {
+  API_BEGIN();
+  auto* ret = BlobShapeStore::Get();
+  *ret = static_cast<caffe::Blob*>(blob)->shape();
+  *shape_size = ret->size();
+  *shape = ret->data();
   API_END();
 }
 

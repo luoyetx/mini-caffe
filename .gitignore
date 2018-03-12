@@ -3,7 +3,9 @@ build
 
 src/proto/caffe.pb.h
 src/proto/caffe.pb.cc
+tools/caffe_pb2.py
 
+*.pyc
 *.lib
 *.dll
 *.exe

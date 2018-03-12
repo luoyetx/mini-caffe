@@ -1,6 +1,7 @@
 # coding = utf-8
 """Blob represents caffe::Blob"""
 from __future__ import absolute_import
+import ctypes
 from .base import LIB
 from .base import check_call, ctypes2numpy_shared
 
@@ -25,25 +26,28 @@ class Blob(object):
         """get blob shape
 
         Returns:
-        s: list(int)
-            num, channels, height, width
+        shape: list(int)
+            shape of this blob
         """
-        num = LIB.CaffeBlobNum(self.handle)
-        channels = LIB.CaffeBlobChannels(self.handle)
-        height = LIB.CaffeBlobHeight(self.handle)
-        width = LIB.CaffeBlobWidth(self.handle)
-        return [num, channels, height, width]
+        ctypes_n = ctypes.c_int32()
+        ctypes_shape = ctypes.POINTER(ctypes.c_int32)()
+        check_call(LIB.CaffeBlobShape(self.handle, ctypes.byref(ctypes_n),
+                                      ctypes.byref(ctypes_shape)))
+        shape = [ctypes_shape[i] for i in range(ctypes_n.value)]
+        return shape
 
-    def reshape(self, num, channels=1, height=1, width=1):
+    def reshape(self, *shape):
         """reshape this blob, this also affect the internal data buffer.
         Data return by `data` may be invalid
 
         Parameters
         ----------
-        num, channels, height, width: int
-            blob num, channels, height, width
+        shape: list(int)
+            shape of this blob
         """
-        check_call(LIB.CaffeBlobReshape(self.handle, num, channels, height, width))
+        shape_size = len(shape)
+        ctypes_shape = (ctypes.c_int32 * shape_size)(*shape)
+        check_call(LIB.CaffeBlobReshape(self.handle, shape_size, ctypes_shape))
 
     @property
     def data(self):

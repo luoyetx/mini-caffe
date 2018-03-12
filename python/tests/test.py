@@ -60,20 +60,22 @@ def test_network():
     mcaffe.Profiler.disable()
     mcaffe.Profiler.dump("resnet-profile.json")
     print('Forward ResNet costs %f ms'%t)
+    # forward network by pass data
+    net.forward(**{'data': np.random.rand(size).reshape(shape).astype(np.float32)})
     # network parameters
     params = net.params
     for layer_name, layer_params in list(params.items()):
         print('layer: {\n\tname: %s'%layer_name)
         for name, param in layer_params:
             shape = param.shape
-            print('\t%s: [%d, %d, %d, %d]'%(name, shape[0], shape[1], shape[2], shape[3]))
+            print('\t{}: {}'.format(name, shape))
         print('}')
     # network internal blobs
     blobs = net.blobs
     print('{')
     for name, blob in list(blobs.items()):
         shape = blob.shape
-        print('\t%s: [%d, %d, %d, %d]'%(name, shape[0], shape[1], shape[2], shape[3]))
+        print('\t{}: {}'.format(name, shape))
     print('}')
 
 
