@@ -279,9 +279,11 @@ void MemoryPool::ReturnGPU(MemBlock block) {
 
 void MemoryPool::Clear() {
   for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); ++it) {
-    free(it->second.ptr);
-    st_.cpu_mem -= it->second.size;
-    st_.unused_cpu_mem -= it->second.size;
+    MemBlock& block = it->second;
+    free(block.ptr);
+    st_.cpu_mem -= block.size;
+    st_.unused_cpu_mem -= block.size;
+    DLOG(INFO) << "[CPU] Free " << MemSize(block.size);
   }
   cpu_pool_.clear();
 #ifdef USE_CUDA
@@ -294,16 +296,17 @@ void MemoryPool::Clear() {
     return;
   }
   for (auto it = gpu_pool_.begin(); it != gpu_pool_.end(); ++it) {
-    int device = it->second.device;
-    if (cur_device != device) {
-      CUDA_CHECK(cudaSetDevice(device));
+    MemBlock& block = it->second;
+    if (cur_device != block.device) {
+      CUDA_CHECK(cudaSetDevice(block.device));
     }
-    CUDA_CHECK(cudaFree(it->second.ptr));
-    if (cur_device != device) {
+    CUDA_CHECK(cudaFree(block.ptr));
+    if (cur_device != block.device) {
       CUDA_CHECK(cudaSetDevice(cur_device));
     }
-    st_.gpu_mem -= it->second.size;
-    st_.unused_gpu_mem -= it->second.size;
+    st_.gpu_mem -= block.size;
+    st_.unused_gpu_mem -= block.size;
+    DLOG(INFO) << "[GPU] Free " << MemSize(block.size);
   }
   gpu_pool_.clear();
 #endif  // USE_CUDA
