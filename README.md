@@ -65,11 +65,13 @@ Mini-Caffe now can be cross compiled for Android platform, checkout the document
 
 ### With CUDA and CUDNN support
 
-Install [CUDA8](https://developer.nvidia.com/cuda-downloads) and [cuDNN5.1](https://developer.nvidia.com/cudnn) in your system, then we can compile Mini-Caffe with GPU support. Run CMake command below.
+Install [CUDA](https://developer.nvidia.com/cuda-downloads) and [cuDNN](https://developer.nvidia.com/cudnn) in your system, then we can compile Mini-Caffe with GPU support. Run CMake command below.
 
 ```
 $ cmake .. -DUSE_CUDA=ON -DUSE_CUDNN=ON
 ```
+
+Currently we only test mini-caffe on CUDA8.0 with cuDNN5.1 and CUDA9.0 with cuDNN7.1.
 
 ### With Java support
 
