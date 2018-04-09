@@ -111,7 +111,7 @@ function build_openblas {
         GCC_TOOLCHAIN=$NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOST_OS-$HOST_BIT
         LLVM_TOOLCHAIN=$NDK_ROOT/toolchains/llvm/prebuilt/$HOST_OS-$HOST_BIT
         SYSROOT=$NDK_ROOT/platforms/$ANDROID_PLATFORM/arch-arm
-        CLANG_FLAGS="-target arm-linux-androideabi -marm -mfpu=vfp -mfloat-abi=softfp --sysroot $SYSROOT -gcc-toolchain $GCC_TOOLCHAIN"
+        CLANG_FLAGS="-target arm-linux-androideabi -marm -mfpu=neon -mfloat-abi=softfp --sysroot $SYSROOT -gcc-toolchain $GCC_TOOLCHAIN"
         OPENBLAS_LDFLAGS="-L$GCC_TOOLCHAIN/lib/gcc/arm-linux-androideabi/4.9.x"
         TARGET=ARMV7
     else
