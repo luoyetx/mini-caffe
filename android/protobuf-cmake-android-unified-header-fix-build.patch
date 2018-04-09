@@ -1,0 +1,13 @@
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index fca4da33..e257fc43 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -16,7 +16,7 @@ endif()
+ project(protobuf C CXX)
+ 
+ # Add c++11 flags for clang
+-set(CMAKE_CXX_FLAGS "-std=c++11")
++set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ 
+ # Options
+ option(protobuf_BUILD_TESTS "Build tests" ON)
