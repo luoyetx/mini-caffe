@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <string>
 
 #include <caffe/net.hpp>
@@ -7,8 +8,8 @@ int main(int argc, char *argv[]) {
   CHECK_EQ(argc, 5) << "[Usage]: ./benchmark net.prototxt net.caffemodel iterations gpu_id";
   std::string proto = argv[1];
   std::string model = argv[2];
-  int iters = std::stoi(argv[3]);
-  int gpu_id = std::stoi(argv[4]);
+  int iters = atoi(argv[3]);
+  int gpu_id = atoi(argv[4]);
   LOG(INFO) << "net prototxt: " << proto;
   LOG(INFO) << "net caffemodel: " << model;
   LOG(INFO) << "net forward iterations: " << iters;

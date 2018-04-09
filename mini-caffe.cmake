@@ -28,6 +28,8 @@ if(MSVC)
   list(APPEND Caffe_LINKER_LIBS debug libprotobufd optimized libprotobuf
                                 libopenblas)
 elseif(ANDROID)
+  # TODO https://github.com/android-ndk/ndk/issues/105
+  set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -nodefaultlibs -lgcc -lc -lm -ldl")
   if(ANDROID_EXTRA_LIBRARY_PATH)
     include_directories(${CMAKE_CURRENT_LIST_DIR}/include
                         ${ANDROID_EXTRA_LIBRARY_PATH}/include)

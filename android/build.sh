@@ -157,7 +157,7 @@ function build_minicaffe {
           -DANDROID_EXTRA_LIBRARY_PATH=$ANDROID_ROOT/$ANDROID_ABI-install \
           -G "Unix Makefiles" \
           $MINICAFFE_ROOT
-    make -j$ANDROID_BUILD_JOBS VERBOSE=1
+    make -j$ANDROID_BUILD_JOBS
 }
 
 patch_protobuf_source
