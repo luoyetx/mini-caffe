@@ -1,4 +1,5 @@
 #include <random>
+#include <cmath>
 #include <cstring>
 #include <chrono>
 #include <algorithm>
@@ -237,7 +238,7 @@ int main(int argc, char *argv[]) {
 
   MemPoolState st = caffe::MemPoolGetState();
   auto __Calc__ = [](int size) -> double {
-    return std::round(static_cast<double>(size) / (1024 * 1024) * 100) / 100;
+    return round(static_cast<double>(size) / (1024 * 1024) * 100) / 100;
   };
   LOG(INFO) << "[CPU] Hold " << __Calc__(st.cpu_mem) << " M, Not Uses " << __Calc__(st.unused_cpu_mem) << " M";
   LOG(INFO) << "[GPU] Hold " << __Calc__(st.gpu_mem) << " M, Not Uses " << __Calc__(st.unused_gpu_mem) << " M";

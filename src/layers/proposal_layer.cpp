@@ -1,4 +1,5 @@
 #include "./proposal_layer.hpp"
+#include <cmath>
 
 namespace caffe {
 
@@ -63,8 +64,8 @@ static void GenerateAnchors(int base_size,
   real_t *anchors = anchors_.mutable_cpu_data();
   for (int i = 0; i < ratios.size(); ++i) {
     // transformed width & height for given ratio factors
-    const real_t ratio_w = static_cast<real_t>(std::round(std::sqrt(base_area / ratios[i])));
-    const real_t ratio_h = static_cast<real_t>(std::round(ratio_w * ratios[i]));
+    const real_t ratio_w = static_cast<real_t>(round(std::sqrt(base_area / ratios[i])));
+    const real_t ratio_h = static_cast<real_t>(round(ratio_w * ratios[i]));
     for (int j = 0; j < scales.size(); ++j) {
       // transformed width & height for given scale factors
       const real_t scale_w = 0.5f * static_cast<real_t>(ratio_w * scales[j] - 1);
