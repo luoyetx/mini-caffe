@@ -11,7 +11,8 @@ fi
 ANDROID_ROOT=`pwd`
 THIRD_PARTY_ROOT=$ANDROID_ROOT/../3rdparty/src
 ANDROID_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake
-ANDROID_PLATFORM=android-21
+ANDROID_PLATFORM_LEVEL=21
+ANDROID_PLATFORM=android-$ANDROID_PLATFORM_LEVEL
 ANDROID_BUILD_JOBS=4
 ANDROID_ABIS=(arm64-v8a armeabi-v7a)
 MINICAFFE_JNILIBS=$ANDROID_ROOT/jniLibs
@@ -103,16 +104,18 @@ function build_openblas {
     if [ "$ANDROID_ABI" = "arm64-v8a" ]; then
         GCC_TOOLCHAIN=$NDK_ROOT/toolchains/aarch64-linux-android-4.9/prebuilt/$HOST_OS-$HOST_BIT
         LLVM_TOOLCHAIN=$NDK_ROOT/toolchains/llvm/prebuilt/$HOST_OS-$HOST_BIT
-        SYSROOT=$NDK_ROOT/platforms/$ANDROID_PLATFORM/arch-arm64
-        CLANG_FLAGS="-target aarch64-linux-android --sysroot $SYSROOT -gcc-toolchain $GCC_TOOLCHAIN"
-        OPENBLAS_LDFLAGS="-L$GCC_TOOLCHAIN/lib/gcc/aarch64-linux-android/4.9.x -lm"
+        SYSROOT=$NDK_ROOT/sysroot
+        LINKER_SYSROOT=$NDK_ROOT/platforms/$ANDROID_PLATFORM/arch-arm64
+        CLANG_FLAGS="-target aarch64-linux-android --sysroot $SYSROOT -gcc-toolchain $GCC_TOOLCHAIN -isystem $SYSROOT/usr/include/aarch64-linux-android -D__ANDROID_API__=$ANDROID_PLATFORM_LEVEL"
+        OPENBLAS_LDFLAGS="--sysroot $LINKER_SYSROOT -L$GCC_TOOLCHAIN/lib/gcc/aarch64-linux-android/4.9.x -lm"
         TARGET=ARMV8
     elif [ "$ANDROID_ABI" = "armeabi-v7a" ]; then
         GCC_TOOLCHAIN=$NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOST_OS-$HOST_BIT
         LLVM_TOOLCHAIN=$NDK_ROOT/toolchains/llvm/prebuilt/$HOST_OS-$HOST_BIT
-        SYSROOT=$NDK_ROOT/platforms/$ANDROID_PLATFORM/arch-arm
-        CLANG_FLAGS="-target arm-linux-androideabi -marm -mfpu=neon -mfloat-abi=softfp --sysroot $SYSROOT -gcc-toolchain $GCC_TOOLCHAIN"
-        OPENBLAS_LDFLAGS="-L$GCC_TOOLCHAIN/lib/gcc/arm-linux-androideabi/4.9.x"
+        SYSROOT=$NDK_ROOT/sysroot
+        LINKER_SYSROOT=$NDK_ROOT/platforms/$ANDROID_PLATFORM/arch-arm
+        CLANG_FLAGS="-target arm-linux-androideabi -marm -mfpu=neon -mfloat-abi=softfp --sysroot $SYSROOT -gcc-toolchain $GCC_TOOLCHAIN -isystem $SYSROOT/usr/include/arm-linux-androideabi -D__ANDROID_API__=$ANDROID_PLATFORM_LEVEL"
+        OPENBLAS_LDFLAGS="--sysroot $LINKER_SYSROOT -L$GCC_TOOLCHAIN/lib/gcc/arm-linux-androideabi/4.9.x"
         TARGET=ARMV7
     else
         echo "Unsupport Android ABI: $ANDROID_ABI"
