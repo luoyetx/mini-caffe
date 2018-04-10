@@ -50,7 +50,6 @@ STUB_GPU(ConvolutionLayer);
 static shared_ptr<Layer> CreateLayer(const LayerParameter &param) {
   ConvolutionParameter conv_param = param.convolution_param();
   if (conv_param.group() == conv_param.num_output()) {  // depthwise
-    LOG(INFO) << param.name();
     return shared_ptr<Layer>(new ConvolutionDepthwiseLayer(param));
   }
 #ifdef USE_CUDNN
