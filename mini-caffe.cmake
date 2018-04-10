@@ -25,20 +25,20 @@ if(MSVC)
                       ${CMAKE_CURRENT_LIST_DIR}/3rdparty/include/google
                       ${CMAKE_CURRENT_LIST_DIR}/include)
   link_directories(${CMAKE_CURRENT_LIST_DIR}/3rdparty/lib)
-  list(APPEND Caffe_LINKER_LIBS debug libprotobufd optimized libprotobuf
+  list(APPEND Caffe_LINKER_LIBS debug libprotobuf-lited optimized libprotobuf-lite
                                 libopenblas)
 elseif(ANDROID)
   if(ANDROID_EXTRA_LIBRARY_PATH)
     include_directories(${CMAKE_CURRENT_LIST_DIR}/include
                         ${ANDROID_EXTRA_LIBRARY_PATH}/include)
     link_directories(${ANDROID_EXTRA_LIBRARY_PATH}/lib)
-    list(APPEND Caffe_LINKER_LIBS openblas protobuf)
+    list(APPEND Caffe_LINKER_LIBS openblas protobuf-lite log)
   else(ANDROID_EXTRA_LIBRARY_PATH)
     message(FATAL_ERROR "ANDROID_EXTRA_LIBRARY_PATH must be set.")
   endif(ANDROID_EXTRA_LIBRARY_PATH)
 else(MSVC)
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
-  list(APPEND Caffe_LINKER_LIBS protobuf)
+  list(APPEND Caffe_LINKER_LIBS protobuf-lite)
   if(BLAS STREQUAL "openblas")
     list(APPEND Caffe_LINKER_LIBS openblas)
     message(STATUS "Use OpenBLAS for blas library")

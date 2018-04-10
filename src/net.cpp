@@ -279,7 +279,7 @@ shared_ptr<NetParameter> ReadTextNetParameterFromFile(const string& file) {
 
 shared_ptr<NetParameter> ReadTextNetParameterFromBuffer(const char* buffer, int buffer_len) {
   shared_ptr<NetParameter> np(new NetParameter);
-  CHECK(google::protobuf::TextFormat::ParseFromString(std::string(buffer, buffer_len), np.get()))
+  CHECK(np->ParseFromString(std::string(buffer, buffer_len)))
     << "Parse Text NetParameter from Buffer failed";
   return np;
 }

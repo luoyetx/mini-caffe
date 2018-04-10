@@ -5,7 +5,7 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
 
-#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 
 #include "caffe/base.hpp"
 #include "../proto/caffe.pb.h"
@@ -16,45 +16,45 @@
 
 namespace caffe {
 
-using ::google::protobuf::Message;
+using ::google::protobuf::MessageLite;
 
-bool ReadProtoFromTextFile(const char* filename, Message* proto);
+bool ReadProtoFromTextFile(const char* filename, MessageLite* proto);
 
-inline bool ReadProtoFromTextFile(const string& filename, Message* proto) {
+inline bool ReadProtoFromTextFile(const string& filename, MessageLite* proto) {
   return ReadProtoFromTextFile(filename.c_str(), proto);
 }
 
-inline void ReadProtoFromTextFileOrDie(const char* filename, Message* proto) {
+inline void ReadProtoFromTextFileOrDie(const char* filename, MessageLite* proto) {
   CHECK(ReadProtoFromTextFile(filename, proto));
 }
 
-inline void ReadProtoFromTextFileOrDie(const string& filename, Message* proto) {
+inline void ReadProtoFromTextFileOrDie(const string& filename, MessageLite* proto) {
   ReadProtoFromTextFileOrDie(filename.c_str(), proto);
 }
 
-void WriteProtoToTextFile(const Message& proto, const char* filename);
-inline void WriteProtoToTextFile(const Message& proto, const string& filename) {
+void WriteProtoToTextFile(const MessageLite& proto, const char* filename);
+inline void WriteProtoToTextFile(const MessageLite& proto, const string& filename) {
   WriteProtoToTextFile(proto, filename.c_str());
 }
 
-bool ReadProtoFromBinaryFile(const char* filename, Message* proto);
+bool ReadProtoFromBinaryFile(const char* filename, MessageLite* proto);
 
-inline bool ReadProtoFromBinaryFile(const string& filename, Message* proto) {
+inline bool ReadProtoFromBinaryFile(const string& filename, MessageLite* proto) {
   return ReadProtoFromBinaryFile(filename.c_str(), proto);
 }
 
-inline void ReadProtoFromBinaryFileOrDie(const char* filename, Message* proto) {
+inline void ReadProtoFromBinaryFileOrDie(const char* filename, MessageLite* proto) {
   CHECK(ReadProtoFromBinaryFile(filename, proto));
 }
 
 inline void ReadProtoFromBinaryFileOrDie(const string& filename,
-                                         Message* proto) {
+                                         MessageLite* proto) {
   ReadProtoFromBinaryFileOrDie(filename.c_str(), proto);
 }
 
-void WriteProtoToBinaryFile(const Message& proto, const char* filename);
+void WriteProtoToBinaryFile(const MessageLite& proto, const char* filename);
 inline void WriteProtoToBinaryFile(
-    const Message& proto, const string& filename) {
+    const MessageLite& proto, const string& filename) {
   WriteProtoToBinaryFile(proto, filename.c_str());
 }
 

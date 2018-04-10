@@ -57,8 +57,7 @@ void ReductionLayer::Forward_cpu(const vector<Blob*>& bottom,
       *top_data = caffe_cpu_dot(dim_, bottom_data, bottom_data);
       break;
     default:
-      LOG(FATAL) << "Unknown reduction op: "
-          << ReductionParameter_ReductionOp_Name(op_);
+      LOG(FATAL) << "Unknown reduction op";
     }
     bottom_data += dim_;
     ++top_data;
