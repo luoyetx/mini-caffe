@@ -2,6 +2,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <cfloat>
 
 #include "./bbox_util.hpp"
 #include "../common.hpp"

@@ -1,3 +1,5 @@
+#include <cfloat>
+
 #include "./detection_output_layer.hpp"
 #include "../util/math_functions.hpp"
 
