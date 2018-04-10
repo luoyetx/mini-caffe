@@ -99,34 +99,6 @@ void ConvolutionDepthwiseLayer::Reshape(const vector<Blob*>& bottom,
   top_shape.push_back((bottom[0]->height() + 2 * pad_h_ - (dilation_h_ * (kernel_h_ - 1) + 1)) / stride_h_ + 1);
   top_shape.push_back((bottom[0]->width() + 2 * pad_w_ - (dilation_w_ * (kernel_w_ - 1) + 1)) / stride_w_ + 1);
   top[0]->Reshape(top_shape);
-  vector<int> weight_buffer_shape;
-  weight_buffer_shape.push_back(bottom[0]->channels());
-  weight_buffer_shape.push_back(kernel_h_);
-  weight_buffer_shape.push_back(kernel_w_);
-  weight_buffer_shape.push_back(bottom[0]->num());
-  weight_buffer_shape.push_back(top[0]->height());
-  weight_buffer_shape.push_back(top[0]->width());
-  weight_buffer_.Reshape(weight_buffer_shape);
-  vector<int> weight_multiplier_shape;
-  weight_multiplier_shape.push_back(bottom[0]->num());
-  weight_multiplier_shape.push_back(top[0]->height());
-  weight_multiplier_shape.push_back(top[0]->width());
-  weight_multiplier_.Reshape(weight_multiplier_shape);
-  caffe_gpu_set(weight_multiplier_.count(), real_t(1), weight_multiplier_.mutable_gpu_data());
-  if (this->layer_param_.convolution_param().bias_term()) {
-    vector<int> bias_buffer_shape;
-    bias_buffer_shape.push_back(bottom[0]->channels());
-    bias_buffer_shape.push_back(bottom[0]->num());
-    bias_buffer_shape.push_back(top[0]->height());
-    bias_buffer_shape.push_back(top[0]->width());
-    bias_buffer_.Reshape(bias_buffer_shape);
-    vector<int> bias_multiplier_shape;
-    bias_multiplier_shape.push_back(bottom[0]->num());
-    bias_multiplier_shape.push_back(top[0]->height());
-    bias_multiplier_shape.push_back(top[0]->width());
-    bias_multiplier_.Reshape(bias_multiplier_shape);
-    caffe_gpu_set(bias_multiplier_.count(), real_t(1), bias_multiplier_.mutable_gpu_data());
-  }
 }
 
 void ConvolutionDepthwiseLayer::Forward_cpu(const vector<Blob*>& bottom,

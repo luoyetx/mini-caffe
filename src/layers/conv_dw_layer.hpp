@@ -32,10 +32,6 @@ class ConvolutionDepthwiseLayer : public Layer {
   unsigned int pad_w_;
   unsigned int dilation_h_;
   unsigned int dilation_w_;
-  Blob weight_buffer_;
-  Blob weight_multiplier_;
-  Blob bias_buffer_;
-  Blob bias_multiplier_;
 };
 
 }  // namespace caffe

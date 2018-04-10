@@ -58,10 +58,10 @@ int main(int argc, char* argv[]) {
   // forward
   net.Forward();
 
-  // get output
+  // get output, shape is N x 7
   shared_ptr<Blob> result = net.blob_by_name("detection_out");
   const float* result_data = result->cpu_data();
-  const int num_det = result->height();
+  const int num_det = result->num();
   vector<BBox> detections;
   for (int k = 0; k < num_det; ++k) {
     if (result_data[0] != -1 && result_data[2] > kScoreThreshold) {

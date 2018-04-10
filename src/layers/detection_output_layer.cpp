@@ -167,12 +167,11 @@ void DetectionOutputLayer::Forward_cpu(const vector<Blob*>& bottom,
   }
 
   vector<int> top_shape(2, 1);
-  top_shape.push_back(num_kept);
-  top_shape.push_back(7);
+  top_shape[0] = num_kept;
+  top_shape[1] = 7;
   real_t* top_data;
   if (num_kept == 0) {
-    LOG(INFO) << "Couldn't find any detections";
-    top_shape[2] = num;
+    top_shape[0] = num;
     top[0]->Reshape(top_shape);
     top_data = top[0]->mutable_cpu_data();
     caffe_set(top[0]->count(), -1, top_data);
