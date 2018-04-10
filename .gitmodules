@@ -4,6 +4,3 @@
 [submodule "3rdparty/src/OpenBLAS"]
 	path = 3rdparty/src/OpenBLAS
 	url = https://github.com/xianyi/OpenBLAS.git
-[submodule "android/android-cmake"]
-	path = android/android-cmake
-	url = https://github.com/taka-no-me/android-cmake.git
