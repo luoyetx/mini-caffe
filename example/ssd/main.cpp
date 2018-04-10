@@ -14,16 +14,6 @@ struct BBox {
   int label;
 };
 
-float ComputeScaleFactor(int width, int height, int target_size, int max_size) {
-  int mmin = min(width, height);
-  int mmax = max(width, height);
-  float scale_factor = static_cast<float>(target_size) / mmin;
-  if (scale_factor * mmax > max_size) {
-    scale_factor = static_cast<float>(max_size) / mmax;
-  }
-  return scale_factor;
-}
-
 int main(int argc, char* argv[]) {
   if (caffe::GPUAvailable()) {
     caffe::SetMode(caffe::GPU, 0);

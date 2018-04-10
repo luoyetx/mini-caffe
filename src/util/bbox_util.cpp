@@ -678,7 +678,7 @@ void ApplyNMS(const vector<NormalizedBBox>& bboxes, const vector<float>& scores,
   ApplyNMS(bboxes, scores, threshold, top_k, reuse_overlap, &overlaps, indices);
 }
 
-void ApplyNMS(const bool* overlapped, const int num, vector<int>* indices) {
+void ApplyNMS(const int* overlapped, const int num, vector<int>* indices) {
   vector<int> index_vec(num);
   for (int i = 0; i < num; i++) {
     index_vec[i] = i;

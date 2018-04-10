@@ -1,6 +1,7 @@
 #ifndef CAFFE_UTIL_BBOX_UTIL_H_
 #define CAFFE_UTIL_BBOX_UTIL_H_
 
+#include "../proto/caffe.pb.h"
 #include <stdint.h>
 #include <cmath>  // for std::fabs and std::signbit
 #include <map>
@@ -9,7 +10,7 @@
 #include <vector>
 
 #include "caffe/logging.hpp"
-#include "../proto/caffe.pb.h"
+#include "caffe/blob.hpp"
 
 using std::map;
 using std::pair;
@@ -220,7 +221,7 @@ void ApplyNMS(const vector<NormalizedBBox>& bboxes, const vector<float>& scores,
 void ApplyNMS(const vector<NormalizedBBox>& bboxes, const vector<float>& scores,
       const float threshold, const int top_k, vector<int>* indices);
 
-void ApplyNMS(const bool* overlapped, const int num, vector<int>* indices);
+void ApplyNMS(const int* overlapped, const int num, vector<int>* indices);
 
 // Do non maximum suppression given bboxes and scores.
 // Inspired by Piotr Dollar's NMS implementation in EdgeBox.
@@ -254,13 +255,6 @@ void ApplyNMSFast(const Dtype* bboxes, const Dtype* scores, const int num,
       const float eta, const int top_k, vector<int>* indices);
 
 #ifdef USE_CUDA  // GPU
-template <typename Dtype>
-__host__ __device__ Dtype BBoxSizeGPU(const Dtype* bbox,
-                                      const bool normalized = true);
-
-template <typename Dtype>
-__host__ __device__ Dtype JaccardOverlapGPU(const Dtype* bbox1,
-                                            const Dtype* bbox2);
 
 template <typename Dtype>
 void DecodeBBoxesGPU(const int nthreads,
@@ -297,15 +291,8 @@ void ApplyNMSGPU(const Dtype* bbox_data, const Dtype* conf_data,
 template <typename Dtype>
 void GetDetectionsGPU(const Dtype* bbox_data, const Dtype* conf_data,
           const int image_id, const int label, const vector<int>& indices,
-          const bool clip_bbox, Blob<Dtype>* detection_blob);
+          const bool clip_bbox, Blob* detection_blob);
 
-template <typename Dtype>
-  void ComputeConfLossGPU(const Blob<Dtype>& conf_blob, const int num,
-      const int num_preds_per_class, const int num_classes,
-      const int background_label_id, const ConfLossType loss_type,
-      const vector<map<int, vector<int> > >& all_match_indices,
-      const map<int, vector<NormalizedBBox> >& all_gt_bboxes,
-      vector<vector<float> >* all_conf_loss);
 #endif  // USE_CUDA
 
 }  // namespace caffe

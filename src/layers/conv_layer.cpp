@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "./conv_layer.hpp"
+#include "./conv_dw_layer.hpp"
 
 #ifdef USE_CUDNN
 #include "./cudnn/cudnn_conv_layer.hpp"
@@ -47,9 +48,13 @@ STUB_GPU(ConvolutionLayer);
 // Creator
 
 static shared_ptr<Layer> CreateLayer(const LayerParameter &param) {
+  ConvolutionParameter conv_param = param.convolution_param();
+  if (conv_param.group() == conv_param.num_output()) {  // depthwise
+    LOG(INFO) << param.name();
+    return shared_ptr<Layer>(new ConvolutionDepthwiseLayer(param));
+  }
 #ifdef USE_CUDNN
   if (Caffe::mode() == Caffe::GPU) {
-    ConvolutionParameter conv_param = param.convolution_param();
     bool use_dilation = false;
     for (int i = 0; i < conv_param.dilation_size(); ++i) {
       if (conv_param.dilation(i) > 1) {
