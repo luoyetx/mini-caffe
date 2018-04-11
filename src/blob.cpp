@@ -92,15 +92,6 @@ real_t* Blob::mutable_gpu_data() {
   return static_cast<real_t*>(data_->mutable_gpu_data());
 }
 
-void Blob::Release() {
-  data_ = nullptr;
-  // no need to free shape data, cache it in blob level
-  //shape_data_ = nullptr;
-  shape_.clear();
-  count_ = 0;
-  capacity_ = 0;
-}
-
 void Blob::ShareData(const Blob& other) {
   CHECK_EQ(count_, other.count());
   CHECK(other.data_);

@@ -207,9 +207,6 @@ class CAFFE_API Blob {
    */
   void ShareData(const Blob& other);
 
-  /*! \brief release memory */
-  void Release();
-
   bool ShapeEquals(const BlobProto& other);
 
  protected:

@@ -164,12 +164,6 @@ void Net::ForwardFromTo(int start, int end) {
     profiler->ScopeStart(layer_names_[i].c_str());
     layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     profiler->ScopeEnd();
-    // try to free bottom blobs
-    for (int blob_idx : bottom_id_vecs_[i]) {
-      if (blob_life_time_[blob_idx] <= i) {
-        blobs_[blob_idx]->Release();
-      }
-    }
   }
 }
 
