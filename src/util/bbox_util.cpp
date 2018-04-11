@@ -501,37 +501,6 @@ template void GetPriorBBoxes(const float* prior_data, const int num_priors,
       vector<NormalizedBBox>* prior_bboxes,
       vector<vector<float> >* prior_variances);
 
-template <typename Dtype>
-void GetDetectionResults(const Dtype* det_data, const int num_det,
-      const int background_label_id,
-      map<int, map<int, vector<NormalizedBBox> > >* all_detections) {
-  all_detections->clear();
-  for (int i = 0; i < num_det; ++i) {
-    int start_idx = i * 7;
-    int item_id = det_data[start_idx];
-    if (item_id == -1) {
-      continue;
-    }
-    int label = det_data[start_idx + 1];
-    CHECK_NE(background_label_id, label)
-        << "Found background label in the detection results.";
-    NormalizedBBox bbox;
-    bbox.set_score(det_data[start_idx + 2]);
-    bbox.set_xmin(det_data[start_idx + 3]);
-    bbox.set_ymin(det_data[start_idx + 4]);
-    bbox.set_xmax(det_data[start_idx + 5]);
-    bbox.set_ymax(det_data[start_idx + 6]);
-    float bbox_size = BBoxSize(bbox);
-    bbox.set_size(bbox_size);
-    (*all_detections)[item_id][label].push_back(bbox);
-  }
-}
-
-// Explicit initialization.
-template void GetDetectionResults(const float* det_data, const int num_det,
-      const int background_label_id,
-      map<int, map<int, vector<NormalizedBBox> > >* all_detections);
-
 void GetTopKScoreIndex(const vector<float>& scores, const vector<int>& indices,
       const int top_k, vector<pair<float, int> >* score_index_vec) {
   CHECK_EQ(scores.size(), indices.size());

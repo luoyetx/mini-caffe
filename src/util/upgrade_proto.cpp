@@ -18,7 +18,7 @@ bool NetNeedsUpgrade(const NetParameter& net_param) {
 bool UpgradeNetAsNeeded(const string& param_file, NetParameter* param) {
   bool success = true;
   if (NetNeedsV1ToV2Upgrade(*param)) {
-    LOG(INFO) << "Attempting to upgrade input file specified using deprecated "
+    DLOG(INFO) << "Attempting to upgrade input file specified using deprecated "
               << "V1LayerParameter: " << param_file;
     NetParameter original_param(*param);
     if (!UpgradeV1Net(original_param, param)) {
@@ -26,18 +26,18 @@ bool UpgradeNetAsNeeded(const string& param_file, NetParameter* param) {
       LOG(ERROR) << "Warning: had one or more problems upgrading "
                  << "V1LayerParameter (see above); continuing anyway.";
     } else {
-      LOG(INFO) << "Successfully upgraded file specified using deprecated "
+      DLOG(INFO) << "Successfully upgraded file specified using deprecated "
                 << "V1LayerParameter";
     }
   }
   // NetParameter uses old style input fields; try to upgrade it.
   if (NetNeedsInputUpgrade(*param)) {
-    LOG(INFO) << "Attempting to upgrade input file specified using deprecated "
+    DLOG(INFO) << "Attempting to upgrade input file specified using deprecated "
               << "input fields: " << param_file;
     UpgradeNetInput(param);
-    LOG(INFO) << "Successfully upgraded file specified using deprecated "
+    DLOG(INFO) << "Successfully upgraded file specified using deprecated "
               << "input fields.";
-    LOG(WARNING) << "Note that future Caffe releases will only support "
+    DLOG(WARNING) << "Note that future Caffe releases will only support "
                  << "input layers and not input fields.";
   }
   return success;

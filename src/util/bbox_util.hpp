@@ -1,7 +1,6 @@
 #ifndef CAFFE_UTIL_BBOX_UTIL_H_
 #define CAFFE_UTIL_BBOX_UTIL_H_
 
-#include "../proto/caffe.pb.h"
 #include <stdint.h>
 #include <cmath>  // for std::fabs and std::signbit
 #include <map>
@@ -11,6 +10,7 @@
 
 #include "caffe/logging.hpp"
 #include "caffe/blob.hpp"
+#include "../proto/caffe.pb.h"
 
 using std::map;
 using std::pair;
@@ -18,8 +18,32 @@ using std::vector;
 
 namespace caffe {
 
-typedef PriorBoxParameter_CodeType CodeType;
-typedef map<int, vector<NormalizedBBox> > LabelBBox;
+struct NormalizedBBox {
+  float xmin() const { return xmin_; }
+  float xmax() const { return xmax_; }
+  float ymin() const { return ymin_; }
+  float ymax() const { return ymax_; }
+  float score() const { return score_; }
+  float size() const { return size_; }
+  bool difficult() const { return difficult_; }
+  void set_xmin(float v) { xmin_ = v; }
+  void set_xmax(float v) { xmax_ = v; }
+  void set_ymin(float v) { ymin_ = v; }
+  void set_ymax(float v) { ymax_ = v; }
+  void set_score(float v) { score_ = v; }
+  void set_size(float v) { size_ = v; }
+  void set_difficult(bool v) { difficult_ = v; }
+  bool has_size() const { return size_ != -1.f; }
+  void clear_size() { size_ = -1.f; }
+
+  float xmin_, ymin_, xmax_, ymax_, score_;
+  float size_ = -1.f;
+  bool difficult_;
+  int label_;
+};
+
+using CodeType = PriorBoxParameter_CodeType;
+using LabelBBox = map<int, vector<NormalizedBBox> > ;
 
 // Function used to sort NormalizedBBox, stored in STL container (e.g. vector),
 // in ascend order based on the score value.
@@ -159,17 +183,6 @@ void GetPriorBBoxes(const Dtype* prior_data, const int num_priors,
       vector<NormalizedBBox>* prior_bboxes,
       vector<vector<float> >* prior_variances);
 
-// Get detection results from det_data.
-//    det_data: 1 x 1 x num_det x 7 blob.
-//    num_det: the number of detections.
-//    background_label_id: the label for background class which is used to do
-//      santity check so that no detection contains it.
-//    all_detections: stores detection results for each class from each image.
-template <typename Dtype>
-void GetDetectionResults(const Dtype* det_data, const int num_det,
-      const int background_label_id,
-      map<int, LabelBBox>* all_detections);
-
 // Get top_k scores with corresponding indices.
 //    scores: a set of scores.
 //    indices: a set of corresponding indices.
@@ -287,11 +300,6 @@ template <typename Dtype>
 void ApplyNMSGPU(const Dtype* bbox_data, const Dtype* conf_data,
           const int num_bboxes, const float confidence_threshold,
           const int top_k, const float nms_threshold, vector<int>* indices);
-
-template <typename Dtype>
-void GetDetectionsGPU(const Dtype* bbox_data, const Dtype* conf_data,
-          const int image_id, const int label, const vector<int>& indices,
-          const bool clip_bbox, Blob* detection_blob);
 
 #endif  // USE_CUDA
 

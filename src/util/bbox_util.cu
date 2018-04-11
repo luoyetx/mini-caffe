@@ -6,6 +6,7 @@
 
 #include "./bbox_util.hpp"
 #include "../common.hpp"
+
 #include "thrust/functional.h"
 #include "thrust/sort.h"
 
@@ -449,51 +450,5 @@ template
 void ApplyNMSGPU(const float* bbox_data, const float* conf_data,
           const int num_bboxes, const float confidence_threshold,
           const int top_k, const float nms_threshold, vector<int>* indices);
-
-template <typename Dtype>
-__global__ void GetDetectionsKernel(const int nthreads,
-          const Dtype* bbox_data, const Dtype* conf_data, const int image_id,
-          const int label, const int* indices, const bool clip_bbox,
-          Dtype* detection_data) {
-  CUDA_KERNEL_LOOP(index, nthreads) {
-    const int det_idx = indices[index];
-    detection_data[index * 7] = image_id;
-    detection_data[index * 7 + 1] = label;
-    detection_data[index * 7 + 2] = conf_data[det_idx];
-    if (clip_bbox) {
-      ClipBBoxGPU(&(bbox_data[det_idx * 4]), &(detection_data[index * 7 + 3]));
-    } else {
-      for (int i = 0; i < 4; ++i) {
-        detection_data[index * 7 + 3 + i] = bbox_data[det_idx * 4 + i];
-      }
-    }
-  }
-}
-
-template <typename Dtype>
-void GetDetectionsGPU(const Dtype* bbox_data, const Dtype* conf_data,
-          const int image_id, const int label, const vector<int>& indices,
-          const bool clip_bbox, Blob* detection_blob) {
-  // Store selected indices in array.
-  int num_det = indices.size();
-  if (num_det == 0) {
-    return;
-  }
-  BlobInt idx_blob(1, 1, 1, num_det);
-  int* idx_data = idx_blob.mutable_cpu_data();
-  std::copy(indices.begin(), indices.end(), idx_data);
-  // Prepare detection_blob.
-  detection_blob->Reshape(1, 1, num_det, 7);
-  Dtype* detection_data = detection_blob->mutable_gpu_data();
-  // NOLINT_NEXT_LINE(whitespace/operators)
-  GetDetectionsKernel<Dtype><<<CAFFE_GET_BLOCKS(num_det),
-      CAFFE_CUDA_NUM_THREADS>>>(num_det, bbox_data, conf_data, image_id, label,
-      idx_blob.gpu_data(), clip_bbox, detection_data);
-  CUDA_POST_KERNEL_CHECK;
-}
-
-template void GetDetectionsGPU(const float* bbox_data, const float* conf_data,
-          const int image_id, const int label, const vector<int>& indices,
-          const bool clip_bbox, Blob* detection_blob);
 
 }  // namespace caffe
