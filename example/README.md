@@ -20,6 +20,10 @@ Generate anime face using WGAN. Model is trained by [luoyetx/WGAN](https://githu
 
 [SSH: Single Stage Headless Face Detector](https://arxiv.org/abs/1708.03979) is converted from [mahyarnajibi/SSH](https://github.com/mahyarnajibi/SSH). Download `SSH.caffemodel` and run the code on GPU.
 
+### SSD
+
+[SSD: Single Shot MultiBox Detector](https://arxiv.org/abs/1512.02325) is converted from [chuanqi305/MobileNet-SSD](https://github.com/chuanqi305/MobileNet-SSD).
+
 ### Build
 
 You need [OpenCV](http://opencv.org/) to build examples.
