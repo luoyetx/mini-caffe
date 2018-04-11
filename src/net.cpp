@@ -142,37 +142,15 @@ void Net::AppendParam(const NetParameter& param, const int layer_id,
   param_id_vecs_[layer_id].push_back(net_param_id);
 }
 
-real_t Net::MemSize() const {
-  size_t memory_used_ = 0;
-  for (auto blob : this->blobs_) {
-    memory_used_ += blob->count()*sizeof(real_t);
-  }
-  for (auto layer : this->layers_) {
-    for (auto param : layer->blobs()) {
-      memory_used_ += param->count()*sizeof(real_t);
-    }
-  }
-  return static_cast<real_t>(memory_used_) / (1024 * 1024);
-}
-
-void Net::ForwardFromTo(int start, int end) {
-  CHECK_GE(start, 0);
-  CHECK_LT(end, layers_.size());
+void Net::Forward(bool reshape) {
   Profiler *profiler = Profiler::Get();
-  for (int i = start; i <= end; ++i) {
-    // LOG(ERROR) << "Forwarding " << layer_names_[i];
+  for (int i = 0; i < layers_.size(); ++i) {
+    // LOG(INFO) << "Forwarding " << layer_names_[i];
     profiler->ScopeStart(layer_names_[i].c_str());
+    layers_[i]->Reshape(bottom_vecs_[i], top_vecs_[i]);
     layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     profiler->ScopeEnd();
   }
-}
-
-void Net::ForwardFrom(int start) {
-  return ForwardFromTo(start, layers_.size() - 1);
-}
-
-void Net::ForwardTo(int end) {
-  return ForwardFromTo(0, end);
 }
 
 void Net::Reshape() {
@@ -252,17 +230,6 @@ const shared_ptr<Blob> Net::blob_by_name(const string& blob_name) const {
   CHECK(has_blob(blob_name)) << "Unknown blob name " << blob_name;
   blob_ptr = blobs_[blob_names_index_.find(blob_name)->second];
   return blob_ptr;
-}
-
-bool Net::has_layer(const string& layer_name) const {
-  return layer_names_index_.find(layer_name) != layer_names_index_.end();
-}
-
-const shared_ptr<Layer> Net::layer_by_name(const string& layer_name) const {
-  shared_ptr<Layer> layer_ptr;
-  CHECK(has_layer(layer_name)) << "Unknown layer name " << layer_name;
-  layer_ptr = layers_[layer_names_index_.find(layer_name)->second];
-  return layer_ptr;
 }
 
 shared_ptr<NetParameter> ReadTextNetParameterFromFile(const string& file) {

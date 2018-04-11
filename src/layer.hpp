@@ -121,9 +121,7 @@ class Layer {
   /**
    * @brief Returns the vector of learnable parameter blobs.
    */
-  vector<shared_ptr<Blob> >& blobs() {
-    return blobs_;
-  }
+  vector<shared_ptr<Blob> >& blobs() { return blobs_; }
 
   /**
    * @brief Returns the layer parameter.
@@ -268,7 +266,6 @@ class Layer {
 // functions.
 inline void Layer::Forward(const vector<Blob*>& bottom,
                            const vector<Blob*>& top) {
-  Reshape(bottom, top);
   switch (Caffe::mode()) {
   case Caffe::CPU:
     Forward_cpu(bottom, top);

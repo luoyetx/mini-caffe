@@ -87,9 +87,11 @@ int main(int argc, char* argv[]) {
     cv::putText(img, buff, cv::Point(bbox.x1, bbox.y1), FONT_HERSHEY_PLAIN, 1, Scalar(0, 255, 0));
   }
 
+  uint64_t toc = profiler->Now();
   profiler->TurnOFF();
   profiler->DumpProfile("./ssd-profile.json");
 
+  LOG(INFO) << "Costs " << (toc - tic) / 1000.f << " ms";
   cv::imwrite("./ssd-result.jpg", img);
   cv::imshow("result", img);
   cv::waitKey(0);
