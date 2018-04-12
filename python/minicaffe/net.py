@@ -107,7 +107,7 @@ class Net(object):
         """
         check_call(LIB.CaffeNetMarkOutput(self.handle, c_str(name)))
 
-    def forward(self, reshape=True, **kwargs):
+    def forward(self, **kwargs):
         """forward network, need to fill data blobs before call this function
 
         Parameters
@@ -119,4 +119,4 @@ class Net(object):
             blob = self.get_blob(k)
             blob.reshape(*v.shape)
             blob.data[...] = v
-        check_call(LIB.CaffeNetForward(self.handle, reshape))
+        check_call(LIB.CaffeNetForward(self.handle))

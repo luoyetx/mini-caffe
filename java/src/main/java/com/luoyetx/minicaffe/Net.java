@@ -52,8 +52,8 @@ public final class Net {
      * this function may make blobs in Java side out of date,
      * call `Blob.syncToJava` if need
      */
-    public void forward(boolean reshape) {
-        if (jniForward(reshape) != 0) {
+    public void forward() {
+        if (jniForward() != 0) {
             throw new RuntimeException(Utils.GetLastError());
         }
     }
@@ -73,7 +73,7 @@ public final class Net {
     private native int jniCreateFromBuffer(byte[] net_buffer, byte[] model_buffer);
     private native int jniDestroy();
     private native int jniMarkOutput(String name);
-    private native int jniForward(boolean reshape);
+    private native int jniForward();
     private native int jniGetBlob(String name, Blob blob);
     // internal Net handle
     private long handle;

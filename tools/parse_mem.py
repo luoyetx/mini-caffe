@@ -6,8 +6,10 @@ import re
 import argparse
 from collections import namedtuple
 import numpy as np
+import seaborn as sns
 from matplotlib import pyplot as plt
 
+sns.set()
 
 Entry = namedtuple('Entry', ('type', 'device', 'time', 's1', 's2'))
 

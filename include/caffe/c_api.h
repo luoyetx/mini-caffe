@@ -77,9 +77,8 @@ CAFFE_API int CaffeNetMarkOutput(NetHandle net, const char *name);
 /*!
  * \brief forward network
  * \note  fill network input blobs before calling this function
- * \param reshape if your network input data size changed, set this to 1
  */
-CAFFE_API int CaffeNetForward(NetHandle net, int reshape);
+CAFFE_API int CaffeNetForward(NetHandle net);
 /*!
  * \brief get network internal blob by name
  * \param net NetHandle

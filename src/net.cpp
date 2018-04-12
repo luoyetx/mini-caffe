@@ -153,7 +153,7 @@ void Net::Forward(bool reshape) {
     std::multimap<size_t, Blob*> pool;
     for (int i = 0; i < layers_.size(); ++i) {
       // blobs used by layer i
-      DLOG(INFO) << "Layer " << layer_names_[i];
+      DLOG(INFO) << "[MemPlace] Layer " << layer_names_[i];
       std::vector<Blob*> temps = layers_[i]->GetTempBlobs();
       std::vector<Blob*>& bottoms = bottom_vecs_[i];
       std::vector<Blob*>& tops = top_vecs_[i];
@@ -185,24 +185,24 @@ void Net::Forward(bool reshape) {
         Blob* blob = p.second;
         auto it = pool.lower_bound(size);
         if (it != pool.end() && it->first <= size * 2) {
-          DLOG(INFO) << "Share " << blob->name() << "(" << size << ") with " << it->second->name() << "(" << it->first << ")";
+          DLOG(INFO) << "[MemPlace] Share " << blob->name() << "(" << size << ") with " << it->second->name() << "(" << it->first << ")";
           Blob* share = it->second;
           blob->ShareData(*share);
           pool.erase(it);
         }
         else {
-          DLOG(INFO) << "Alloc " << blob->name() << "(" << size << ")";
+          DLOG(INFO) << "[MemPlace] Alloc " << blob->name() << "(" << size << ")";
         }
       }
       // put unused blob to pool
       for (int blob_idx : bottom_id_vecs_[i]) {
         if (blob_life_time_[blob_idx] <= i) {
-          DLOG(INFO) << "Put " << blobs_[blob_idx]->name() << "(" << blobs_[blob_idx]->capacity() << ") to Pool";
+          DLOG(INFO) << "[MemPlace] Put " << blobs_[blob_idx]->name() << "(" << blobs_[blob_idx]->capacity() << ") to Pool";
           pool.insert(std::make_pair(blobs_[blob_idx]->capacity(), blobs_[blob_idx].get()));
         }
       }
       for (auto* blob : temps) {
-        DLOG(INFO) << "Put " << blob->name() << "(" << blob->capacity() << ") to Pool";
+        DLOG(INFO) << "[MemPlace] Put " << blob->name() << "(" << blob->capacity() << ") to Pool";
         pool.insert(std::make_pair(blob->capacity(), blob));
       }
     }
