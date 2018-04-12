@@ -216,6 +216,14 @@ void Net::Forward(bool reshape) {
     layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     profiler->ScopeEnd();
   }
+  // sync gpu data
+  if (Caffe::mode() == Caffe::GPU) {
+    profiler->ScopeStart("Sync");
+    for (auto* blob : top_vecs_[layers_.size() - 1]) {
+      blob->cpu_data();
+    }
+    profiler->ScopeEnd();
+  }
 }
 
 void Net::Reshape() {

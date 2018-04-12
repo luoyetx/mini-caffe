@@ -73,7 +73,7 @@ public final class Net {
     private native int jniCreateFromBuffer(byte[] net_buffer, byte[] model_buffer);
     private native int jniDestroy();
     private native int jniMarkOutput(String name);
-    private native int jniForward();
+    private native int jniForward(boolean reshape);
     private native int jniGetBlob(String name, Blob blob);
     // internal Net handle
     private long handle;
