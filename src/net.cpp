@@ -69,6 +69,7 @@ void Net::Init(const NetParameter& param) {
   for (size_t layer_id = 0; layer_id < layer_names_.size(); ++layer_id) {
     layer_names_index_[layer_names_[layer_id]] = layer_id;
   }
+  PlaceMemory();
 }
 
 // Helper for Net::Init: add a new top blob to the net.
@@ -143,76 +144,79 @@ void Net::AppendParam(const NetParameter& param, const int layer_id,
   param_id_vecs_[layer_id].push_back(net_param_id);
 }
 
+void Net::PlaceMemory() {
+  // get shape info
+  this->Reshape();
+  // place
+  using BlobPair = std::pair<size_t, Blob*>;
+  std::multimap<size_t, Blob*> pool;
+  for (int i = 0; i < layers_.size(); ++i) {
+    // blobs used by layer i
+    DLOG(INFO) << "[MemPlace] Layer " << layer_names_[i];
+    std::vector<Blob*> temps = layers_[i]->GetTempBlobs();
+    std::vector<Blob*>& bottoms = bottom_vecs_[i];
+    std::vector<Blob*>& tops = top_vecs_[i];
+    // blobs need to place memory
+    std::vector<BlobPair> blobs;
+    blobs.reserve(temps.size() + tops.size());
+    for (auto* blob : temps) {
+      blobs.push_back(std::make_pair(blob->count(), blob));
+    }
+    for (auto* blob : tops) {
+      bool should_place = true;
+      // check inplace
+      for (auto* bottom_blob : bottoms) {
+        if (bottom_blob == blob) {
+          should_place = false;
+          break;
+        }
+      }
+      if (should_place) {
+        blobs.push_back(std::make_pair(blob->count(), blob));
+      }
+    }
+    std::sort(blobs.begin(), blobs.end(), [](const BlobPair& x, const BlobPair& y) {
+      return x.first > y.first;
+    });
+    // search pool to place memory if possible
+    for (auto& p : blobs) {
+      size_t size = p.first;
+      Blob* blob = p.second;
+      auto it = pool.lower_bound(size);
+      if (it != pool.end() && it->first <= size * 2) {
+        DLOG(INFO) << "[MemPlace] Share " << blob->name() << "(" << size << ") with " << it->second->name() << "(" << it->first << ")";
+        Blob* share = it->second;
+        blob->ShareData(*share);
+        pool.erase(it);
+      }
+      else {
+        DLOG(INFO) << "[MemPlace] Alloc " << blob->name() << "(" << size << ")";
+      }
+    }
+    // put unused blob to pool
+    for (int blob_idx : bottom_id_vecs_[i]) {
+      if (blob_life_time_[blob_idx] <= i) {
+        DLOG(INFO) << "[MemPlace] Put " << blobs_[blob_idx]->name() << "(" << blobs_[blob_idx]->capacity() << ") to Pool";
+        pool.insert(std::make_pair(blobs_[blob_idx]->capacity(), blobs_[blob_idx].get()));
+      }
+    }
+    for (auto* blob : temps) {
+      DLOG(INFO) << "[MemPlace] Put " << blob->name() << "(" << blob->capacity() << ") to Pool";
+      pool.insert(std::make_pair(blob->capacity(), blob));
+    }
+  }
+}
+
 void Net::Forward(bool reshape) {
   // static place memory
   if (reshape) {
-    // get shape info
-    this->Reshape();
-    // place
-    using BlobPair = std::pair<size_t, Blob*>;
-    std::multimap<size_t, Blob*> pool;
-    for (int i = 0; i < layers_.size(); ++i) {
-      // blobs used by layer i
-      DLOG(INFO) << "[MemPlace] Layer " << layer_names_[i];
-      std::vector<Blob*> temps = layers_[i]->GetTempBlobs();
-      std::vector<Blob*>& bottoms = bottom_vecs_[i];
-      std::vector<Blob*>& tops = top_vecs_[i];
-      // blobs need to place memory
-      std::vector<BlobPair> blobs;
-      blobs.reserve(temps.size() + tops.size());
-      for (auto* blob : temps) {
-        blobs.push_back(std::make_pair(blob->count(), blob));
-      }
-      for (auto* blob : tops) {
-        bool should_place = true;
-        // check inplace
-        for (auto* bottom_blob : bottoms) {
-          if (bottom_blob == blob) {
-            should_place = false;
-            break;
-          }
-        }
-        if (should_place) {
-          blobs.push_back(std::make_pair(blob->count(), blob));
-        }
-      }
-      std::sort(blobs.begin(), blobs.end(), [](const BlobPair& x, const BlobPair& y) {
-        return x.first > y.first;
-      });
-      // search pool to place memory if possible
-      for (auto& p : blobs) {
-        size_t size = p.first;
-        Blob* blob = p.second;
-        auto it = pool.lower_bound(size);
-        if (it != pool.end() && it->first <= size * 2) {
-          DLOG(INFO) << "[MemPlace] Share " << blob->name() << "(" << size << ") with " << it->second->name() << "(" << it->first << ")";
-          Blob* share = it->second;
-          blob->ShareData(*share);
-          pool.erase(it);
-        }
-        else {
-          DLOG(INFO) << "[MemPlace] Alloc " << blob->name() << "(" << size << ")";
-        }
-      }
-      // put unused blob to pool
-      for (int blob_idx : bottom_id_vecs_[i]) {
-        if (blob_life_time_[blob_idx] <= i) {
-          DLOG(INFO) << "[MemPlace] Put " << blobs_[blob_idx]->name() << "(" << blobs_[blob_idx]->capacity() << ") to Pool";
-          pool.insert(std::make_pair(blobs_[blob_idx]->capacity(), blobs_[blob_idx].get()));
-        }
-      }
-      for (auto* blob : temps) {
-        DLOG(INFO) << "[MemPlace] Put " << blob->name() << "(" << blob->capacity() << ") to Pool";
-        pool.insert(std::make_pair(blob->capacity(), blob));
-      }
-    }
+    PlaceMemory();
   }
   // forward network
   Profiler *profiler = Profiler::Get();
   for (int i = 0; i < layers_.size(); ++i) {
     // LOG(INFO) << "Forwarding " << layer_names_[i];
     profiler->ScopeStart(layer_names_[i].c_str());
-    layers_[i]->Reshape(bottom_vecs_[i], top_vecs_[i]);
     layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
     profiler->ScopeEnd();
   }

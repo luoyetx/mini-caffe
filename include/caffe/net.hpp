@@ -122,6 +122,8 @@ class CAFFE_API Net {
   void AppendParam(const NetParameter& param, const int layer_id,
                    const int param_id);
 
+  void PlaceMemory();
+
   /// @brief The network name
   string name_;
   /// @brief Individual layers in the net
