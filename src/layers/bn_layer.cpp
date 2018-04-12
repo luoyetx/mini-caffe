@@ -43,6 +43,11 @@ void BNLayer::LayerSetUp(const vector<Blob*>& bottom,
     caffe_set(this->blobs_[3]->count(), static_cast<real_t>(1),
         this->blobs_[3]->mutable_cpu_data());
   }
+  // set temp blob name
+  broadcast_buffer_.set_name(this->layer_param_.name() + "__broadcast_buffer__");
+  spatial_statistic_.set_name(this->layer_param_.name() + "__spatial_statistic__");
+  x_norm_.set_name(this->layer_param_.name() + "__x_norm__");
+  spatial_sum_multiplier_.set_name(this->layer_param_.name() + "__spatial_sum_multiplier__");
 }
 
 void BNLayer::Reshape(const vector<Blob*>& bottom,

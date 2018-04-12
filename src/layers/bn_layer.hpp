@@ -17,6 +17,7 @@ class BNLayer : public Layer {
 		                      const vector<Blob*>& top);
 	virtual void Reshape(const vector<Blob*>& bottom,
 		                   const vector<Blob*>& top);
+  virtual vector<Blob*> GetTempBlobs() { return{ &broadcast_buffer_, &spatial_statistic_, &x_norm_, &spatial_sum_multiplier_ }; }
 
 	virtual const char* type() const { return "BN"; }
 	virtual int ExactNumBottomBlobs() const { return 1; }

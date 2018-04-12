@@ -20,6 +20,7 @@ class BaseConvolutionLayer : public Layer {
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
+  virtual vector<Blob*> GetTempBlobs() { return {&col_buffer_}; }
 
   virtual int MinBottomBlobs() const { return 1; }
   virtual int MinTopBlobs() const { return 1; }
