@@ -24,9 +24,6 @@ class CuDNNDeconvolutionLayer : public DeconvolutionLayer {
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
-  virtual void ClearInternalBuffer() {
-    workspaceDataBlob.Release();
-  }
   virtual ~CuDNNDeconvolutionLayer();
 
  protected:
