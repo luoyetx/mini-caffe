@@ -5,11 +5,10 @@
 #include <caffe/profiler.hpp>
 
 int main(int argc, char *argv[]) {
-  CHECK_EQ(argc, 5) << "[Usage]: ./benchmark net.prototxt iterations gpu_id";
+  CHECK_EQ(argc, 4) << "[Usage]: ./benchmark net.prototxt iterations gpu_id";
   std::string proto = argv[1];
-  std::string model = argv[2];
-  int iters = atoi(argv[3]);
-  int gpu_id = atoi(argv[4]);
+  int iters = atoi(argv[2]);
+  int gpu_id = atoi(argv[3]);
   LOG(INFO) << "net prototxt: " << proto;
   LOG(INFO) << "net forward iterations: " << iters;
   LOG(INFO) << "run on device " << gpu_id;
