@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
   }
   // forward
   clock_t start = clock();
-  CHECK_SUCCESS(CaffeNetForward(net, 0));
+  CHECK_SUCCESS(CaffeNetForward(net));
   clock_t end = clock();
   float time = (float)(end - start) / CLOCKS_PER_SEC;  // s
   time *= 1000;  // ms
