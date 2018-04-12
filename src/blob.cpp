@@ -57,13 +57,13 @@ void Blob::ReshapeLike(const Blob& other) {
 Blob::Blob(const int num, const int channels,
            const int height, const int width)
     // capacity_ must be initialized before calling Reshape
-    : capacity_(0) {
+    : capacity_(0), name_("") {
   Reshape(num, channels, height, width);
 }
 
 Blob::Blob(const vector<int>& shape)
     // capacity_ must be initialized before calling Reshape
-    : capacity_(0) {
+    : capacity_(0), name_("") {
   Reshape(shape);
 }
 
@@ -93,8 +93,9 @@ real_t* Blob::mutable_gpu_data() {
 }
 
 void Blob::ShareData(const Blob& other) {
-  CHECK_EQ(count_, other.count());
+  CHECK_LE(count_, other.capacity_);  // memory of `other` can place this blob
   CHECK(other.data_);
+  capacity_ = other.capacity_;
   data_ = other.data_;
 }
 
