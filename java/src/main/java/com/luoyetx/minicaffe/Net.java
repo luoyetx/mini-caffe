@@ -52,8 +52,8 @@ public final class Net {
      * this function may make blobs in Java side out of date,
      * call `Blob.syncToJava` if need
      */
-    public void forward() {
-        if (jniForward() != 0) {
+    public void forward(boolean reshape) {
+        if (jniForward(reshape) != 0) {
             throw new RuntimeException(Utils.GetLastError());
         }
     }

@@ -51,7 +51,7 @@ public class MiniCaffeTest {
         blob.syncToC();
         // forward network
         long start = System.currentTimeMillis();
-        net.forward();
+        net.forward(true);
         long end = System.currentTimeMillis();
         System.out.println("Forward Network costs " + (end - start) + " ms");
     }

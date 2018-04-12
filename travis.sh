@@ -20,7 +20,7 @@ unzip -o model.zip
 # test
 ./run_net
 ./run_net_c
-./benchmark ./model/resnet.prototxt ./model/resnet.caffemodel 1 -1
+./benchmark ./model/resnet.prototxt 1 -1
 cd ..
 
 # java test

@@ -124,10 +124,10 @@ CaffeJNIMethod(Net, MarkOutput, jint)(JNIEnv *env, jobject thiz,
   return 0;
 }
 
-CaffeJNIMethod(Net, Forward, jint)(JNIEnv *env, jobject thiz) {
+CaffeJNIMethod(Net, Forward, jint)(JNIEnv *env, jobject thiz, jboolean reshape) {
   NetHandle net;
   JNIGetHandleFromObj(thiz, net);
-  CHECK_SUCCESS(CaffeNetForward(net));
+  CHECK_SUCCESS(CaffeNetForward(net, reshape));
   return 0;
 }
 
