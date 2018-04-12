@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
   profiler->TurnON();
   for (int i = 0; i < iters; i++) {
     uint64_t tic = profiler->Now();
-    net.Forward(false);
+    net.Forward();
     uint64_t toc = profiler->Now();
     LOG(INFO) << "Forward costs " << (toc - tic) / 1000. << " ms";
   }
