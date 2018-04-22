@@ -45,11 +45,7 @@ class BatchNormLayer : public Layer {
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
-  virtual void ClearInternalBuffer() {
-    mean_.Release();
-    variance_.Release();
-    temp_.Release();
-  }
+  virtual vector<Blob*> GetTempBlobs() { return {&temp_}; }
 
   virtual const char* type() const { return "BatchNorm"; }
   virtual int ExactNumBottomBlobs() const { return 1; }

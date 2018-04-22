@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "./reshape_layer.hpp"
+#include "../util//math_functions.hpp"
 
 namespace caffe {
 
@@ -85,6 +86,20 @@ void ReshapeLayer::Reshape(const vector<Blob*>& bottom,
   CHECK_EQ(top[0]->count(), bottom[0]->count())
       << "output count must match input count";
   top[0]->ShareData(*bottom[0]);
+}
+
+void ReshapeLayer::Forward_cpu(const vector<Blob*>& bottom,
+                               const vector<Blob*>& top) {
+  if (bottom[0] != top[0]) {
+    caffe_copy(bottom[0]->count(), bottom[0]->cpu_data(), top[0]->mutable_cpu_data());
+  }
+}
+
+void ReshapeLayer::Forward_gpu(const vector<Blob*>& bottom,
+                               const vector<Blob*>& top) {
+  if (bottom[0] != top[0]) {
+    caffe_copy(bottom[0]->count(), bottom[0]->gpu_data(), top[0]->mutable_gpu_data());
+  }
 }
 
 REGISTER_LAYER_CLASS(Reshape);

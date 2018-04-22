@@ -56,6 +56,11 @@ void NormalizeLayer::LayerSetUp(const vector<Blob*>& bottom,
     CHECK_EQ(this->blobs_[0]->count(), channels)
         << "Scale size is inconsistent with prototxt config";
   }
+  // set temp blob name
+  buffer_.set_name(this->layer_param_.name() + "__buffer__");
+  buffer_spatial_.set_name(this->layer_param_.name() + "__buffer_spatial__");
+  norm_.set_name(this->layer_param_.name() + "__norm__");
+  sum_spatial_multiplier_.set_name(this->layer_param_.name() + "__sum_spatial_multiplier__");
 }
 
 void NormalizeLayer::Reshape(const vector<Blob*>& bottom,

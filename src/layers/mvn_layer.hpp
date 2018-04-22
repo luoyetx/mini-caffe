@@ -18,11 +18,7 @@ class MVNLayer : public Layer {
       : Layer(param) {}
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
-  virtual void ClearInternalBuffer() {
-    mean_.Release();
-    variance_.Release();
-    temp_.Release();
-  }
+  virtual vector<Blob*> GetTempBlobs() { return {&mean_, &variance_, &temp_}; }
 
   virtual const char* type() const { return "MVN"; }
   virtual int ExactNumBottomBlobs() const { return 1; }

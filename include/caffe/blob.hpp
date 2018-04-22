@@ -25,7 +25,7 @@ class SyncedMemory;
 class CAFFE_API Blob {
  public:
   Blob()
-      : data_(), count_(0), capacity_(0) {}
+      : data_(), count_(0), capacity_(0), name_("") {}
 
   /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
   explicit Blob(const int num, const int channels,
@@ -74,6 +74,7 @@ class CAFFE_API Blob {
   }
   int num_axes() const { return static_cast<int>(shape_.size()); }
   int count() const { return count_; }
+  int capacity() const { return capacity_; }
 
   /**
    * @brief Compute the volume of a slice; i.e., the product of dimensions
@@ -207,10 +208,10 @@ class CAFFE_API Blob {
    */
   void ShareData(const Blob& other);
 
-  /*! \brief release memory */
-  void Release();
-
   bool ShapeEquals(const BlobProto& other);
+
+  std::string name() { return name_; }
+  void set_name(std::string name) { name_ = name; }
 
  protected:
   shared_ptr<SyncedMemory> data_;
@@ -218,6 +219,7 @@ class CAFFE_API Blob {
   vector<int> shape_;
   int count_;
   int capacity_;
+  std::string name_;
 
   DISABLE_COPY_AND_ASSIGN(Blob);
 };  // class Blob

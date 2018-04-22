@@ -15,10 +15,6 @@ class ProposalLayer : public Layer {
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
-  virtual void ClearInternalBuffer() {
-    proposals_.Release();
-    nms_mask_.Release();
-  }
 
   virtual const char* type() const { return "ProposalLayer"; }
 

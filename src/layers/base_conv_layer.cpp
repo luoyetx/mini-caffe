@@ -177,6 +177,8 @@ void BaseConvolutionLayer::LayerSetUp(const vector<Blob*>& bottom,
   }
   kernel_dim_ = this->blobs_[0]->count(1);
   weight_offset_ = conv_out_channels_ * kernel_dim_ / group_;
+  // set temp blob name
+  col_buffer_.set_name(this->layer_param_.name() + "__col_buffer__");
 }
 
 void BaseConvolutionLayer::Reshape(const vector<Blob*>& bottom,

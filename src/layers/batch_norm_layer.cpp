@@ -32,6 +32,8 @@ void BatchNormLayer::LayerSetUp(const vector<Blob*>& bottom,
                 this->blobs_[i]->mutable_cpu_data());
     }
   }
+  // set temp blob name
+  temp_.set_name(this->layer_param_.name() + "__temp__");
 }
 
 void BatchNormLayer::Reshape(const vector<Blob*>& bottom,
@@ -45,7 +47,7 @@ void BatchNormLayer::Reshape(const vector<Blob*>& bottom,
   mean_.Reshape(sz);
   variance_.Reshape(sz);
   temp_.ReshapeLike(*bottom[0]);
-  sz[0]=bottom[0]->shape(0);
+  sz[0] = bottom[0]->shape(0);
   batch_sum_multiplier_.Reshape(sz);
 
   int spatial_dim = bottom[0]->count()/(channels_*bottom[0]->shape(0));

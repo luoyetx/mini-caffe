@@ -20,6 +20,7 @@ class NormalizeLayer : public Layer {
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
                        const vector<Blob*>& top);
+  virtual vector<Blob*> GetTempBlobs() { return {&buffer_, &buffer_spatial_, &norm_, &sum_spatial_multiplier_}; }
 
   virtual inline const char* type() const { return "Normalize"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }

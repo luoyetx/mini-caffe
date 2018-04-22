@@ -61,7 +61,7 @@ void DetectionOutputLayer::Reshape(const vector<Blob*>& bottom,
   CHECK_EQ(num_priors_ * num_classes_, bottom[1]->channels())
       << "Number of priors must match number of confidence predictions.";
   // num() and channels() are 1.
-  vector<int> top_shape(2, 1);
+  vector<int> top_shape;
   // Since the number of bboxes to be kept is unknown before nms, we manually
   // set it to (fake) 1.
   top_shape.push_back(1);

@@ -93,7 +93,7 @@ int CaffeNetMarkOutput(NetHandle net, const char *name) {
 
 int CaffeNetForward(NetHandle net) {
   API_BEGIN();
-  static_cast<caffe::Net*>(net)->Forward();
+  static_cast<caffe::Net*>(net)->Forward(true);
   API_END();
 }
 

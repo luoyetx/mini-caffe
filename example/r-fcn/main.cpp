@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
 
   caffe::Profiler* profiler = caffe::Profiler::Get();
   profiler->TurnON();
+  uint64_t tic = profiler->Now();
 
   int height = img.rows;
   int width = img.cols;
@@ -137,8 +138,11 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  uint64_t toc = profiler->Now();
   profiler->TurnOFF();
   profiler->DumpProfile("./rfcn-profile.json");
+
+  LOG(INFO) << "Costs " << (toc - tic) / 1000.f << " ms";
 
   MemPoolState st = caffe::MemPoolGetState();
   auto __Calc__ = [](int size) -> double {

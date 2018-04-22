@@ -43,8 +43,8 @@ void PermuteLayer::Forward_gpu(const vector<Blob*>& bottom,
         num_axes_, top_data);
     CUDA_POST_KERNEL_CHECK;
   } else {
-    // If there is no need to permute, we share data to save memory.
-    top[0]->ShareData(*bottom[0]);
+    // If there is no need to permute
+    caffe_copy(bottom[0]->count(), bottom[0]->gpu_data(), top[0]->mutable_gpu_data());
   }
 }
 

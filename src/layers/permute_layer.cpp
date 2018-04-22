@@ -100,8 +100,8 @@ void PermuteLayer::Forward_cpu(const vector<Blob*>& bottom,
     Permute(top_count, bottom_data, permute_order, old_steps,
             new_steps, num_axes_, top_data);
   } else {
-    // If there is no need to permute, we share data to save memory.
-    top[0]->ShareData(*bottom[0]);
+    // If there is no need to permute
+    caffe_copy(bottom[0]->count(), bottom[0]->cpu_data(), top[0]->mutable_cpu_data());
   }
 }
 
