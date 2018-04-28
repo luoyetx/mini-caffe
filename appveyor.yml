@@ -14,24 +14,27 @@ environment:
   PYTHON2: "C:\\Python27-x64"
   PYTHON3: "C:\\Python35-x64"
 
-before_build:
+install:
   - cmd: |
       git submodule update --init
       cd 3rdparty/src/protobuf/cmake
       mkdir build
       cd build
-      cmake .. -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -G "Visual Studio 12 2013 Win64"
+      cmake .. -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -G "Visual Studio 14 2015 Win64"
       msbuild protobuf.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
       msbuild protobuf.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
       cd ../../../../../
       call copydeps.bat
+
+before_build:
+  - cmd: |
       call generatepb.bat
 
 build_script:
   - cmd: |
       mkdir build
       cd build
-      cmake .. -DUSE_JAVA=ON -G "Visual Studio 12 2013 Win64"
+      cmake .. -DUSE_JAVA=ON -G "Visual Studio 14 2015 Win64"
       msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
       cd ..
 
