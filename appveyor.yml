@@ -6,7 +6,7 @@ pull_requests:
 skip_tags: true
 skip_branch_with_pr: true
 
-image: Visual Studio 2013
+image: Visual Studio 2015
 
 environment:
   URL_3rdparty: https://github.com/luoyetx/misc/blob/master/mini-caffe/3rdparty.zip?raw=true
@@ -15,13 +15,16 @@ environment:
   PYTHON3: "C:\\Python35-x64"
 
 install:
-  - ps: |
-      if (!(Test-Path "3rdparty.zip")) {
-        echo "Downloading 3rdparty.zip from ${env:URL_3rdparty}"
-        appveyor DownloadFile "${env:URL_3rdparty}" -FileName 3rdparty.zip -Timeout 1200000
-      }
   - cmd: |
-      7z x 3rdparty.zip -y -o"%APPVEYOR_BUILD_FOLDER%" >NUL
+      git submodule update --init
+      cd 3rdparty/src/protobuf/cmake
+      mkdir build
+      cd build
+      cmake .. -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -G "Visual Studio 14 2015 Win64"
+      msbuild protobuf.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
+      msbuild protobuf.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
+      cd ../../../../../
+      call copydeps.bat
 
 before_build:
   - cmd: |
@@ -31,7 +34,7 @@ build_script:
   - cmd: |
       mkdir build
       cd build
-      cmake .. -DUSE_JAVA=ON -G "Visual Studio 12 2013 Win64"
+      cmake .. -DUSE_JAVA=ON -G "Visual Studio 14 2015 Win64"
       msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
       cd ..
 
