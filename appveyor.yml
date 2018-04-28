@@ -6,7 +6,7 @@ pull_requests:
 skip_tags: true
 skip_branch_with_pr: true
 
-image: Visual Studio 2013
+image: Visual Studio 2015
 
 environment:
   URL_3rdparty: https://github.com/luoyetx/misc/blob/master/mini-caffe/3rdparty.zip?raw=true
