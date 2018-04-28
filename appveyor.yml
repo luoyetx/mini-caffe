@@ -14,17 +14,16 @@ environment:
   PYTHON2: "C:\\Python27-x64"
   PYTHON3: "C:\\Python35-x64"
 
-install:
-  - ps: |
-      if (!(Test-Path "3rdparty.zip")) {
-        echo "Downloading 3rdparty.zip from ${env:URL_3rdparty}"
-        appveyor DownloadFile "${env:URL_3rdparty}" -FileName 3rdparty.zip -Timeout 1200000
-      }
-  - cmd: |
-      7z x 3rdparty.zip -y -o"%APPVEYOR_BUILD_FOLDER%" >NUL
-
 before_build:
   - cmd: |
+      cd 3rdparty/src/protobuf/cmake
+      mkdir build
+      cd build
+      cmake .. -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_MSVC_STATIC_RUNTIME=OFF -G "Visual Studio 12 2013 Win64"
+      msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Debug;Platform=x64 /m
+      msbuild mini-caffe.sln /t:Rebuild /p:Configuration=Release;Platform=x64 /m
+      cd ../../../../../
+      call copydeps.bat
       call generatepb.bat
 
 build_script:
