@@ -144,7 +144,11 @@ MemoryPool::~MemoryPool() {
   Clear();
   // small object pool
   for (auto& block : obj_pool_) {
+#ifdef USE_CUDA
+    CUDA_CHECK(cudaFreeHost(block.ptr));
+#else
     free(block.ptr);
+#endif
   }
 }
 
@@ -189,7 +193,11 @@ MemBlock MemoryPool::RequestCPU(size_t size) {
       else {
         curr_page_.device = -1;
         curr_page_.size = kPageSize;
+#ifdef USE_CUDA
+        CUDA_CHECK(cudaMallocHost(static_cast<void**>(&curr_page_.ptr), kPageSize));
+#else
         curr_page_.ptr = malloc(kPageSize);
+#endif
         st_.cpu_mem += kPageSize;
         obj_pool_.push_back(curr_page_);
         block.ptr = curr_page_.ptr;
@@ -203,7 +211,11 @@ MemBlock MemoryPool::RequestCPU(size_t size) {
     if (it == cpu_pool_.end() || !ShouldBorrowMem(it->second.size, size)) {
       block.device = -1;
       block.size = size;
+#ifdef USE_CUDA
+      CUDA_CHECK(cudaMallocHost(static_cast<void**>(&block.ptr), size));
+#else
       block.ptr = malloc(size);
+#endif
       st_.cpu_mem += size;
       DLOG(INFO) << "[CPU] Requested " << MemSize(size) << ", Create " << MemSize(block.size);
     }
@@ -280,7 +292,11 @@ void MemoryPool::ReturnGPU(MemBlock block) {
 void MemoryPool::Clear() {
   for (auto it = cpu_pool_.begin(); it != cpu_pool_.end(); ++it) {
     MemBlock& block = it->second;
+#ifdef USE_CUDA
+    CUDA_CHECK(cudaFreeHost(block.ptr));
+#else
     free(block.ptr);
+#endif
     st_.cpu_mem -= block.size;
     st_.unused_cpu_mem -= block.size;
     DLOG(INFO) << "[CPU] Free " << MemSize(block.size);
