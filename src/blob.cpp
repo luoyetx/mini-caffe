@@ -37,6 +37,7 @@ void Blob::Reshape(const vector<int>& shape) {
   }
   if (count_ > capacity_) {
     capacity_ = count_;
+    own_data_ = true;
     data_.reset(new SyncedMemory(capacity_ * sizeof(real_t)));
   }
 }
@@ -96,7 +97,15 @@ void Blob::ShareData(const Blob& other) {
   CHECK_LE(count_, other.capacity_);  // memory of `other` can place this blob
   CHECK(other.data_);
   capacity_ = other.capacity_;
+  own_data_ = false;
   data_ = other.data_;
+}
+
+void Blob::ResetMemory() {
+  if (!own_data_) {
+    own_data_ = true;
+    data_.reset(new SyncedMemory(capacity_ * sizeof(real_t)));
+  }
 }
 
 bool Blob::ShapeEquals(const BlobProto& other) {
