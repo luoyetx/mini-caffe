@@ -25,7 +25,7 @@ class SyncedMemory;
 class CAFFE_API Blob {
  public:
   Blob()
-      : data_(), count_(0), capacity_(0), name_("") {}
+      : data_(), count_(0), capacity_(0), name_(""), own_data_(false) {}
 
   /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
   explicit Blob(const int num, const int channels,
@@ -213,6 +213,9 @@ class CAFFE_API Blob {
   std::string name() { return name_; }
   void set_name(std::string name) { name_ = name; }
 
+  // Reset blob memory
+  void ResetMemory();
+
  protected:
   shared_ptr<SyncedMemory> data_;
   shared_ptr<SyncedMemory> shape_data_;
@@ -220,6 +223,7 @@ class CAFFE_API Blob {
   int count_;
   int capacity_;
   std::string name_;
+  bool own_data_;
 
   DISABLE_COPY_AND_ASSIGN(Blob);
 };  // class Blob

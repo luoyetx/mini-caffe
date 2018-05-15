@@ -160,6 +160,7 @@ void Net::PlaceMemory() {
     std::vector<BlobPair> blobs;
     blobs.reserve(temps.size() + tops.size());
     for (auto* blob : temps) {
+      blob->ResetMemory();
       blobs.push_back(std::make_pair(blob->count(), blob));
     }
     for (auto* blob : tops) {
@@ -172,6 +173,7 @@ void Net::PlaceMemory() {
         }
       }
       if (should_place) {
+        blob->ResetMemory();
         blobs.push_back(std::make_pair(blob->count(), blob));
       }
     }
