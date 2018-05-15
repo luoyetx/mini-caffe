@@ -181,54 +181,54 @@ int main(int argc, char *argv[]) {
   Profiler *profiler = Profiler::Get();
   profiler->TurnON();
 
-  //// test nin, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#network-in-network-model
-  //{
-  //  LOG(INFO) << "Test NIN";
-  //  auto test = NIN("model/nin.prototxt", "model/nin.caffemodel");
-  //  timer.Tic();
-  //  profiler->ScopeStart("nin");
-  //  test.Forward();
-  //  profiler->ScopeEnd();
-  //  timer.Toc();
-  //  LOG(INFO) << "Forward NIN costs " << timer.Elasped() << " ms";
-  //}
-  //// test googlenet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#cnn-models-for-salient-object-subitizing
-  //{
-  //  LOG(INFO) << "Test GoogLeNet";
-  //  auto test = GoogLeNet("model/googlenet.prototxt", "model/googlenet.caffemodel");
-  //  timer.Tic();
-  //  profiler->ScopeStart("googlenet");
-  //  test.Forward();
-  //  profiler->ScopeEnd();
-  //  timer.Toc();
-  //  LOG(INFO) << "Forward GoogLeNet costs " << timer.Elasped() << " ms";
-  //}
-  //// test resnet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#imagenet-pre-trained-models-with-batch-normalization
-  //{
-  //  LOG(INFO) << "Test ResNet";
-  //  auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
-  //  timer.Tic();
-  //  profiler->ScopeStart("resnet");
-  //  test.Forward();
-  //  profiler->ScopeEnd();
-  //  timer.Toc();
-  //  LOG(INFO) << "Forward ResNet costs " << timer.Elasped() << " ms";
-  //}
+  // test nin, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#network-in-network-model
+  {
+    LOG(INFO) << "Test NIN";
+    auto test = NIN("model/nin.prototxt", "model/nin.caffemodel");
+    timer.Tic();
+    profiler->ScopeStart("nin");
+    test.Forward();
+    profiler->ScopeEnd();
+    timer.Toc();
+    LOG(INFO) << "Forward NIN costs " << timer.Elasped() << " ms";
+  }
+  // test googlenet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#cnn-models-for-salient-object-subitizing
+  {
+    LOG(INFO) << "Test GoogLeNet";
+    auto test = GoogLeNet("model/googlenet.prototxt", "model/googlenet.caffemodel");
+    timer.Tic();
+    profiler->ScopeStart("googlenet");
+    test.Forward();
+    profiler->ScopeEnd();
+    timer.Toc();
+    LOG(INFO) << "Forward GoogLeNet costs " << timer.Elasped() << " ms";
+  }
+  // test resnet, model from https://github.com/BVLC/caffe/wiki/Model-Zoo#imagenet-pre-trained-models-with-batch-normalization
+  {
+    LOG(INFO) << "Test ResNet";
+    auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
+    timer.Tic();
+    profiler->ScopeStart("resnet");
+    test.Forward();
+    profiler->ScopeEnd();
+    timer.Toc();
+    LOG(INFO) << "Forward ResNet costs " << timer.Elasped() << " ms";
+  }
 
-  //// dump profile data
-  //profiler->TurnOFF();
-  //profiler->DumpProfile("profile.json");
+  // dump profile data
+  profiler->TurnOFF();
+  profiler->DumpProfile("profile.json");
 
-  //// test multi-thread
-  //const int kThreads = 3;
-  //LOG(INFO) << "test " << kThreads << " threads";
-  //std::vector<std::thread> pool;
-  //for (int i = 0; i < kThreads; i++) {
-  //  pool.emplace_back(std::thread{thread_test});
-  //}
-  //for (int i = 0; i < kThreads; i++) {
-  //  pool[i].join();
-  //}
+  // test multi-thread
+  const int kThreads = 3;
+  LOG(INFO) << "test " << kThreads << " threads";
+  std::vector<std::thread> pool;
+  for (int i = 0; i < kThreads; i++) {
+    pool.emplace_back(std::thread{thread_test});
+  }
+  for (int i = 0; i < kThreads; i++) {
+    pool[i].join();
+  }
 
   test_io();
   test_reshape();
