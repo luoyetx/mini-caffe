@@ -145,7 +145,10 @@ MemoryPool::~MemoryPool() {
   // small object pool
   for (auto& block : obj_pool_) {
 #ifdef USE_CUDA
-    CUDA_CHECK(cudaFreeHost(block.ptr));
+    cudaError_t err = cudaFree(0);
+    if (err != cudaErrorCudartUnloading) {
+      CUDA_CHECK(cudaFreeHost(block.ptr));
+    }
 #else
     free(block.ptr);
 #endif
