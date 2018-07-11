@@ -59,6 +59,19 @@ $ make -j4
 
 If you don't use Ubuntu, then you may need to install OpenBLAS and protobuf through your system package manager if any.
 
+### Build on Mac OSX
+
+Install OpenBLAS and protobuf library through `brew`.
+
+```
+$ brew install openblas protobuf
+$ ./generate.sh
+$ mkdir build
+$ cd build
+$ cmake .. -DCMAKE_BUILD_TYPE=Release
+$ make -j4
+```
+
 ### Build for Android
 
 Mini-Caffe now can be cross compiled for Android platform, checkout the document [here](android).
