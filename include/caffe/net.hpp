@@ -33,22 +33,9 @@ class CAFFE_API Net {
   /**
    * @brief Run Forward and return the result.
    *
+   * @param reshape, if your input data shape changes, reshape is need.
    */
-  const void Forward() {
-    ForwardFromTo(0, layers_.size() - 1);
-  }
-
-  /**
-   * The From and To variants of Forward and Backward operate on the
-   * (topological) ordering by which the net is specified. For general DAG
-   * networks, note that (1) computing from one layer to another might entail
-   * extra computation on unrelated branches, and (2) computation starting in
-   * the middle may be incorrect if all of the layers of a fan-in are not
-   * included.
-   */
-  void ForwardFromTo(int start, int end);
-  void ForwardFrom(int start);
-  void ForwardTo(int end);
+  void Forward(bool reshape=true);
 
   /**
    * @brief Reshape all layers from bottom to top.
@@ -71,8 +58,6 @@ class CAFFE_API Net {
 
   /// @brief returns the network name.
   const string& name() const { return name_; }
-  /// @brief returns the layer names
-  const vector<string>& layer_names() const { return layer_names_; }
   /// @brief returns the blob names
   const vector<string>& blob_names() const { return blob_names_; }
   /// @biref return the param names
@@ -80,10 +65,6 @@ class CAFFE_API Net {
   /// @brief returns the blobs
   const vector<shared_ptr<Blob> >& blobs() const {
     return blobs_;
-  }
-  /// @brief returns the layers
-  const vector<shared_ptr<Layer> >& layers() const {
-    return layers_;
   }
   /// @brief all parameters
   const vector<shared_ptr<Blob> >& params() const {
@@ -123,11 +104,9 @@ class CAFFE_API Net {
   }
   bool has_blob(const string& blob_name) const;
   const shared_ptr<Blob> blob_by_name(const string& blob_name) const;
-  bool has_layer(const string& layer_name) const;
-  const shared_ptr<Layer> layer_by_name(const string& layer_name) const;
 
-  /// @brief calculate memory usage in MB
-  real_t MemSize() const;
+  /// @brief mark extra output named blob
+  void MarkOutputs(const std::vector<std::string>& outs);
 
  protected:
   // Helpers for Init.
@@ -143,6 +122,8 @@ class CAFFE_API Net {
   void AppendParam(const NetParameter& param, const int layer_id,
                    const int param_id);
 
+  void PlaceMemory();
+
   /// @brief The network name
   string name_;
   /// @brief Individual layers in the net
@@ -152,6 +133,7 @@ class CAFFE_API Net {
   /// @brief the blobs storing intermediate results between the layer.
   vector<shared_ptr<Blob> > blobs_;
   vector<string> blob_names_;
+  vector<int> blob_life_time_;
   std::map<string, int> blob_names_index_;
   /// @brief parameters in the network.
   vector<shared_ptr<Blob> > params_;

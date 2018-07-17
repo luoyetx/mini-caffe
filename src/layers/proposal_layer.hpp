@@ -14,9 +14,7 @@ class ProposalLayer : public Layer {
   virtual void LayerSetUp(const vector<Blob*>& bottom,
                           const vector<Blob*>& top);
   virtual void Reshape(const vector<Blob*>& bottom,
-                       const vector<Blob*>& top) {
-    //LOG(FATAL) << "Reshaping happens during the call to forward.";
-  }
+                       const vector<Blob*>& top);
 
   virtual const char* type() const { return "ProposalLayer"; }
 

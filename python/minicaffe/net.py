@@ -96,7 +96,27 @@ class Net(object):
             params[layer_name].append((name, param))
         return params
 
-    def forward(self):
-        """forward network, need to fill data blobs before call this function
+    def mark_output(self, name):
+        """mark network internal blob as output, you need to mark it if you need the data,
+        and the blob is not an output blob, otherwise you may get the wrong result
+
+        Parameters
+        ----------
+        name: string
+            blob name to mark as an output
         """
+        check_call(LIB.CaffeNetMarkOutput(self.handle, c_str(name)))
+
+    def forward(self, **kwargs):
+        """forward network, need to fill data blobs before call this function
+
+        Parameters
+        ==========
+        kwargs: dict(str: np.array)
+            input blob map
+        """
+        for k, v in kwargs.items():
+            blob = self.get_blob(k)
+            blob.reshape(*v.shape)
+            blob.data[...] = v
         check_call(LIB.CaffeNetForward(self.handle))

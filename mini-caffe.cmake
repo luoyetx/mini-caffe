@@ -14,7 +14,7 @@ if(USE_JAVA)
 endif()
 
 # turn on C++11
-if(CMAKE_COMPILER_IS_GNUCXX)
+if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
@@ -28,15 +28,21 @@ if(MSVC)
   list(APPEND Caffe_LINKER_LIBS debug libprotobufd optimized libprotobuf
                                 libopenblas)
 elseif(ANDROID)
+  # TODO https://github.com/android-ndk/ndk/issues/105
+  set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -nodefaultlibs -lgcc -lc -lm -ldl")
   if(ANDROID_EXTRA_LIBRARY_PATH)
     include_directories(${CMAKE_CURRENT_LIST_DIR}/include
                         ${ANDROID_EXTRA_LIBRARY_PATH}/include)
     link_directories(${ANDROID_EXTRA_LIBRARY_PATH}/lib)
-    list(APPEND Caffe_LINKER_LIBS openblas protobuf)
+    list(APPEND Caffe_LINKER_LIBS openblas protobuf log)
   else(ANDROID_EXTRA_LIBRARY_PATH)
     message(FATAL_ERROR "ANDROID_EXTRA_LIBRARY_PATH must be set.")
   endif(ANDROID_EXTRA_LIBRARY_PATH)
 else(MSVC)
+  if(APPLE)
+    include_directories(/usr/local/opt/openblas/include)
+    link_directories(/usr/local/opt/openblas/lib)
+  endif(APPLE)
   include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
   list(APPEND Caffe_LINKER_LIBS protobuf)
   if(BLAS STREQUAL "openblas")

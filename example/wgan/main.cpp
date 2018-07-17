@@ -8,28 +8,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-/*! \brief Timer */
-class Timer {
-  using Clock = std::chrono::high_resolution_clock;
-public:
-  /*! \brief start or restart timer */
-  inline void Tic() {
-    start_ = Clock::now();
-  }
-  /*! \brief stop timer */
-  inline void Toc() {
-    end_ = Clock::now();
-  }
-  /*! \brief return time in ms */
-  inline double Elasped() {
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_ - start_);
-    return duration.count();
-  }
-
-private:
-  Clock::time_point start_, end_;
-};
-
 int main(int argc, char **argv) {
   if (caffe::GPUAvailable()) {
     caffe::SetMode(caffe::GPU, 0);
@@ -45,16 +23,16 @@ int main(int argc, char **argv) {
   std::mt19937 gen(rd());
   std::normal_distribution<float> nd(0, 1);
   auto input = net.blob_by_name("data");
+  input->Reshape({64, 100, 1, 1});
   float *data = input->mutable_cpu_data();
   const int n = input->count();
   for (int i = 0; i < n; ++i) {
     data[i] = nd(gen);
   }
   // forward
-  Timer timer;
-  timer.Tic();
+  auto tic = profiler->Now();
   net.Forward();
-  timer.Toc();
+  auto toc = profiler->Now();
   // visualization
   auto images = net.blob_by_name("gconv5");
   const int num = images->num();
@@ -81,8 +59,9 @@ int main(int argc, char **argv) {
   }
   profiler->ScopeEnd();
   profiler->TurnOFF();
-  profiler->DumpProfile("profile.json");
-  std::cout << "generate costs " << timer.Elasped() << " ms" << std::endl;
+  profiler->DumpProfile("./wgan-profile.json");
+  LOG(INFO) << "generate costs " << double(toc - tic) / 1000 << " ms";
+  cv::imwrite("./wgan-result.jpg", canvas);
   cv::imshow("gan-face", canvas);
   cv::waitKey();
   return 0;

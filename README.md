@@ -59,17 +59,32 @@ $ make -j4
 
 If you don't use Ubuntu, then you may need to install OpenBLAS and protobuf through your system package manager if any.
 
+### Build on Mac OSX
+
+Install OpenBLAS and protobuf library through `brew`.
+
+```
+$ brew install openblas protobuf
+$ ./generate.sh
+$ mkdir build
+$ cd build
+$ cmake .. -DCMAKE_BUILD_TYPE=Release
+$ make -j4
+```
+
 ### Build for Android
 
 Mini-Caffe now can be cross compiled for Android platform, checkout the document [here](android).
 
 ### With CUDA and CUDNN support
 
-Install [CUDA8](https://developer.nvidia.com/cuda-downloads) and [cuDNN5.1](https://developer.nvidia.com/cudnn) in your system, then we can compile Mini-Caffe with GPU support. Run CMake command below.
+Install [CUDA](https://developer.nvidia.com/cuda-downloads) and [cuDNN](https://developer.nvidia.com/cudnn) in your system, then we can compile Mini-Caffe with GPU support. Run CMake command below.
 
 ```
 $ cmake .. -DUSE_CUDA=ON -DUSE_CUDNN=ON
 ```
+
+Currently we only test mini-caffe on CUDA8.0 with cuDNN5.1 and CUDA9.0 with cuDNN7.1.
 
 ### With Java support
 

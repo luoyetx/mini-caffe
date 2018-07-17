@@ -20,6 +20,7 @@ public class MiniCaffeTest {
         System.out.println("Create NIN");
         Net net = new Net("../build/model/nin.prototxt",
                           "../build/model/nin.caffemodel");
+        net.markOutput("conv1");
         Utils.OpenScope("nin");
         testForward(net);
         Utils.CloseScope();

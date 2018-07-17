@@ -25,7 +25,7 @@ class SyncedMemory;
 class CAFFE_API Blob {
  public:
   Blob()
-      : data_(), count_(0), capacity_(0) {}
+      : data_(), count_(0), capacity_(0), name_(""), own_data_(false) {}
 
   /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
   explicit Blob(const int num, const int channels,
@@ -74,6 +74,7 @@ class CAFFE_API Blob {
   }
   int num_axes() const { return static_cast<int>(shape_.size()); }
   int count() const { return count_; }
+  int capacity() const { return capacity_; }
 
   /**
    * @brief Compute the volume of a slice; i.e., the product of dimensions
@@ -179,8 +180,8 @@ class CAFFE_API Blob {
    */
   void CopyFrom(const Blob& source, bool reshape = false);
 
-  real_t data_at(const int n, const int c,
-                 const int h, const int w) const {
+  real_t data_at(const int n, const int c=0,
+                 const int h=0, const int w=0) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 
@@ -188,9 +189,8 @@ class CAFFE_API Blob {
     return cpu_data()[offset(index)];
   }
 
-  const real_t* cpu_data() const;
-  void set_cpu_data(real_t* data);
   const int* gpu_shape() const;
+  const real_t* cpu_data() const;
   const real_t* gpu_data() const;
   real_t* mutable_cpu_data();
   real_t* mutable_gpu_data();
@@ -210,12 +210,20 @@ class CAFFE_API Blob {
 
   bool ShapeEquals(const BlobProto& other);
 
+  std::string name() { return name_; }
+  void set_name(std::string name) { name_ = name; }
+
+  // Reset blob memory
+  void ResetMemory();
+
  protected:
   shared_ptr<SyncedMemory> data_;
   shared_ptr<SyncedMemory> shape_data_;
   vector<int> shape_;
   int count_;
   int capacity_;
+  std::string name_;
+  bool own_data_;
 
   DISABLE_COPY_AND_ASSIGN(Blob);
 };  // class Blob
@@ -236,8 +244,8 @@ class BlobInt : public Blob {
   explicit BlobInt(const vector<int>& shape)
     : Blob(shape) {}
 
-  int data_at(const int n, const int c,
-                     const int h, const int w) const {
+  int data_at(const int n, const int c=0,
+              const int h=0, const int w=0) const {
     return cpu_data()[offset(n, c, h, w)];
   }
 
@@ -246,7 +254,6 @@ class BlobInt : public Blob {
   }
 
   const int* cpu_data() const;
-  void set_cpu_data(int* data);
   const int* gpu_data() const;
   int* mutable_cpu_data();
   int* mutable_gpu_data();

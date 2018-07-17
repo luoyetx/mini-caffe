@@ -24,6 +24,10 @@ void MVNLayer::Reshape(const vector<Blob*>& bottom,
   real_t* multiplier_data = sum_multiplier_.mutable_cpu_data();
   caffe_set(sum_multiplier_.count(), static_cast<real_t>(1), multiplier_data);
   eps_ = this->layer_param_.mvn_param().eps();
+  // set temp blob name
+  mean_.set_name(this->layer_param_.name() + "__mean__");
+  variance_.set_name(this->layer_param_.name() + "__variance__");
+  temp_.set_name(this->layer_param_.name() + "__temp__");
 }
 
 void MVNLayer::Forward_cpu(const vector<Blob*>& bottom,

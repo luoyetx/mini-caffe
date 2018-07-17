@@ -1,4 +1,5 @@
 #include "./proposal_layer.hpp"
+#include <cmath>
 
 namespace caffe {
 
@@ -53,9 +54,9 @@ static int TransformBBox(real_t* box,
 
 /*! \brief generate base anchors */
 static void GenerateAnchors(int base_size,
-                             const vector<real_t> ratios,
-                             const vector<real_t> scales,
-                             Blob& anchors_) {
+                            const vector<real_t> ratios,
+                            const vector<real_t> scales,
+                            Blob& anchors_) {
   // base box's width & height & center location
   const real_t base_area = static_cast<real_t>(base_size * base_size);
   const real_t center = static_cast<real_t>(0.5 * (base_size - 1));
@@ -63,8 +64,8 @@ static void GenerateAnchors(int base_size,
   real_t *anchors = anchors_.mutable_cpu_data();
   for (int i = 0; i < ratios.size(); ++i) {
     // transformed width & height for given ratio factors
-    const real_t ratio_w = static_cast<real_t>(std::round(std::sqrt(base_area / ratios[i])));
-    const real_t ratio_h = static_cast<real_t>(std::round(ratio_w * ratios[i]));
+    const real_t ratio_w = static_cast<real_t>(round(std::sqrt(base_area / ratios[i])));
+    const real_t ratio_h = static_cast<real_t>(round(ratio_w * ratios[i]));
     for (int j = 0; j < scales.size(); ++j) {
       // transformed width & height for given scale factors
       const real_t scale_w = 0.5f * static_cast<real_t>(ratio_w * scales[j] - 1);
@@ -245,6 +246,18 @@ void ProposalLayer::LayerSetUp(const vector<Blob*> &bottom,
   }
 }
 
+void ProposalLayer::Reshape(const vector<Blob*>& bottom,
+                            const vector<Blob*>& top) {
+  vector<int> top_shape(2);
+  top_shape[0] = bottom[0]->shape(0) * post_nms_topn_;
+  top_shape[1] = 5;
+  top[0]->Reshape(top_shape);
+  if (top.size() > 1) {
+    top_shape.pop_back();
+    top[1]->Reshape(top_shape);
+  }
+}
+
 void ProposalLayer::Forward_cpu(const vector<Blob*>& bottom,
                                 const vector<Blob*>& top) {
   const real_t* anchors_score_map = bottom[0]->cpu_data();
@@ -288,7 +301,7 @@ void ProposalLayer::Forward_cpu(const vector<Blob*>& bottom,
                        img_height, img_width,
                        min_bbox_size, feat_stride_);
 
-  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn_);
+  SortBBox(proposals_.mutable_cpu_data(), 0, num_proposals - 1, pre_nms_topn);
 
   NonMaximumSuppressionCPU(pre_nms_topn, proposals_.cpu_data(),
                            roi_indices_.mutable_cpu_data(), num_rois,

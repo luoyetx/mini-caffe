@@ -10,15 +10,16 @@ fi
 # set up envs
 ANDROID_ROOT=`pwd`
 THIRD_PARTY_ROOT=$ANDROID_ROOT/../3rdparty/src
-ANDROID_TOOLCHAIN_FILE=$ANDROID_ROOT/android-cmake/android.toolchain.cmake
-ANDROID_NATIVE_API_LEVEL=21
-ANDROID_BUILD_JOBS=2
-ANDROID_ABIS=(arm64-v8a armeabi x86 x86_64)
+ANDROID_TOOLCHAIN_FILE=$NDK_ROOT/build/cmake/android.toolchain.cmake
+ANDROID_PLATFORM_LEVEL=21
+ANDROID_PLATFORM=android-$ANDROID_PLATFORM_LEVEL
+ANDROID_BUILD_JOBS=4
+ANDROID_ABIS=(arm64-v8a armeabi-v7a)
 MINICAFFE_JNILIBS=$ANDROID_ROOT/jniLibs
 
 echo "Android Build Root: $ANDROID_ROOT"
 echo "Android NDK Root: $NDK_ROOT"
-echo "Android Native API Level: $ANDROID_NATIVE_API_LEVEL"
+echo "Android Platform: $ANDROID_PLATFORM"
 
 # check host system
 if [ "$(uname)" = "Darwin" ]; then
@@ -41,6 +42,12 @@ fi
 # update submodule
 echo "Update git submodules"
 git submodule update --init
+
+function patch_protobuf_source {
+    cd $THIRD_PARTY_ROOT/protobuf
+    git checkout .
+    patch -p1 -i $ANDROID_ROOT/protobuf-cmake-android-unified-header-fix-build.patch
+}
 
 function build_protobuf_host {
     echo "Build protobuf host"
@@ -71,11 +78,13 @@ function build_protobuf {
     cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_TOOLCHAIN_FILE \
           -DANDROID_NDK=$NDK_ROOT \
           -DANDROID_ABI=$ANDROID_ABI \
-          -DANDROID_NATIVE_API_LEVEL=$ANDROID_NATIVE_API_LEVEL \
+          -DANDROID_ARM_NEON=ON \
+          -DANDROID_PLATFORM=$ANDROID_PLATFORM \
           -DCMAKE_INSTALL_PREFIX=$PROTOBUF_INSTALL_ROOT \
           -DCMAKE_BUILD_TYPE=Release \
           -Dprotobuf_BUILD_TESTS=OFF \
           -Dprotobuf_BUILD_SHARED_LIBS=OFF \
+          -Dprotobuf_BUILD_PROTOC_BINARIES=OFF \
           -G "Unix Makefiles" \
           $THIRD_PARTY_ROOT/protobuf/cmake
     make -j$ANDROID_BUILD_JOBS
@@ -93,42 +102,40 @@ function build_openblas {
     cp -rn $THIRD_PARTY_ROOT/OpenBLAS/* $OPENBLAS_BUILD_ROOT
     # check $ANDROID_ABI
     if [ "$ANDROID_ABI" = "arm64-v8a" ]; then
-        CROSS_SUFFIX=$NDK_ROOT/toolchains/aarch64-linux-android-4.9/prebuilt/$HOST_OS-$HOST_BIT/bin/aarch64-linux-android-
-        SYSROOT=$NDK_ROOT/platforms/android-$ANDROID_NATIVE_API_LEVEL/arch-arm64
+        GCC_TOOLCHAIN=$NDK_ROOT/toolchains/aarch64-linux-android-4.9/prebuilt/$HOST_OS-$HOST_BIT
+        LLVM_TOOLCHAIN=$NDK_ROOT/toolchains/llvm/prebuilt/$HOST_OS-$HOST_BIT
+        SYSROOT=$NDK_ROOT/sysroot
+        LINKER_SYSROOT=$NDK_ROOT/platforms/$ANDROID_PLATFORM/arch-arm64
+        CLANG_FLAGS="-target aarch64-linux-android --sysroot $SYSROOT -gcc-toolchain $GCC_TOOLCHAIN -isystem $SYSROOT/usr/include/aarch64-linux-android -D__ANDROID_API__=$ANDROID_PLATFORM_LEVEL"
+        OPENBLAS_LDFLAGS="--sysroot $LINKER_SYSROOT -L$GCC_TOOLCHAIN/lib/gcc/aarch64-linux-android/4.9.x -lm"
         TARGET=ARMV8
-        BINARY=64
-    elif [ "$ANDROID_ABI" = "armeabi" ]; then
-        CROSS_SUFFIX=$NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOST_OS-$HOST_BIT/bin/arm-linux-androideabi-
-        SYSROOT=$NDK_ROOT/platforms/android-$ANDROID_NATIVE_API_LEVEL/arch-arm
-        TARGET=ARMV5
-        BINARY=32
-    elif [ "$ANDROID_ABI" = "x86" ]; then
-        CROSS_SUFFIX=$NDK_ROOT/toolchains/x86-4.9/prebuilt/$HOST_OS-$HOST_BIT/bin/i686-linux-android-
-        SYSROOT=$NDK_ROOT/platforms/android-$ANDROID_NATIVE_API_LEVEL/arch-x86
-        TARGET=ATOM
-        BINARY=32
-    elif [ "$ANDROID_ABI" = "x86_64" ]; then
-        CROSS_SUFFIX=$NDK_ROOT/toolchains/x86_64-4.9/prebuilt/$HOST_OS-$HOST_BIT/bin/x86_64-linux-android-
-        SYSROOT=$NDK_ROOT/platforms/android-$ANDROID_NATIVE_API_LEVEL/arch-x86_64
-        TARGET=ATOM
-        BINARY=64
+    elif [ "$ANDROID_ABI" = "armeabi-v7a" ]; then
+        GCC_TOOLCHAIN=$NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOST_OS-$HOST_BIT
+        LLVM_TOOLCHAIN=$NDK_ROOT/toolchains/llvm/prebuilt/$HOST_OS-$HOST_BIT
+        SYSROOT=$NDK_ROOT/sysroot
+        LINKER_SYSROOT=$NDK_ROOT/platforms/$ANDROID_PLATFORM/arch-arm
+        CLANG_FLAGS="-target arm-linux-androideabi -marm -mfpu=neon -mfloat-abi=softfp --sysroot $SYSROOT -gcc-toolchain $GCC_TOOLCHAIN -isystem $SYSROOT/usr/include/arm-linux-androideabi -D__ANDROID_API__=$ANDROID_PLATFORM_LEVEL"
+        OPENBLAS_LDFLAGS="--sysroot $LINKER_SYSROOT -L$GCC_TOOLCHAIN/lib/gcc/arm-linux-androideabi/4.9.x"
+        TARGET=ARMV7
     else
         echo "Unsupport Android ABI: $ANDROID_ABI"
         exit 1
     fi
     cd $OPENBLAS_BUILD_ROOT
-    # make -j$ANDROID_BUILD_JOBS \
-    #      CC="${CROSS_SUFFIX}gcc --sysroot=$SYSROOT" \
-    #      FC="${CROSS_SUFFIX}gfortran --sysroot=$SYSROOT" \
-    #      CROSS_SUFFIX=$CROSS_SUFFIX \
-    #      HOSTCC=gcc USE_THREAD=1 NUM_THREADS=4 USE_OPENMP=1 \
-    #      NO_LAPACK=1 TARGET=$TARGET BINARY=$BINARY
-    make -j$ANDROID_BUILD_JOBS \
-         CC="${CROSS_SUFFIX}gcc --sysroot=$SYSROOT" \
-         NOFORTRAN=1 \
-         CROSS_SUFFIX=$CROSS_SUFFIX \
-         HOSTCC=gcc USE_THREAD=1 NUM_THREADS=4 \
-         NO_LAPACK=1 TARGET=$TARGET BINARY=$BINARY
+
+    # save current env
+    OLD_PATH=$PATH
+    OLD_LDFLAGS=$LDFLAGS
+
+    export PATH=$GCC_TOOLCHAIN/bin:$LLVM_TOOLCHAIN/bin:$PATH
+    export LDFLAGS=$OPENBLAS_LDFLAGS
+
+    make TARGET=$TARGET ONLY_CBLAS=1 AR=ar CC="$LLVM_TOOLCHAIN/bin/clang $CLANG_FLAGS" HOSTCC=gcc ARM_SOFTFP_ABI=1 -j$ANDROID_BUILD_JOBS
+
+    # restore env
+    export PATH=$OLD_PATH
+    export LDFLAGS=$OLD_LDFLAGS
+
     make PREFIX=$OPENBLAS_INSTALL_ROOT install
 }
 
@@ -147,13 +154,16 @@ function build_minicaffe {
     cmake -DCMAKE_TOOLCHAIN_FILE=$ANDROID_TOOLCHAIN_FILE \
           -DANDROID_NDK=$NDK_ROOT \
           -DANDROID_ABI=$ANDROID_ABI \
-          -DANDROID_NATIVE_API_LEVEL=$ANDROID_NATIVE_API_LEVEL \
+          -DANDROID_ARM_NEON=ON \
+          -DANDROID_PLATFORM=$ANDROID_PLATFORM \
           -DCMAKE_BUILD_TYPE=Release \
           -DANDROID_EXTRA_LIBRARY_PATH=$ANDROID_ROOT/$ANDROID_ABI-install \
           -G "Unix Makefiles" \
           $MINICAFFE_ROOT
     make -j$ANDROID_BUILD_JOBS
 }
+
+patch_protobuf_source
 
 # build protobuf for host
 build_protobuf_host

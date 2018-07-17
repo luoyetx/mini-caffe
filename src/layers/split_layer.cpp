@@ -24,13 +24,16 @@ void SplitLayer::Reshape(const vector<Blob*>& bottom,
 void SplitLayer::Forward_cpu(const vector<Blob*>& bottom,
                              const vector<Blob*>& top) {
   for (int i = 0; i < top.size(); ++i) {
-    top[i]->ShareData(*bottom[0]);
+    caffe_copy(bottom[0]->count(), bottom[0]->cpu_data(), top[i]->mutable_cpu_data());
   }
 }
 
-#ifndef USE_CUDA
-STUB_GPU(SplitLayer);
-#endif
+void SplitLayer::Forward_gpu(const vector<Blob*>& bottom,
+                             const vector<Blob*>& top) {
+  for (int i = 0; i < top.size(); ++i) {
+    caffe_copy(bottom[0]->count(), bottom[0]->gpu_data(), top[i]->mutable_gpu_data());
+  }
+}
 
 REGISTER_LAYER_CLASS(Split);
 

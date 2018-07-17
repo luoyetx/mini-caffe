@@ -31,14 +31,16 @@ int main(int argc, char *argv[]) {
   int channels = CaffeBlobChannels(blob);
   int height = CaffeBlobHeight(blob);
   int width = CaffeBlobWidth(blob);
+  int count = CaffeBlobCount(blob);
   CHECK(num == 1);
   CHECK(channels == 3);
   CHECK(height == 224);
   CHECK(width == 224);
-  CHECK(CaffeBlobReshape(blob, num, channels, height, width) == 0);
+  CHECK(count == num*channels*height*width);
+  int shape[] = { num, channels, height, width };
+  CHECK(CaffeBlobReshape(blob, 4, shape) == 0);
   // copy data
   real_t *data = CaffeBlobData(blob);
-  int count = num * channels * height * width;
   int i;
   for (i = 0; i < count; i++) {
     float x = (float)(rand()) / RAND_MAX;  // 0 ~ 1

@@ -1,13 +1,12 @@
 #include <vector>
 
 #include "./flatten_layer.hpp"
+#include "../util/math_functions.hpp"
 
 namespace caffe {
 
 void FlattenLayer::Reshape(const vector<Blob*>& bottom,
                            const vector<Blob*>& top) {
-  CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
-      "allow in-place computation.";
   const int start_axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.flatten_param().axis());
   const int end_axis = bottom[0]->CanonicalAxisIndex(
@@ -27,7 +26,16 @@ void FlattenLayer::Reshape(const vector<Blob*>& bottom,
 
 void FlattenLayer::Forward_cpu(const vector<Blob*>& bottom,
                                const vector<Blob*>& top) {
-  top[0]->ShareData(*bottom[0]);
+  if (bottom[0] != top[0]) {
+    caffe_copy(bottom[0]->count(), bottom[0]->cpu_data(), top[0]->mutable_cpu_data());
+  }
+}
+
+void FlattenLayer::Forward_gpu(const vector<Blob*>& bottom,
+  const vector<Blob*>& top) {
+  if (bottom[0] != top[0]) {
+    caffe_copy(bottom[0]->count(), bottom[0]->gpu_data(), top[0]->mutable_gpu_data());
+  }
 }
 
 REGISTER_LAYER_CLASS(Flatten);

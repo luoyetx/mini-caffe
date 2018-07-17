@@ -1,4 +1,5 @@
 #include <random>
+#include <cmath>
 #include <cstring>
 #include <chrono>
 #include <algorithm>
@@ -29,7 +30,7 @@ struct Mat {
     data_ = new real_t[size];
     memcpy(data_, m.data_, size * sizeof(real_t));
   }
-  Mat(Mat &&m) 
+  Mat(Mat &&m)
     : data_(m.data_) {
     rows_ = m.rows_;
     cols_ = m.cols_;
@@ -55,6 +56,7 @@ struct Mat {
     if (data_) delete[] data_;
   }
 
+  real_t At(int r, int c) { return data_[r*cols() + c]; }
   int rows() { return rows_; }
   int cols() { return cols_; }
   float *data() { return data_; }
@@ -120,7 +122,7 @@ struct TestFunctor {
     const int bias = input->offset(0, 1);
     const int bytes = bias * sizeof(real_t);
     for (int k = 0; k < data.size(); k++) {
-      memcpy(input->mutable_cpu_data() + 0 * bias, data[k].data(), bytes);
+      memcpy(input->mutable_cpu_data() + k * bias, data[k].data(), bytes);
     }
     // forward network
     this->net->Forward();
@@ -167,6 +169,8 @@ struct ResNet : public TestFunctor {
 };
 
 void thread_test();
+void test_io();
+void test_reshape();
 
 int main(int argc, char *argv[]) {
   if (caffe::GPUAvailable()) {
@@ -181,7 +185,6 @@ int main(int argc, char *argv[]) {
   {
     LOG(INFO) << "Test NIN";
     auto test = NIN("model/nin.prototxt", "model/nin.caffemodel");
-    LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
     profiler->ScopeStart("nin");
     test.Forward();
@@ -193,7 +196,6 @@ int main(int argc, char *argv[]) {
   {
     LOG(INFO) << "Test GoogLeNet";
     auto test = GoogLeNet("model/googlenet.prototxt", "model/googlenet.caffemodel");
-    LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
     profiler->ScopeStart("googlenet");
     test.Forward();
@@ -205,7 +207,6 @@ int main(int argc, char *argv[]) {
   {
     LOG(INFO) << "Test ResNet";
     auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
-    LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
     timer.Tic();
     profiler->ScopeStart("resnet");
     test.Forward();
@@ -218,6 +219,33 @@ int main(int argc, char *argv[]) {
   profiler->TurnOFF();
   profiler->DumpProfile("profile.json");
 
+  // test multi-thread
+  const int kThreads = 3;
+  LOG(INFO) << "test " << kThreads << " threads";
+  std::vector<std::thread> pool;
+  for (int i = 0; i < kThreads; i++) {
+    pool.emplace_back(std::thread{thread_test});
+  }
+  for (int i = 0; i < kThreads; i++) {
+    pool[i].join();
+  }
+
+  test_io();
+  test_reshape();
+  return 0;
+}
+
+void thread_test() {
+  if (caffe::GPUAvailable()) {
+    caffe::SetMode(caffe::GPU, 0);
+  }
+  LOG(INFO) << "Test ResNet";
+  auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
+  test.Forward();
+  caffe::MemPoolClear();
+}
+
+void test_io() {
   // test IO
   ifstream fin("model/resnet.prototxt");
   stringstream buffer;
@@ -235,25 +263,59 @@ int main(int argc, char *argv[]) {
   Net net(*network_param);
   net.CopyTrainedLayersFrom(*model_param);
 
-  // test multi-thread
-  const int kThreads = 3;
-  LOG(INFO) << "test " << kThreads << " threads";
-  std::vector<std::thread> pool;
-  for (int i = 0; i < kThreads; i++) {
-    pool.emplace_back(std::thread{thread_test});
-  }
-  for (int i = 0; i < kThreads; i++) {
-    pool[i].join();
-  }
-  return 0;
+  MemPoolState st = caffe::MemPoolGetState();
+  auto __Calc__ = [](int size) -> double {
+    return round(static_cast<double>(size) / (1024 * 1024) * 100) / 100;
+  };
+  LOG(INFO) << "[CPU] Hold " << __Calc__(st.cpu_mem) << " M, Not Uses " << __Calc__(st.unused_cpu_mem) << " M";
+  LOG(INFO) << "[GPU] Hold " << __Calc__(st.gpu_mem) << " M, Not Uses " << __Calc__(st.unused_gpu_mem) << " M";
 }
 
-void thread_test() {
-  if (caffe::GPUAvailable()) {
-    caffe::SetMode(caffe::GPU, 0);
-  }
-  LOG(INFO) << "Test ResNet";
-  auto test = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
-  LOG(INFO) << "Memory Used: " << test.net->MemSize() << " MB";
-  test.Forward();
+void test_reshape() {
+  LOG(INFO) << "Test Reshape";
+  auto resnet = ResNet("model/resnet.prototxt", "model/resnet.caffemodel");
+  std::vector<Mat> fm;
+  fm.push_back(Mat::Random(224, 224, 128));
+  fm.push_back(Mat::Random(224, 224, 128));
+  fm.push_back(Mat::Random(224, 224, 128));
+  std::shared_ptr<Blob> input = resnet.net->blob_by_name("data");
+  std::shared_ptr<Blob> prob = resnet.net->blob_by_name("prob");
+
+  auto forward_bs = [&](int bs) {
+    input->Reshape(bs, 3, 224, 224);
+    const int bias = input->offset(0, 1);
+    const int bytes = bias * sizeof(real_t);
+    for (int k = 0; k < bs * fm.size(); k++) {
+      memcpy(input->mutable_cpu_data() + k * bias, fm[k % fm.size()].data(), bytes);
+    }
+    resnet.net->Forward();
+  };
+
+  Mat b1_prob(1, 1000);
+  Mat b2_prob(2, 1000);
+
+  auto check_result = [&]() {
+    auto AllMostEQ = [](float x, float y) {
+      return std::abs(x - y) < 1e-6;
+    };
+    for (int i = 0; i < 1000; i++) {
+      float p1 = b1_prob.At(0, i);
+      float p2 = b2_prob.At(0, i);
+      float p3 = b2_prob.At(1, i);
+      CHECK(AllMostEQ(p1, p2) && AllMostEQ(p2, p3)) << p1 << " " << p2 << " " << p3;
+    }
+  };
+
+  // batch size 1
+  forward_bs(1);
+  memcpy(b1_prob.data_, prob->cpu_data(), 1000 * sizeof(real_t));
+  // batch size 2
+  forward_bs(2);
+  memcpy(b2_prob.data_, prob->cpu_data(), 2000 * sizeof(real_t));
+  check_result();
+  // batch size 1
+  forward_bs(1);
+  memcpy(b1_prob.data_, prob->cpu_data(), 1000 * sizeof(real_t));
+  check_result();
+  caffe::MemPoolClear();
 }

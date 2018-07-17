@@ -45,8 +45,14 @@ int main(int argc, char* argv[]) {
   }
   Net net("../models/r-fcn/test_agnostic.prototxt");
   net.CopyTrainedLayersFrom("../models/r-fcn/resnet50_rfcn_final.caffemodel");
+  net.MarkOutputs({ "rois" });
 
   Mat img = imread("../r-fcn/004545.jpg");
+
+  caffe::Profiler* profiler = caffe::Profiler::Get();
+  profiler->TurnON();
+  uint64_t tic = profiler->Now();
+
   int height = img.rows;
   int width = img.cols;
   const int kSizeMin = 600;
@@ -85,11 +91,7 @@ int main(int argc, char* argv[]) {
   im_info->mutable_cpu_data()[1] = imgResized.cols;
   im_info->mutable_cpu_data()[2] = scale_factor;
 
-  caffe::Profiler* profiler = caffe::Profiler::Get();
-  profiler->TurnON();
   net.Forward();
-  profiler->TurnOFF();
-  profiler->DumpProfile("profile.json");
 
   shared_ptr<Blob> rois = net.blob_by_name("rois");
   shared_ptr<Blob> cls_prob = net.blob_by_name("cls_prob");
@@ -135,6 +137,20 @@ int main(int argc, char* argv[]) {
       cv::putText(img, buff, cv::Point(bbox.x1, bbox.y1), FONT_HERSHEY_PLAIN, 1, Scalar(0, 255, 0));
     }
   }
+
+  uint64_t toc = profiler->Now();
+  profiler->TurnOFF();
+  profiler->DumpProfile("./rfcn-profile.json");
+
+  LOG(INFO) << "Costs " << (toc - tic) / 1000.f << " ms";
+
+  MemPoolState st = caffe::MemPoolGetState();
+  auto __Calc__ = [](int size) -> double {
+    return std::round(static_cast<double>(size) / (1024 * 1024) * 100) / 100;
+  };
+  LOG(INFO) << "[CPU] Hold " << __Calc__(st.cpu_mem) << " M, Not Uses " << __Calc__(st.unused_cpu_mem) << " M";
+  LOG(INFO) << "[GPU] Hold " << __Calc__(st.gpu_mem) << " M, Not Uses " << __Calc__(st.unused_gpu_mem) << " M";
+  cv::imwrite("./rfcn-result.jpg", img);
   cv::imshow("result", img);
   cv::waitKey(0);
   return 0;

@@ -25,20 +25,19 @@ void Blob::Reshape(const vector<int>& shape) {
   count_ = 1;
   shape_.resize(shape.size());
   if (!shape_data_ || shape_data_->size() < shape.size() * sizeof(int)) {
-    shape_data_.reset(new SyncedMemory(shape.size() * sizeof(int)));
+    static_assert(kMaxBlobAxes*sizeof(int) == MemoryPool::kElementSize, "Static Assert Error");
+    shape_data_.reset(new SyncedMemory(kMaxBlobAxes * sizeof(int)));
   }
   int* shape_data = static_cast<int*>(shape_data_->mutable_cpu_data());
   for (int i = 0; i < shape.size(); ++i) {
     CHECK_GE(shape[i], 0);
-    if (count_ != 0) {
-      CHECK_LE(shape[i], std::numeric_limits<int>::max() / count_) << "blob size exceeds INT_MAX";
-    }
     count_ *= shape[i];
     shape_[i] = shape[i];
     shape_data[i] = shape[i];
   }
   if (count_ > capacity_) {
     capacity_ = count_;
+    own_data_ = true;
     data_.reset(new SyncedMemory(capacity_ * sizeof(real_t)));
   }
 }
@@ -59,13 +58,13 @@ void Blob::ReshapeLike(const Blob& other) {
 Blob::Blob(const int num, const int channels,
            const int height, const int width)
     // capacity_ must be initialized before calling Reshape
-    : capacity_(0) {
+    : capacity_(0), name_("") {
   Reshape(num, channels, height, width);
 }
 
 Blob::Blob(const vector<int>& shape)
     // capacity_ must be initialized before calling Reshape
-    : capacity_(0) {
+    : capacity_(0), name_("") {
   Reshape(shape);
 }
 
@@ -77,11 +76,6 @@ const int* Blob::gpu_shape() const {
 const real_t* Blob::cpu_data() const {
   CHECK(data_);
   return static_cast<const real_t*>(data_->cpu_data());
-}
-
-void Blob::set_cpu_data(real_t* data) {
-  CHECK(data);
-  data_->set_cpu_data(data);
 }
 
 real_t* Blob::mutable_cpu_data() {
@@ -100,9 +94,18 @@ real_t* Blob::mutable_gpu_data() {
 }
 
 void Blob::ShareData(const Blob& other) {
-  CHECK_EQ(count_, other.count());
+  CHECK_LE(count_, other.capacity_);  // memory of `other` can place this blob
   CHECK(other.data_);
+  capacity_ = other.capacity_;
+  own_data_ = false;
   data_ = other.data_;
+}
+
+void Blob::ResetMemory() {
+  if (!own_data_) {
+    own_data_ = true;
+    data_.reset(new SyncedMemory(capacity_ * sizeof(real_t)));
+  }
 }
 
 bool Blob::ShapeEquals(const BlobProto& other) {
@@ -192,11 +195,6 @@ void Blob::ToProto(BlobProto* proto) const {
 const int* BlobInt::cpu_data() const {
   CHECK(data_);
   return static_cast<const int*>(data_->cpu_data());
-}
-
-void BlobInt::set_cpu_data(int* data) {
-  CHECK(data);
-  data_->set_cpu_data(data);
 }
 
 int* BlobInt::mutable_cpu_data() {

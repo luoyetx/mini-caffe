@@ -60,6 +60,14 @@ inline int CAFFE_GET_BLOCKS(const int N) {
 
 #endif  // USE_CUDA
 
+#define STUB_GPU(classname)                                        \
+void classname::Forward_gpu(const vector<Blob*>& bottom,           \
+                            const vector<Blob*>& top) { NO_GPU; }
+
+#define STUB_GPU_FORWARD(classname, funcname)                          \
+void classname::funcname##_##gpu(const vector<Blob*>& bottom,          \
+                                 const vector<Blob*>& top) { NO_GPU; }
+
 namespace caffe {
 
 // A singleton class to hold common caffe stuff, such as the handler that

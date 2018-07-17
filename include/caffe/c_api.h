@@ -32,13 +32,15 @@ CAFFE_API int CaffeBlobHeight(BlobHandle blob);
 CAFFE_API int CaffeBlobWidth(BlobHandle blob);
 /*! \brief get blob data */
 CAFFE_API real_t *CaffeBlobData(BlobHandle blob);
+/*! \brief get blob count */
+CAFFE_API int CaffeBlobCount(BlobHandle blob);
 /*!
  * \brief reshape blob
  * \note  this may change blob data pointer
  */
-CAFFE_API int CaffeBlobReshape(BlobHandle blob,
-                               int num, int channels,
-                               int height, int width);
+CAFFE_API int CaffeBlobReshape(BlobHandle blob, int shape_size, int* shape);
+/*! \brief get blob shape */
+CAFFE_API int CaffeBlobShape(BlobHandle blob, int* shape_size, int** shape);
 
 // Net API
 
@@ -66,6 +68,12 @@ CAFFE_API int CaffeNetCreateFromBuffer(const char *net_buffer, int nb_len,
                                        NetHandle *net);
 /*! \brief destroy network */
 CAFFE_API int CaffeNetDestroy(NetHandle net);
+/*!
+ * \brief mark internal blob as output
+ * \param net net handle
+ * \param name blob name
+ */
+CAFFE_API int CaffeNetMarkOutput(NetHandle net, const char *name);
 /*!
  * \brief forward network
  * \note  fill network input blobs before calling this function
@@ -148,6 +156,10 @@ CAFFE_API int CaffeSetMode(int mode, int device);
  * \note  this function is thread safe
  */
 CAFFE_API const char *CaffeGetLastError();
+/*!
+ * \brief clear unused memory in threaded memory pool
+ */
+CAFFE_API int CaffeMemoryPoolClear();
 
 #ifdef __cplusplus
 }
