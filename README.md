@@ -8,7 +8,7 @@ Minimal runtime core of [Caffe](https://github.com/BVLC/caffe). This repo is aim
 
 ### What can Mini-Caffe do?
 
-Mini-Caffe only depends on OpenBLAS and protobuf which means you can't train model with Mini-Caffe. It also only supports **Forward** function which means you can't apply models like nerual art style transform that uses **Backward** function.
+Mini-Caffe only depends on OpenBLAS and protobuf which means you can't train model with Mini-Caffe. It also only supports **Forward** function which means you can't apply models like neural art style transform that uses **Backward** function.
 
 ### Build on Windows
 
