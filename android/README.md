@@ -1,7 +1,7 @@
 Android Support
 ===============
 
-Mini-Caffe now can be corss compiled for Android platform.
+Mini-Caffe now can be cross compiled for Android platform.
 
 ### Prerequisites
 
