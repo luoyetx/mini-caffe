@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <vector>
+#include <cmath>
 
 #include "./concat_layer.hpp"
 #include "./flatten_layer.hpp"
