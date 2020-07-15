@@ -2,6 +2,7 @@
 // Adapted from ReLU layer code written by Yangqing Jia
 
 #include <vector>
+#include <cmath>
 
 #include "./tanh_layer.hpp"
 

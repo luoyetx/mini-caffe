@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <vector>
+#include <cmath>
 
 #include "./bnll_layer.hpp"
 
